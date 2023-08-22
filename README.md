@@ -1,7 +1,37 @@
-# Tauri + React + Typescript
+# Concordium LC1C
 
-This template should help get you started developing with Tauri, React and Typescript in Vite.
+The Concordium LC1C GUI tool is built using Tauri and Rust.
 
-## Recommended IDE Setup
+## Prerequisites
 
-- [VS Code](https://code.visualstudio.com/) + [Tauri](https://marketplace.visualstudio.com/items?itemName=tauri-apps.tauri-vscode) + [rust-analyzer](https://marketplace.visualstudio.com/items?itemName=rust-lang.rust-analyzer)
+Before you begin, ensure you have the following installed:
+
+- [Rust and Cargo](https://rustup.rs/)
+- [Node.js](https://nodejs.org/)
+- [Yarn](https://yarnpkg.com/) (or npm)
+
+## Installation
+
+1. **Clone the Repository**:
+
+   ```bash
+   git clone https://github.com/your-repository-url/concordium-lc1c.git
+   cd concordium-lc1c
+   ```
+
+2. **Install Frontend Dependencies**:
+Navigate to the frontend directory (assuming it's named frontend):
+    ```bash
+    cd frontend
+    yarn install
+    ````
+
+3. **Install Rust Dependencies**:
+Navigate back to the root directory and install the Rust dependencies:
+    ```bash
+    cd ..
+    cargo build --release```
+
+## Launching In Development Mode
+```bash
+yarn run tauri dev```
