@@ -30,8 +30,10 @@ Navigate to the frontend directory (assuming it's named frontend):
 Navigate back to the root directory and install the Rust dependencies:
     ```bash
     cd ..
-    cargo build --release```
+    cargo build --release
+    ```
 
 ## Launching In Development Mode
 ```bash
-yarn run tauri dev```
+yarn run tauri dev
+```
