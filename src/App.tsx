@@ -1,6 +1,8 @@
 import React, {useState } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
+import { open } from '@tauri-apps/api/shell';
+
 import "./App.css";
 
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
@@ -121,12 +123,18 @@ function Installer() {
 function GenesisBuilder() {
   const [configLevel, setConfigLevel] = useState<string | null>(null);
 
+  
+
+  function handleOpenLink(event: React.MouseEvent<HTMLAnchorElement>) {
+    event.preventDefault(); // Prevent the default behavior of the link
+    open('https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml'); // Replace with the link you want to open
+  }
+
+
   const EasyConfig = () => (
     <div>
-      <label>
-        Basic Setting:
-        <input type="text" />
-      </label>
+      <p>For easy configuration, the local chain will be loaded with a template genesis file found <a href="https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml" onClick={handleOpenLink}>here</a>. </p>
+      <p> Nothing else is needed. You can successfully run the local chain. </p>
     </div>
   );
 
@@ -163,11 +171,18 @@ function GenesisBuilder() {
         <button onClick={() => setConfigLevel('easy')}>Easy</button>
         <button onClick={() => setConfigLevel('advanced')}>Advanced</button>
         <button onClick={() => setConfigLevel('expert')}>Expert</button>
-      </div>
 
+      </div>
+      <div className="config-container">
       {configLevel === 'easy' && <EasyConfig />}
       {configLevel === 'advanced' && <AdvancedConfig />}
       {configLevel === 'expert' && <ExpertConfig />}
+      </div>
+
+      <div className="launch-button-container">
+        <button>Launch Local Chain</button>
+      </div>
+      
     </div>
   );
 }

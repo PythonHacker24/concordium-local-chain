@@ -8,6 +8,7 @@ use std::io::copy;
 use std::io::Write;
 use reqwest;
 use dirs;
+use tauri::api::file;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
@@ -17,18 +18,31 @@ async fn install() -> Result<(), String> {
         "https://example.com/concordium-node-windows.zip"
     } else if cfg!(target_os = "macos") {
         "https://distribution.concordium.software/macos/signed/concordium-node-6.0.4-0.pkg"
+        
     } else if cfg!(target_os = "linux") {
-        "https://example.com/concordium-node-linux.zip"
+        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_5.4.2-0_amd64.deb"
     } else {
         return Err("Unsupported OS".into());
     };
 
+    // Change Filename Depending on OS
+    let file_name = if cfg!(target_os = "windows") {
+        "concordium-node-lc1c.exe"
+    } else if cfg!(target_os = "macos") {
+        "concordium-node-lc1c.pkg"
+        
+    } else if cfg!(target_os = "linux") {
+        "concordium-node-lc1c.deb"
+    } else {
+        return Err("Unsupported OS".into());
+    };
+
+
+
     // Download the appropriate Concordium node binary for the detected OS
-    // You can use the reqwest crate or another HTTP client for Rust
-    // For simplicity, we'll assume a function download_file(url, destination)
 
     let downloads_folder = dirs::download_dir().unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"));
-    let destination = downloads_folder.join("concordium-node-lc1c.pkg");
+    let destination = downloads_folder.join(file_name);
     let destination_str = destination.to_str().ok_or("Failed to convert path to string")?;
 
     match download_file(&download_url, &destination_str).await {
