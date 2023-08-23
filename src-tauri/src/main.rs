@@ -4,11 +4,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::fs::File;
-use std::io::copy;
 use std::io::Write;
 use reqwest;
 use dirs;
-use tauri::api::file;
 
 // Learn more about Tauri commands at https://tauri.app/v1/guides/features/command
 #[tauri::command]
