@@ -1,6 +1,8 @@
-import React, {useState } from "react";
+import React, {useEffect, useState } from "react";
 import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-router-dom";
 import { invoke } from "@tauri-apps/api/tauri";
+import { listen, UnlistenFn } from '@tauri-apps/api/event'
+
 import { open } from '@tauri-apps/api/shell';
 
 import "./App.css";
@@ -21,7 +23,7 @@ function Installer() {
   const [installationSuccess, setInstallationSuccess] = useState(false);
   // Verification for Genesis Creator
   const [installationSuccessCreator, setInstallationSuccessCreator] = useState(false);
-
+  
   const navigate = useNavigate();
 
   function goToGenesisBuilder() {
@@ -122,8 +124,16 @@ function Installer() {
 
 function GenesisBuilder() {
   const [configLevel, setConfigLevel] = useState<string | null>(null);
+  const [launching, setLaunching] = useState(false);
+  const [launched, setLaunched] = useState(false);
+
+
+  const navigate = useNavigate();
 
   
+  function dashboard() {
+    navigate("/dashboard");
+  }
 
   function handleOpenLink(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault(); // Prevent the default behavior of the link
@@ -158,6 +168,31 @@ function GenesisBuilder() {
     </div>
   );
 
+  
+  async function launch() {
+    setLaunching(true);
+
+    // Launch a template launch if config easy
+    if (configLevel === 'easy') {
+      try {
+        // Invoking the `template_launch` function on the Tauri backend
+        await invoke('template_launch');
+        setLaunching(false);
+        setLaunched(true)
+      } catch (error) {
+        console.error("Error calling template_launch:", error);
+      }
+    } else {
+      try {
+        // Invoking the `launch` function on the Tauri backend
+        await invoke('launch');
+        setLaunching(false);
+      } catch (error) {
+        console.error("Error calling launch:", error);
+      }
+    }
+  }
+
   return (
     <div>
       <h2>
@@ -168,9 +203,9 @@ function GenesisBuilder() {
         </span>
       </h2>
       <div>
-        <button onClick={() => setConfigLevel('easy')}>Easy</button>
-        <button onClick={() => setConfigLevel('advanced')}>Advanced</button>
-        <button onClick={() => setConfigLevel('expert')}>Expert</button>
+        <button onClick={() => setConfigLevel('easy')} disabled={launched}>Easy</button>
+        <button onClick={() => setConfigLevel('advanced') } disabled={launched}>Advanced</button>
+        <button onClick={() => setConfigLevel('expert')} disabled={launched}>Expert</button>
 
       </div>
       <div className="config-container">
@@ -180,15 +215,69 @@ function GenesisBuilder() {
       </div>
 
       <div className="launch-button-container">
-        <button>Launch Local Chain</button>
+        <button onClick={launch} disabled={launching || launched} style={{ 
+            backgroundColor: launched ? "green" : undefined,
+            color: launched ? "white" : undefined
+          }}>
+        {launching ? "Launching..." : launched ? "Chain Launched!" : "Launch Local Chain"}
+        </button>
+        {launched ? <button onClick={dashboard}>
+         Visit Dashboard
+        </button> : ""
+           }
       </div>
       
     </div>
   );
 }
 
+/* --------------------------------------------------------- DASHBOARD PAGE ----------------------------------------------------------------------------*/
+
+function Dashboard() {
+  const [latestHash, setLatestHash] = useState("");
+  const [blocks, setBlocks] = useState(0);
+
+  useEffect(() => {
+    let unlistenFn: UnlistenFn | undefined;
+
+    // Set up the listener for the 'new-block' event
+    listen('new-block', (event) => {
+      console.log("Received new block event:", event.payload);
+    }).then(unlisten => {
+      unlistenFn = unlisten;
+    });
+
+    // Cleanup the listener when the component is unmounted
+    return () => {
+      if (unlistenFn) {
+        unlistenFn();
+      }
+    };
+  }, []);
+  // Function to invoke killing blockchain
+  async function killChain() {
+    console.log("KILLED")
+    try {
+      await invoke("kill_chain");
+    } catch (error) {
+      console.error("Kill error:", error);
+    }
+  }
 
 
+  return (
+    <div>
+      <p> Block Number: {blocks}</p>
+      <p> Latest Hash: {latestHash}</p>
+
+      <div className="launch-button-container">
+      <button onClick={killChain}>Kill Local Chain</button>
+      </div>
+      
+      
+    </div>
+  );
+}
 
 
 /* --------------------------------------------------------- FULL APPLICATION ----------------------------------------------------------------------*/
@@ -199,6 +288,7 @@ function App() {
       <Routes>
         <Route path="/genesis-builder" element={<GenesisBuilder />} />
         <Route path="/" element={<Installer />} />
+        <Route path="/dashboard" element={<Dashboard />} />
       </Routes>
     </Router>
   );
