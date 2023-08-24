@@ -235,17 +235,25 @@ function GenesisBuilder() {
 
 function Dashboard() {
   const [latestHash, setLatestHash] = useState("");
-  const [blocks, setBlocks] = useState(0);
+  const [blocks, setBlocks] = useState("");
 
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
 
     // Set up the listener for the 'new-block' event
-    listen('new-block', (event) => {
+    listen('new-block', (event: any) => {
       console.log("Received new block event:", event.payload);
-    }).then(unlisten => {
+      console.log(blocks)
+      setBlocks(event.payload.number);
+      setLatestHash(event.payload.hash);
+    })
+    .then(unlisten => {
       unlistenFn = unlisten;
+    })
+    .catch(error => {
+      console.error("Error setting up listener:", error);
     });
+    
 
     // Cleanup the listener when the component is unmounted
     return () => {
@@ -256,7 +264,6 @@ function Dashboard() {
   }, []);
   // Function to invoke killing blockchain
   async function killChain() {
-    console.log("KILLED")
     try {
       await invoke("kill_chain");
     } catch (error) {

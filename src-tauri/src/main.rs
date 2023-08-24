@@ -3,12 +3,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+use std::clone;
 // Imports
 use std::{fs::File, io::BufRead};
 use std::io::Write;
 use reqwest;
 use dirs;
-use tauri::Window;
+use tauri::{Window, Manager};
 use std::path::{Path, PathBuf};
 use tokio::io::{BufReader, AsyncBufReadExt};
 use tokio::process::Command as AsyncCommand;
@@ -21,12 +22,16 @@ use tauri::regex::Regex;
 
 struct AppState {
     child_process: Option<Child>,
+    main_window: Option<Window>,
+
+    
 }
 
 impl AppState {
     fn new() -> Self {
         AppState {
             child_process: None,
+            main_window: None,
         }
     }
 }
@@ -148,14 +153,14 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
 
     let metadata = dest_file.metadata()?;
     println!("Downloaded {} bytes to {}", metadata.len(), destination);
-    // if mac OS open the file after downloading
-    if cfg!(target_os = "macos") {
-        std::process::Command::new("open")
-            .arg(destination)
-            .output()?;
-    }
-
-    // TODO: Add for other OS as well
+        // if mac OS open the file after downloading
+        if cfg!(target_os = "macos") {
+            std::process::Command::new("open")
+                .arg(destination)
+                .output()?;
+        }
+    
+        // TODO: Add for other OS as well
     Ok(())
 }
 
@@ -164,7 +169,7 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
 
 
 #[tauri::command]
-async fn template_launch(window: Window, app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<(), String> {
+async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<(), String> {
     
     // Retrieve the home directory 
     let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
@@ -231,23 +236,31 @@ async fn template_launch(window: Window, app_state: tauri::State<'_, Arc<Mutex<A
         "--baker-credentials-file", "bakers/baker-0-credentials.json"
     ])
     .current_dir(&new_chain_folder)
-    .stdout(std::process::Stdio::piped())  // Capture stdout
+    .stdout(std::process::Stdio::piped()) // Capture stdout
+    .stderr(std::process::Stdio::piped())  // Capture stderr  
     .spawn()
     .expect("Failed to start the node.");
     
-    let reader = BufReader::new(child.stdout.take().expect("Failed to capture stdout."));
+    let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
     
     let mut state = app_state.lock().unwrap();
     state.child_process = Some(child);
 
-    let mut lines = reader.lines();
-
+    let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+    let window_clone = state.main_window.clone();
     tokio::spawn(async move {
         while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
-            if let Some(block_info) = parse_block_info(&line) {
-                window.emit("new-block", block_info).unwrap();
+            // logging
+            if let Some(window) = &window_clone {
+                //logging
+                if let Some(block_info) = parse_block_info(&line) {
+                    println!("{:?}", block_info);
+                    window.emit("new-block", block_info).unwrap();
+                }
             }
-            println!("{}", line);
+            
+
+
         }
     });
     
@@ -297,29 +310,47 @@ async fn kill_chain(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result
 
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
-#[derive(Clone, serde::Serialize)]
+#[derive(Clone, serde::Serialize, Debug)]
 struct BlockInfo {
     hash: String,
     number: u64,
 }
 
+// Parse to get hash and number
 fn parse_block_info(line: &str) -> Option<BlockInfo> {
-    // Define a regular expression pattern to capture the block hash and block number
-    let re = Regex::new(r"Block ([0-9a-f]+) \((\d+)\) arrived").unwrap();
+    // logging
+    println!("Processing line: {}", line); // Add this
+
+    // Define a regular expression pattern to capture the block hash and height
+    let re = Regex::new(r"Block ([0-9a-f]{64}) is finalized at height (\d+)").unwrap();
 
     if let Some(captures) = re.captures(line) {
         let hash = captures.get(1).map_or("", |m| m.as_str()).to_string();
         let number = captures.get(2).map_or("", |m| m.as_str()).parse::<u64>().unwrap_or(0);
+        // logging
+        println!("Matched block hash: {}, height: {}", hash, number); // Modify this
+
         return Some(BlockInfo { hash, number });
     }
     None
 }
 
+
 fn main() {
     let app_state = Arc::new(Mutex::new(AppState::new()));
 
     tauri::Builder::default()
-        .manage(app_state)
+        .manage(app_state.clone())
+        .setup(move |app| {
+            // Get a reference to the main window
+            let main_window = app.get_window("main").unwrap();
+    
+            // Store the window reference in the app state
+            let mut state = app_state.lock().unwrap();
+            state.main_window = Some(main_window);
+    
+            Ok(())
+        })
         .invoke_handler(tauri::generate_handler![install, verify_installation, install_genesis_creator, template_launch, kill_chain])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
