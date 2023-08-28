@@ -15,7 +15,7 @@ const layoutStyles = {
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
      <React.StrictMode>
-          <div style={layoutStyles}>
+          <div className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6" style={layoutStyles as React.CSSProperties}>
                <App />
           </div>
      </React.StrictMode>,

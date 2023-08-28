@@ -1,6 +1,5 @@
 /** @type {import('tailwindcss').Config} */
 export default {
-     darkMode: false,
      content: [
           "./index.html",
           "./src/**/*.{js,ts,jsx,tsx}",
@@ -9,6 +8,7 @@ export default {
           fontSize: {
                sm: '0.8rem',
                base: '1rem',
+               normal: '18px',
                xl: '1.25rem',
                '2xl': '1.563rem',
                '3xl': '1.953rem',
@@ -35,10 +35,16 @@ export default {
                width: {
                     '62': '62em',
                     '34': '34em',
-                    '44': '44em',
+                    '44': '40em',
                }
           },
      },
-     plugins: [],
+     plugins: [
+          require("@catppuccin/tailwindcss")({
+               defaultFlavour: "mocha",
+               prefix: "ctp",
+          })
+
+     ],
 }
 

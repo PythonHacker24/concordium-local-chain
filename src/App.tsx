@@ -3,7 +3,6 @@ import { BrowserRouter as Router, Route, Routes, useNavigate } from "react-route
 import { invoke } from "@tauri-apps/api/tauri";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from '@tauri-apps/api/event'
-import '@coreui/coreui/dist/css/coreui.min.css'
 import { CAlert, CButton } from "@coreui/react";
 import { open } from '@tauri-apps/api/shell';
 import "./App.css";
@@ -75,36 +74,28 @@ function Installer() {
           }
      }
      return (
-          <div className="container prose md:prose-lg lg:prose-xl m-auto h-96">
-               <h1 className=" subpixel-antialiased text-5xl font-bold">Concordium LC1C</h1>
+          <div className="container prose md:prose-lg lg:prose-xl m-auto">
+               <h1 className=" subpixel-antialiased text-5xl font-bold text-white">Concordium LC1C</h1>
 
-               <p className="text-xl">Follow the below steps to complete installation and running of a local node.</p>
+               <p className="my-5 text-xl text-slate-300">Follow the below steps to complete installation and running of a local node.</p>
 
 
-               <CButton className="mt-2 w-4/5  sm:w-34 md:w-44 bg-blue-700 mx-auto hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={install} disabled={installing || installationSuccess} style={{
-                    backgroundColor: installationSuccess || verificationSuccess ? "green" : undefined,
-                    // color: installationSuccess ? "white" : undefined
-               }}
+               <CButton className={`bg-ctp-blue mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-ctp-sky text-lg inline-flex items-center justify-center  text-center font-extrabold text-normal text-slate-800 hover:text-slate-700 lg:px-8 xl:px-10 mb-3 ${installingCreator ? 'bg-ctp-sky' : verificationSuccess ? 'bg-ctp-green' : 'bg-ctp-blue'}`} onClick={install} disabled={installing || installationSuccess}
                >
                     {installing ? "Installing..." : installationSuccess || verificationSuccess ? "Node Installed!" : "Install Concordium Node"}
                </CButton>
 
-               <CButton className="bg-blue-700 w-4/5  sm:w-34 md:w-44 mx-auto hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={verifyInstallation} disabled={verifying || verificationSuccess} style={{
-                    backgroundColor: verificationSuccess ? "green" : undefined,
-               }}>
+               <CButton className={`bg-ctp-blue mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-ctp-sky text-lg inline-flex items-center justify-center  text-center font-extrabold text-normal text-slate-800 hover:text-slate-700 lg:px-8 xl:px-10 mb-3 ${verifying ? 'bg-ctp-sky' : verificationSuccess ? 'bg-ctp-green' : ""}`} onClick={verifyInstallation} disabled={verifying || verificationSuccess}>
                     {verifying ? "Verifying Installation..." : verificationSuccess ? "Node Installation Verified!" : "Verify Node Installation"}
                </CButton>
 
 
-               <CButton className="bg-blue-700 mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={installCreator} disabled={installingCreator || installationSuccessCreator} style={{
-
-                    backgroundColor: installationSuccessCreator ? "green" : undefined,
-               }}>
+               <CButton className={`bg-ctp-blue mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-ctp-sky text-lg inline-flex items-center justify-center  text-center font-extrabold text-normal text-slate-800 hover:text-slate-700 lg:px-8 xl:px-10 mb-3 ${installingCreator ? 'bg-ctp-sky' : installationSuccessCreator ? 'bg-ctp-green' : 'bg-ctp-blue'}`} onClick={installCreator} disabled={installingCreator || installationSuccessCreator}>
                     {installingCreator ? "Installing..." : installationSuccessCreator ? "Genesis Creator Installed!" : "Install Genesis Creator"}
                </CButton>
 
                {installationSuccess && installationSuccessCreator && (
-                    <CButton className="bg-blue-700 mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={goToGenesisBuilder} >
+                    <CButton className="bg-ctp-blue hover:bg-ctp-sky mx-auto w-4/5 sm:w-34 md:w-44  text-lg inline-flex items-center justify-center  text-center font-extrabold text-normal text-slate-800 hover:text-slate-700 lg:px-8 xl:px-10 mb-3" onClick={goToGenesisBuilder} >
                          Go to Genesis Builder
                     </CButton>
                )}
@@ -279,7 +270,7 @@ function Dashboard() {
 
      return (
 
-          <div className="w-34 mx-auto bg-white rounded-xl shadow-xl overflow-hidden md:max-w-5xl">
+          <div className="w-34 mx-auto rounded-xl shadow-xl overflow-hidden md:max-w-5xl">
                <div className="md:flex">
                     <div className="p-8">
                          <div className="uppercase tracking-wide text-xl text-indigo-500 font-semibold">
