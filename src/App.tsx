@@ -279,7 +279,7 @@ function Dashboard() {
 
      return (
 
-          <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:max-w-2xl">
+          <div className="w-34 mx-auto bg-white rounded-xl shadow-xl overflow-hidden md:max-w-5xl">
                <div className="md:flex">
                     <div className="p-8">
                          <div className="uppercase tracking-wide text-xl text-indigo-500 font-semibold">
