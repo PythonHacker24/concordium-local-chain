@@ -78,10 +78,10 @@ function Installer() {
           <div className="container prose md:prose-lg lg:prose-xl m-auto h-96">
                <h1 className=" subpixel-antialiased text-5xl font-bold">Concordium LC1C</h1>
 
-               <p className="text-base">Follow the below steps to complete installation and running of a local node.</p>
+               <p className="text-xl">Follow the below steps to complete installation and running of a local node.</p>
 
 
-               <CButton className="mt-2 bg-blue-700 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={install} disabled={installing || installationSuccess} style={{
+               <CButton className="mt-2 w-4/5  sm:w-34 md:w-44 bg-blue-700 mx-auto hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={install} disabled={installing || installationSuccess} style={{
                     backgroundColor: installationSuccess || verificationSuccess ? "green" : undefined,
                     // color: installationSuccess ? "white" : undefined
                }}
@@ -89,22 +89,22 @@ function Installer() {
                     {installing ? "Installing..." : installationSuccess || verificationSuccess ? "Node Installed!" : "Install Concordium Node"}
                </CButton>
 
-
-               <CButton className="bg-blue-700 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={verifyInstallation} disabled={verifying || verificationSuccess} style={{
+               <CButton className="bg-blue-700 w-4/5  sm:w-34 md:w-44 mx-auto hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white hover:bg-opacity-90 lg:px-8 xl:px-10 mb-3" onClick={verifyInstallation} disabled={verifying || verificationSuccess} style={{
                     backgroundColor: verificationSuccess ? "green" : undefined,
                }}>
                     {verifying ? "Verifying Installation..." : verificationSuccess ? "Node Installation Verified!" : "Verify Node Installation"}
                </CButton>
 
 
-               <CButton className="bg-blue-700 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={installCreator} disabled={installingCreator || installationSuccessCreator} style={{
+               <CButton className="bg-blue-700 mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={installCreator} disabled={installingCreator || installationSuccessCreator} style={{
+
                     backgroundColor: installationSuccessCreator ? "green" : undefined,
                }}>
                     {installingCreator ? "Installing..." : installationSuccessCreator ? "Genesis Creator Installed!" : "Install Genesis Creator"}
                </CButton>
 
                {installationSuccess && installationSuccessCreator && (
-                    <CButton className="bg-blue-700 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={goToGenesisBuilder}>
+                    <CButton className="bg-blue-700 mx-auto w-4/5 sm:w-34 md:w-44 hover:bg-blue-700 text-lg inline-flex items-center justify-center  text-center text-base font-normal text-white lg:px-8 xl:px-10 mb-3" onClick={goToGenesisBuilder} >
                          Go to Genesis Builder
                     </CButton>
                )}
