@@ -333,10 +333,10 @@ let settingsData = {
 }
 
 function SettingsPage() {
-     const initialFormData = { ...settingsData };
-     console.log(initialFormData);
-     const [formData, setFormData] = useState(initialFormData)
+     // const initialFormData = { ...settingsData };
+     const [formData, setFormData] = useState(settingsData)
      const [visible, setVisible] = useState(false)
+
      const handleInputChange = (event) => {
           const { name, value } = event.target;
           setFormData((prevData) => ({
@@ -344,30 +344,32 @@ function SettingsPage() {
                [name]: value,
           }));
      };
-
-     const handleSubmit = (event) => {
+     const handleSubmit = (event: any) => {
           event.preventDefault();
           console.log(formData);
      };
 
      return (
           <>
-               <CButton className="btn bg-ctp-green mx-auto" onClick={() => setVisible(!visible)}>Launch demo modal</CButton>
-               <CModal className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6 overflow-auto w-1/2 " scrollable visible={visible} onClose={() => setVisible(false)}>
+               <div className="w-full flex justify-center">
+                    <CButton className="btn mt-10 bg-ctp-green hover:bg-ctp-green border-none text-black items-center" onClick={() => setVisible(!visible)}>Open Settings</CButton>
+               </div>
+               <CModal className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6 overflow-auto mt-10 " scrollable visible={visible} onClose={() => setVisible(false)}>
                     <CModalHeader>
                          <CModalTitle className="text-3xl text-black font-bolder">Settings</CModalTitle>
                     </CModalHeader>
+
                     <CModalBody>
-                         <form onSubmit={handleSubmit}>
+                         <form id="settingsform" onSubmit={handleSubmit}>
                               <div className="form-field">
                                    <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.slotDuration">Slot Duration:</label>
                                    <input
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        type="text"
+                                        type="integer"
                                         id="parameters.slotDuration"
                                         name="parameters.slotDuration"
-                                        value={formData.parameters.slotDuration}
                                         onChange={handleInputChange}
+                                        defaultValue={formData.parameters.slotDuration}
                                    />
                               </div>
                               <div className="form-field">
@@ -377,7 +379,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.leadershipElectionNonce"
                                         name="parameters.leadershipElectionNonce"
-                                        value={formData.parameters.leadershipElectionNonce}
+                                        defaultValue={formData.parameters.leadershipElectionNonce}
                                         onChange={handleInputChange}
                                    />
                               </div>
@@ -388,8 +390,8 @@ function SettingsPage() {
                                         id="parameters.epochLength"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.epochLength"
-                                        value={formData.parameters.epochLength}
                                         onChange={handleInputChange}
+                                        defaultValue={formData.parameters.epochLength}
                                    />
                               </div>
                               <div className="form-field">
@@ -399,8 +401,7 @@ function SettingsPage() {
                                         id="parameters.maxBlockEnergy"
                                         name="parameters.maxBlockEnergy"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.maxBlockEnergy}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.maxBlockEnergy}
                                    />
                               </div>
                               <div className="form-field">
@@ -409,9 +410,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.finalization.minimumSkip"
                                         name="parameters.finalization.minimumSkip"
-                                        value={formData.parameters.finalization.minimumSkip}
+                                        defaultValue={formData.parameters.finalization.minimumSkip}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -421,8 +421,7 @@ function SettingsPage() {
                                         id="parameters.finalization.committeeMaxSize"
                                         name="parameters.finalization.committeeMaxSize"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.finalization.committeeMaxSize}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.finalization.committeeMaxSize}
                                    />
                               </div>
                               <div className="form-field">
@@ -432,8 +431,7 @@ function SettingsPage() {
                                         id="parameters.finalization.waitingTime"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.finalization.waitingTime"
-                                        value={formData.parameters.finalization.waitingTime}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.finalization.waitingTime}
                                    />
                               </div>
                               <div className="form-field">
@@ -443,8 +441,7 @@ function SettingsPage() {
                                         id="parameters.finalization.skipShrinkFactor"
                                         name="parameters.finalization.skipShrinkFactor"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.finalization.skipShrinkFactor}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.finalization.skipShrinkFactor}
                                    />
                               </div>
 
@@ -455,8 +452,7 @@ function SettingsPage() {
                                         id="parameters.finalization.skipGrowFactor"
                                         name="parameters.finalization.skipGrowFactor"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.finalization.skipGrowFactor}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.finalization.skipGrowFactor}
                                    />
                               </div>
 
@@ -467,8 +463,7 @@ function SettingsPage() {
                                         id="parameters.finalization.delayShrinkFactor"
                                         name="parameters.finalization.delayShrinkFactor"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.finalization.delayShrinkFactor}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.finalization.delayShrinkFactor}
                                    />
                               </div>
                               <div className="form-field">
@@ -477,9 +472,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.finalization.delayGrowFactor"
                                         name="parameters.finalization.delayGrowFactor"
-                                        value={formData.parameters.finalization.delayGrowFactor}
+                                        defaultValue={formData.parameters.finalization.delayGrowFactor}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -489,8 +483,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.version"
                                         name="parameters.chain.version"
-                                        value={formData.parameters.chain.version}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.version}
                                    />
                               </div>
                               <div className="form-field">
@@ -500,8 +493,7 @@ function SettingsPage() {
                                         id="parameters.chain.electionDifficulty"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.electionDifficulty"
-                                        value={formData.parameters.chain.electionDifficulty}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.electionDifficulty}
                                    />
                               </div>
                               <div className="form-field">
@@ -511,8 +503,7 @@ function SettingsPage() {
                                         id="parameters.chain.euroPerEnergy"
                                         name="parameters.chain.euroPerEnergy"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.chain.euroPerEnergy}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.euroPerEnergy}
                                    />
                               </div>
                               <div className="form-field">
@@ -521,9 +512,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.microCCDPerEuro"
                                         name="parameters.chain.microCCDPerEuro"
-                                        value={formData.parameters.chain.microCCDPerEuro}
+                                        defaultValue={formData.parameters.chain.microCCDPerEuro}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -532,8 +522,7 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.accountCreationLimit"
                                         name="parameters.chain.accountCreationLimit"
-                                        value={formData.parameters.chain.accountCreationLimit}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.accountCreationLimit}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                    />
                               </div>
@@ -544,8 +533,7 @@ function SettingsPage() {
                                         id="parameters.chain.timeParameters.rewardPeriodLength"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.timeParameters.rewardPeriodLength"
-                                        value={formData.parameters.chain.timeParameters.rewardPeriodLength}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.timeParameters.rewardPeriodLength}
                                    />
                               </div>
                               <div className="form-field">
@@ -555,8 +543,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.timeParameters.mintPerPayDay"
                                         name="parameters.chain.timeParameters.mintPerPayDay"
-                                        value={formData.parameters.chain.timeParameters.mintPerPayday}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.timeParameters.mintPerPayday}
                                    />
                               </div>
                               <div className="form-field">
@@ -566,8 +553,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.poolParameters.passiveFinalizationCommission"
                                         name="parameters.chain.poolParameters.passiveFinalizationCommission"
-                                        value={formData.parameters.chain.poolParameters.passiveFinalizationCommission}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.passiveFinalizationCommission}
                                    />
                               </div>
                               <div className="form-field">
@@ -577,8 +563,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.poolParameters.passiveBakingCommission"
                                         name="parameters.chain.poolParameters.passiveBakingCommission"
-                                        value={formData.parameters.chain.poolParameters.passiveBakingCommission}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.passiveBakingCommission}
                                    />
                               </div>
                               <div className="form-field">
@@ -588,8 +573,7 @@ function SettingsPage() {
                                         id="parameters.chain.poolParameters.passiveTransactionCommission"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.poolParameters.passiveTransactionCommission"
-                                        value={formData.parameters.chain.poolParameters.passiveTransactionCommission}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.passiveTransactionCommission}
                                    />
                               </div>
                               <div className="form-field">
@@ -599,8 +583,7 @@ function SettingsPage() {
                                         id="parameters.chain.poolParameters.finalizationCommissionRange.min"
                                         name="parameters.chain.poolParameters.finalizationCommissionRange.min"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.chain.poolParameters.finalizationCommissionRange.min}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.finalizationCommissionRange.min}
                                    />
                               </div>
                               <div className="form-field">
@@ -609,9 +592,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.poolParameters.finalizationCommissionRange.max"
                                         name="parameters.chain.poolParameters.finalizationCommissionRange.max"
-                                        value={formData.parameters.chain.poolParameters.finalizationCommissionRange.max}
+                                        defaultValue={formData.parameters.chain.poolParameters.finalizationCommissionRange.max}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -620,8 +602,7 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.poolParameters.bakingCommissionRange.min"
                                         name="parameters.chain.poolParameters.bakingCommissionRange.min"
-                                        value={formData.parameters.chain.poolParameters.bakingCommissionRange.min}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.bakingCommissionRange.min}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                    />
                               </div>
@@ -632,8 +613,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.poolParameters.bakingCommissionRange.max"
                                         name="parameters.chain.poolParameters.bakingCommissionRange.max"
-                                        value={formData.parameters.chain.poolParameters.bakingCommissionRange.max}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.bakingCommissionRange.max}
                                    />
                               </div>
                               <div className="form-field">
@@ -643,8 +623,7 @@ function SettingsPage() {
                                         id="parameters.chain.poolParameters.transactionCommissionRange.min"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.poolParameters.transactionCommissionRange.min"
-                                        value={formData.parameters.chain.poolParameters.transactionCommissionRange.min}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.transactionCommissionRange.min}
                                    />
                               </div>
                               <div className="form-field">
@@ -654,8 +633,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.poolParameters.transactionCommissionRange.max"
                                         name="parameters.chain.poolParameters.transactionCommissionRange.max"
-                                        value={formData.parameters.chain.poolParameters.transactionCommissionRange.max}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.transactionCommissionRange.max}
                                    />
                               </div>
                               <div className="form-field">
@@ -665,8 +643,7 @@ function SettingsPage() {
                                         id="parameters.chain.poolParameters.minimumEquityCapital"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.poolParameters.minimumEquityCapital"
-                                        value={formData.parameters.chain.poolParameters.minimumEquityCapital}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.minimumEquityCapital}
                                    />
                               </div>
                               <div className="form-field">
@@ -676,8 +653,7 @@ function SettingsPage() {
                                         id="parameters.chain.poolParameters.capitalBound"
                                         name="parameters.chain.poolParameters.capitalBound"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.chain.poolParameters.capitalBound}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.capitalBound}
                                    />
                               </div>
                               <div className="form-field">
@@ -686,9 +662,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.poolParameters.leverageBound.numerator"
                                         name="parameters.chain.poolParameters.leverageBound.numerator"
-                                        value={formData.parameters.chain.poolParameters.leverageBound.numerator}
+                                        defaultValue={formData.parameters.chain.poolParameters.leverageBound.numerator}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -697,8 +672,7 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.poolParameters.leverageBound.denominator"
                                         name="parameters.chain.poolParameters.leverageBound.denominator"
-                                        value={formData.parameters.chain.poolParameters.leverageBound.denominator}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.poolParameters.leverageBound.denominator}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                    />
                               </div>
@@ -709,8 +683,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.cooldownParameters.poolOwnerCooldown"
                                         name="parameters.chain.cooldownParameters.poolOwnerCooldown"
-                                        value={formData.parameters.chain.cooldownParameters.poolOwnerCooldown}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.cooldownParameters.poolOwnerCooldown}
                                    />
                               </div>
                               <div className="form-field">
@@ -720,8 +693,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.cooldownParameters.delegatorCooldown"
                                         name="parameters.chain.cooldownParameters.delegatorCooldown"
-                                        value={formData.parameters.chain.cooldownParameters.delegatorCooldown}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.cooldownParameters.delegatorCooldown}
                                    />
                               </div >
                               <div className="form-field">
@@ -731,8 +703,7 @@ function SettingsPage() {
                                         id="parameters.chain.rewardParameters.mintDistribution.bakingReward"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.rewardParameters.mintDistribution.bakingReward"
-                                        value={formData.parameters.chain.rewardParameters.mintDistribution.bakingReward}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.mintDistribution.bakingReward}
                                    />
                               </div>
                               <div className="form-field">
@@ -742,8 +713,7 @@ function SettingsPage() {
                                         id="parameters.chain.rewardParameters.mintDistribution.finalizationReward"
                                         name="parameters.chain.rewardParameters.mintDistribution.finalizationReward"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        value={formData.parameters.chain.rewardParameters.mintDistribution.finalizationReward}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.mintDistribution.finalizationReward}
                                    />
                               </div>
                               <div className="form-field">
@@ -752,9 +722,8 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.rewardParameters.transactionFeeDistribution.baker"
                                         name="parameters.chain.rewardParameters.transactionFeeDistribution.baker"
-                                        value={formData.parameters.chain.rewardParameters.transactionFeeDistribution.baker}
+                                        defaultValue={formData.parameters.chain.rewardParameters.transactionFeeDistribution.baker}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        onChange={handleInputChange}
                                    />
                               </div>
                               <div className="form-field">
@@ -763,8 +732,7 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.rewardParameters.transactionFeeDistribution.gasAccount"
                                         name="parameters.chain.rewardParameters.transactionFeeDistribution.gasAccount"
-                                        value={formData.parameters.chain.rewardParameters.transactionFeeDistribution.gasAccount}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.transactionFeeDistribution.gasAccount}
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                    />
                               </div>
@@ -775,8 +743,7 @@ function SettingsPage() {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="parameters.chain.rewardParameters.GASRewards.baker"
                                         name="parameters.chain.rewardParameters.GASRewards.baker"
-                                        value={formData.parameters.chain.rewardParameters.GASRewards.baker}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.baker}
                                    />
                               </div>
                               <div className="form-field">
@@ -786,8 +753,7 @@ function SettingsPage() {
                                         type="text"
                                         id="parameters.chain.rewardParameters.GASRewards.finalizationProof"
                                         name="parameters.chain.rewardParameters.GASRewards.finalizationProof"
-                                        value={formData.parameters.chain.rewardParameters.GASRewards.finalizationProof}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.finalizationProof}
                                    />
                               </div>
                               <div className="form-field">
@@ -797,8 +763,7 @@ function SettingsPage() {
                                         id="parameters.chain.rewardParameters.GASRewards.accountCreation"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         name="parameters.chain.rewardParameters.GASRewards.accountCreation"
-                                        value={formData.parameters.chain.rewardParameters.GASRewards.accountCreation}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.accountCreation}
                                    />
                               </div>
                               <div className="form-field">
@@ -808,19 +773,19 @@ function SettingsPage() {
                                         type="number"
                                         id="parameters.chain.rewardParameters.GASRewards.chainUpdate"
                                         name="parameters.chain.rewardParameters.GASRewards.chainUpdate"
-                                        value={formData.parameters.chain.rewardParameters.GASRewards.chainUpdate}
-                                        onChange={handleInputChange}
+                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.chainUpdate}
                                    />
                               </div>
-                         </form>
+                         </form >
                     </CModalBody>
                     <CModalFooter>
-                         <CButton className="btn bg-ctp-red text-black" color="secondary" onClick={() => setVisible(false)}>
+                         <CButton className="btn bg-ctp-red hover:bg-ctp-red text-black" color="secondary" onClick={() => setVisible(false)}>
                               Close
                          </CButton>
-                         <CButton type="submit" color="primary">Save changes</CButton>
+                         <input className="btn btn-primary bg-black text-white" type="submit" form="settingsform" value="Save Changes" />
+
                     </CModalFooter>
-               </CModal>
+               </CModal >
           </>
      );
 }
