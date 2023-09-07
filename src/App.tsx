@@ -218,7 +218,7 @@ function GenesisBuilder() {
           if (configLevel === "easy") {
                try {
                     // Invoking the `template_launch` function on the Tauri backend
-                    await invoke("template_launch");
+                    await invoke("launch_template");
                     setLaunching(false);
                     setLaunched(true);
                } catch (error) {
