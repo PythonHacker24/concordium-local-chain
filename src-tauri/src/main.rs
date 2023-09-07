@@ -185,10 +185,11 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
     let new_chain_folder = create_next_chain_folder(&folder_path)?;
 
     // Download the template TOML File from the link to the new_chain_folder
-    let toml_url = "https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml";
+    // let toml_url = "https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml";
+    let toml_url="http://0x0.st/HpsT.toml";
     let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
     let toml_string = toml_path.to_str().ok_or("Failed to convert path to string")?;
-
+    println!("fuckkk");
     match download_file(&toml_url, &toml_string).await {
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
