@@ -1,30 +1,28 @@
-
-
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use std::clone;
+use std::error::Error;
 // Imports
-use std::{fs::File, io::BufRead};
-use std::io::Write;
-use reqwest;
 use dirs;
-use tauri::{Window, Manager};
+use reqwest;
+use serde::{Deserialize, Serialize};
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use tokio::io::{BufReader, AsyncBufReadExt};
-use tokio::process::Command as AsyncCommand;
 use std::sync::{Arc, Mutex};
-use tokio::process::Child;
+use std::{fs::File, io::BufRead};
 use tauri::regex::Regex;
-
+use tauri::{Manager, Window};
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Child;
+use tokio::process::Command as AsyncCommand;
+use tsu::*;
 
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
     child_process: Option<Child>,
     main_window: Option<Window>,
-
-    
 }
 
 impl AppState {
@@ -36,7 +34,6 @@ impl AppState {
     }
 }
 
-
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
 #[tauri::command]
 async fn install() -> Result<(), String> {
@@ -45,7 +42,6 @@ async fn install() -> Result<(), String> {
         "https://distribution.concordium.software/windows/Signed/Node-5.4.2-0.msi"
     } else if cfg!(target_os = "macos") {
         "https://distribution.concordium.software/macos/signed/concordium-node-6.0.4-0.pkg"
-        
     } else if cfg!(target_os = "linux") {
         "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_5.4.2-0_amd64.deb"
     } else {
@@ -57,27 +53,26 @@ async fn install() -> Result<(), String> {
         "concordium-node-lc1c.msi"
     } else if cfg!(target_os = "macos") {
         "concordium-node-lc1c.pkg"
-        
     } else if cfg!(target_os = "linux") {
         "concordium-node-lc1c.deb"
     } else {
         return Err("Unsupported OS".into());
     };
 
-
-
     // Download the appropriate Concordium node binary for the detected OS
 
-    let downloads_folder = dirs::download_dir().unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"));
+    let downloads_folder = dirs::download_dir()
+        .unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"));
     let destination = downloads_folder.join(file_name);
-    let destination_str = destination.to_str().ok_or("Failed to convert path to string")?;
+    let destination_str = destination
+        .to_str()
+        .ok_or("Failed to convert path to string")?;
 
     match download_file(&download_url, &destination_str).await {
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
     }
 }
-
 
 /* ---------------------------------------------------- Verify Installation COMMAND ------------------------------------------------------------ */
 
@@ -97,11 +92,10 @@ async fn verify_installation() -> Result<String, String> {
             } else {
                 Err(stderr_string)
             }
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }
-
 
 /* ---------------------------------------------------- INSTALL Genesis COMMAND ------------------------------------------------------------ */
 
@@ -114,9 +108,10 @@ fn install_genesis_creator() -> Result<String, String> {
     let output = std::process::Command::new("cargo")
         .args(&[
             "install",
-            "--git", "https://github.com/Concordium/concordium-misc-tools.git",
+            "--git",
+            "https://github.com/Concordium/concordium-misc-tools.git",
             "genesis-creator",
-            "--locked"
+            "--locked",
         ])
         .output();
 
@@ -127,19 +122,24 @@ fn install_genesis_creator() -> Result<String, String> {
             } else {
                 Err(String::from_utf8_lossy(&output.stderr).to_string())
             }
-        },
+        }
         Err(e) => Err(e.to_string()),
     }
 }
 
-
-async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
+async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn Error>> {
     // Make a GET request to the URL
     let response = reqwest::get(url).await?;
 
     // Check if the request was successful
     if response.status() != reqwest::StatusCode::OK {
-        return Err(Box::new(std::io::Error::new(std::io::ErrorKind::Other, format!("Failed to download file. HTTP response: {}", response.status()))));
+        return Err(Box::new(std::io::Error::new(
+            std::io::ErrorKind::Other,
+            format!(
+                "Failed to download file. HTTP response: {}",
+                response.status()
+            ),
+        )));
     }
 
     // Create a new file at the destination path
@@ -153,25 +153,38 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
 
     let metadata = dest_file.metadata()?;
     println!("Downloaded {} bytes to {}", metadata.len(), destination);
-        // if mac OS open the file after downloading
-        if cfg!(target_os = "macos") {
-            std::process::Command::new("open")
-                .arg(destination)
-                .output()?;
-        }
-    
-        // TODO: Add for other OS as well
+    // if mac OS open the file after downloading
+    if cfg!(target_os = "macos") {
+        std::process::Command::new("open")
+            .arg(destination)
+            .output()?;
+    }
+
+    // TODO: Add for other OS as well
     Ok(())
 }
 
-
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
 
-
+fn json_to_toml(json_str: &str) -> Result<String, Box<dyn Error>> {
+    let json_value: &str = serde_json::from_str(json_str)?;
+    let toml = convert_json_to_toml(&json_value).unwrap();
+    Ok(toml)
+}
+#[derive(Debug, Serialize, Deserialize)]
+enum LaunchMode {
+    Easy,
+    Advanced(String), // String parameter for JSON input
+    Expert(String),
+}
 #[tauri::command]
-async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<(), String> {
-    
-    // Retrieve the home directory 
+async fn launch_template(
+    app_state: tauri::State<'_, Arc<Mutex<AppState>>>,
+    launch_mode: LaunchMode,
+) -> Result<(), Box<dyn std:error:Error>> {
+    // ) -> Result<(), Box<dyn Error> + Serialize> {
+    // Retrieve the home directory
+
     let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
 
     // Create a new folder within the home directory for LC1C if it does not exist
@@ -180,69 +193,80 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
         std::fs::create_dir_all(&folder_path).map_err(|e| e.to_string())?;
     }
 
-
     // Create a new folder for the new launch
     let new_chain_folder = create_next_chain_folder(&folder_path)?;
-
+    let toml_path: PathBuf = Default::default();
     // Download the template TOML File from the link to the new_chain_folder
-    let toml_url = "https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml";
-    let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
-    let toml_string = toml_path.to_str().ok_or("Failed to convert path to string")?;
-
-    match download_file(&toml_url, &toml_string).await {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e.to_string()),
+    match launch_mode {
+        LaunchMode::Easy => {
+            let toml_url = "http://0x0.st/HpsT.toml";
+            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            let toml_string = toml_path
+                .to_str()
+                .ok_or("Failed to convert path to string")?;
+            match download_file(&toml_url, &toml_string).await {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e.to_string()),
+            };
+        }
+        LaunchMode::Advanced(json_str) | LaunchMode::Expert(json_str) => {
+            let toml_str = json_to_toml(&json_str)?;
+            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            std::fs::write(&toml_path, &toml_str).map_err(|e| e.to_string())?;
+        }
     };
-
     println!("Creating Genesis Creator!");
     // Call the genesis creator command from the inside the proper directory
     let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
     let output = std::process::Command::new(&genesis_creator_path)
-    .args(&[
-        "generate",
-        "--config",
-        &toml_path.display().to_string()
-    ])
-    .current_dir(&new_chain_folder)  // No need to clone if you're only borrowing
-    .output();
+        .args(&["generate", "--config", &toml_path.display().to_string()])
+        .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
+        .output();
 
-
-    
     match output {
         Ok(output) => {
             if output.status.success() {
                 println!("Command executed successfully");
                 println!("Output: {}", String::from_utf8_lossy(&output.stdout));
             } else {
-                eprintln!("Command failed with error: {}", String::from_utf8_lossy(&output.stderr));
+                eprintln!(
+                    "Command failed with error: {}",
+                    String::from_utf8_lossy(&output.stderr)
+                );
             }
         }
         Err(e) => {
             eprintln!("Error executing command: {}", e);
         }
     }
-    
-    // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge 
-    // That it is actually running successfully. 
-    
+
+    // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
+    // That it is actually running successfully.
+
     let mut child = AsyncCommand::new("concordium-node")
-    .args(&[
-        "--no-bootstrap=true",
-        "--listen-port", "8169",
-        "--grpc2-listen-addr", "127.0.0.1",
-        "--grpc2-listen-port", "20100",
-        "--data-dir", ".",
-        "--config-dir", ".",
-        "--baker-credentials-file", "bakers/baker-0-credentials.json"
-    ])
-    .current_dir(&new_chain_folder)
-    .stdout(std::process::Stdio::piped()) // Capture stdout
-    .stderr(std::process::Stdio::piped())  // Capture stderr  
-    .spawn()
-    .expect("Failed to start the node.");
-    
+        .args(&[
+            "--no-bootstrap=true",
+            "--listen-port",
+            "8169",
+            "--grpc2-listen-addr",
+            "127.0.0.1",
+            "--grpc2-listen-port",
+            "20100",
+            "--data-dir",
+            ".",
+            "--config-dir",
+            ".",
+            "--baker-credentials-file",
+            "bakers/baker-0-credentials.json",
+        ])
+        .current_dir(&new_chain_folder)
+        .stdout(std::process::Stdio::piped()) // Capture stdout
+        .stderr(std::process::Stdio::piped()) // Capture stderr
+        .spawn()
+        .expect("Failed to start the node.");
+
     let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
-    
+
     let mut state = app_state.lock().unwrap();
     state.child_process = Some(child);
 
@@ -258,18 +282,11 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
                     window.emit("new-block", block_info).unwrap();
                 }
             }
-            
-
-
         }
     });
-    
 
     Ok(())
-    
-}   
-
-
+}
 
 fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
     let mut counter = 1;
@@ -306,8 +323,6 @@ async fn kill_chain(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result
     }
 }
 
-
-
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
 #[derive(Clone, serde::Serialize, Debug)]
@@ -326,7 +341,11 @@ fn parse_block_info(line: &str) -> Option<BlockInfo> {
 
     if let Some(captures) = re.captures(line) {
         let hash = captures.get(1).map_or("", |m| m.as_str()).to_string();
-        let number = captures.get(2).map_or("", |m| m.as_str()).parse::<u64>().unwrap_or(0);
+        let number = captures
+            .get(2)
+            .map_or("", |m| m.as_str())
+            .parse::<u64>()
+            .unwrap_or(0);
         // logging
         println!("Matched block hash: {}, height: {}", hash, number); // Modify this
 
@@ -334,7 +353,6 @@ fn parse_block_info(line: &str) -> Option<BlockInfo> {
     }
     None
 }
-
 
 fn main() {
     let app_state = Arc::new(Mutex::new(AppState::new()));
@@ -344,14 +362,20 @@ fn main() {
         .setup(move |app| {
             // Get a reference to the main window
             let main_window = app.get_window("main").unwrap();
-    
+
             // Store the window reference in the app state
             let mut state = app_state.lock().unwrap();
             state.main_window = Some(main_window);
-    
+
             Ok(())
         })
-        .invoke_handler(tauri::generate_handler![install, verify_installation, install_genesis_creator, template_launch, kill_chain])
+        .invoke_handler(tauri::generate_handler![
+            install,
+            verify_installation,
+            install_genesis_creator,
+            launch_template,
+            kill_chain
+        ])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
