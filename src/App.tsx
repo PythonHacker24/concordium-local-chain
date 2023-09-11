@@ -59,8 +59,7 @@ function Installer() {
                setVerificationError(null); // clear any previous errors
                setVerificationSuccess(true);
                setInstallationSuccess(true);
-               console.error("Verification Failed: ", error);
-               setVerificationError("Verification Failed: " + error);
+               
           } finally {
                setVerifying(false);
           }
