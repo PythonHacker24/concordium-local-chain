@@ -1,23 +1,21 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
-use std::clone;
 use std::error::Error;
 // Imports
 use dirs;
 use reqwest;
 use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
+use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
-use std::{fs::File, io::BufRead};
 use tauri::regex::Regex;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
-use tsu::*;
-
+use toml::Value as TomlValue;
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -165,24 +163,47 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn Error
 }
 
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
-
-fn json_to_toml(json_str: &str) -> Result<String, Box<dyn Error>> {
-    let json_value: &str = serde_json::from_str(json_str)?;
-    let toml = convert_json_to_toml(&json_value).unwrap();
-    Ok(toml)
+fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
+    match json_value {
+        JsonValue::Null => Some(TomlValue::String("".to_string())),
+        JsonValue::Bool(b) => Some(TomlValue::Boolean(*b)),
+        JsonValue::Number(n) => {
+            if n.is_f64() {
+                Some(TomlValue::Float(n.as_f64().unwrap()))
+            } else if n.is_i64() {
+                Some(TomlValue::Integer(n.as_i64().unwrap()))
+            } else {
+                None
+            }
+        }
+        JsonValue::String(s) => Some(TomlValue::String(s.clone())),
+        JsonValue::Array(arr) => {
+            let toml_arr: Vec<TomlValue> = arr.iter().filter_map(|v| json_to_toml(v)).collect();
+            Some(TomlValue::Array(toml_arr))
+        }
+        JsonValue::Object(obj) => {
+            let mut toml_table = toml::value::Table::new();
+            for (k, v) in obj.iter() {
+                if let Some(toml_v) = json_to_toml(v) {
+                    toml_table.insert(k.clone(), toml_v);
+                }
+            }
+            Some(TomlValue::Table(toml_table))
+        }
+    }
 }
 #[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
 enum LaunchMode {
     Easy,
-    Advanced(String), // String parameter for JSON input
+    Advanced(String),
     Expert(String),
 }
 #[tauri::command]
 async fn launch_template(
     app_state: tauri::State<'_, Arc<Mutex<AppState>>>,
     launch_mode: LaunchMode,
-) -> Result<(), Box<dyn std:error:Error>> {
-    // ) -> Result<(), Box<dyn Error> + Serialize> {
+) -> Result<(), String> {
     // Retrieve the home directory
 
     let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
@@ -210,9 +231,14 @@ async fn launch_template(
             };
         }
         LaunchMode::Advanced(json_str) | LaunchMode::Expert(json_str) => {
-            let toml_str = json_to_toml(&json_str)?;
+            let json_value: JsonValue =
+                serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
+            let toml_value = json_to_toml(&json_value).ok_or("Failed to convert JSON to TOML")?;
+
+            let toml_string = toml::to_string(&toml_value).map_err(|e| e.to_string())?;
+            println!("Received launch_mode: {:?}", toml_string);
             let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
-            std::fs::write(&toml_path, &toml_str).map_err(|e| e.to_string())?;
+            std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
         }
     };
     println!("Creating Genesis Creator!");

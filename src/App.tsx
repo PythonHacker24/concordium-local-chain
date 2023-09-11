@@ -5,7 +5,6 @@ import {
      Routes,
      useNavigate,
 } from "react-router-dom";
-import SettingsPage from './components/form'
 import { invoke } from "@tauri-apps/api/tauri";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
@@ -13,6 +12,7 @@ import { CAlert, CButton } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
 import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+import SettingsPage from "./components/form";
 
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
@@ -59,7 +59,6 @@ function Installer() {
                setVerificationError(null); // clear any previous errors
                setVerificationSuccess(true);
                setInstallationSuccess(true);
-          } catch (error) {
                console.error("Verification Failed: ", error);
                setVerificationError("Verification Failed: " + error);
           } finally {
@@ -160,8 +159,13 @@ function GenesisBuilder() {
      const [configLevel, setConfigLevel] = useState<string | null>(null);
      const [launching, setLaunching] = useState(false);
      const [launched, setLaunched] = useState(false);
+     const [formData, setformData] = useState(null);
 
      const navigate = useNavigate();
+     const HandleSubmit = (formData: any) => {
+          console.log(formData)
+          setformData(formData)
+     }
 
      function dashboard() {
           navigate("/dashboard");
@@ -194,7 +198,7 @@ function GenesisBuilder() {
      const AdvancedConfig = () => (
           <div>
                <EasyConfig />
-               <SettingsPage />
+               <SettingsPage onHandleSubmit={HandleSubmit} />
           </div>
      );
 
@@ -213,25 +217,24 @@ function GenesisBuilder() {
 
      async function launch() {
           setLaunching(true);
+          let launch_mode = null;
+          console.log(configLevel)
 
-          // Launch a template launch if config easy
           if (configLevel === "easy") {
-               try {
-                    // Invoking the `template_launch` function on the Tauri backend
-                    await invoke("launch_template");
-                    setLaunching(false);
-                    setLaunched(true);
-               } catch (error) {
-                    console.error("Error calling template_launch:", error);
-               }
+               launch_mode = { Easy: null };
+          } else if (configLevel === "advanced") {
+               launch_mode = { Advanced: JSON.stringify(formData) };
           } else {
-               try {
-                    // Invoking the `launch` function on the Tauri backend
-                    await invoke("launch");
-                    setLaunching(false);
-               } catch (error) {
-                    console.error("Error calling launch:", error);
-               }
+               launch_mode = { Expert: JSON.stringify(formData) };
+          }
+          try {
+               console.log(launch_mode)
+               await invoke('launch_template', { launchMode: launch_mode });
+               setLaunching(false);
+               setLaunched(true);
+          } catch (error) {
+               console.error("Error calling launch_template:", error);
+               setLaunching(false);
           }
      }
 

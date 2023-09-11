@@ -3,7 +3,8 @@ import { CButton, CModalFooter, CModal, CModalHeader, CModalBody, CModalTitle } 
 import '@coreui/coreui/dist/css/coreui.min.css'
 
 
-function SettingsPage() {
+// function SettingsPage(onHandleSubmit:any) {
+const SettingsPage = ({ onHandleSubmit }) => {
      const [visible, setVisible] = useState(false);
 
      const [formData, setFormData] = useState({
@@ -352,19 +353,19 @@ function SettingsPage() {
                updatedData.parameters.chain.poolParameters.finalizationCommissionRange = value;
           } else if (key === 'parameters.chain.poolParameters.bakingCommissionRange') {
                updatedData.parameters.chain.poolParameters.bakingCommissionRange = value;
-          } else if(key === 'parameters.chain.poolParameters.transactionCommissionRange'){
+          } else if (key === 'parameters.chain.poolParameters.transactionCommissionRange') {
                updatedData.parameters.chain.poolParameters.transactionCommissionRange = value;
-          }else if( key === 'parameters.chain.poolParameters.leverageBound'){
+          } else if (key === 'parameters.chain.poolParameters.leverageBound') {
                updatedData.parameters.chain.poolParameters.leverageBound = value;
-          }else if( key === 'parameters.chain.cooldownParameters'){
+          } else if (key === 'parameters.chain.cooldownParameters') {
                updatedData.parameters.chain.cooldownParameters = value;
-          }else if( key === 'parameters.chain.rewardParameters.mintDistribution'){
+          } else if (key === 'parameters.chain.rewardParameters.mintDistribution') {
                updatedData.parameters.chain.rewardParameters.mintDistribution = value;
-          }else if( key === 'parameters.chain.rewardParameters.transactionFeeDistribution'){
+          } else if (key === 'parameters.chain.rewardParameters.transactionFeeDistribution') {
                updatedData.parameters.chain.rewardParameters.transactionFeeDistribution = value;
-          }else if(key === 'parameters.chain.rewardParameters.GASRewards'){
+          } else if (key === 'parameters.chain.rewardParameters.GASRewards') {
                updatedData.parameters.chain.rewardParameters.GASRewards = value;
-          }else{
+          } else {
                updatedData[key] = value;
           }
           // Update the state with the modified JSON object
@@ -373,7 +374,8 @@ function SettingsPage() {
 
      const handleSubmit = (event: any) => {
           event.preventDefault();
-          console.log(formData);
+          // console.log(formData);
+          onHandleSubmit(formData);
      }
      return (
           <>
@@ -857,3 +859,5 @@ function SettingsPage() {
 
 
 export default SettingsPage;
+
+
