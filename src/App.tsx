@@ -59,7 +59,6 @@ function Installer() {
                setVerificationError(null); // clear any previous errors
                setVerificationSuccess(true);
                setInstallationSuccess(true);
-
           } finally {
                setVerifying(false);
           }

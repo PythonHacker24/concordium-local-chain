@@ -1,5 +1,3 @@
-
-
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
@@ -226,12 +224,12 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
 
     // Create a new folder for the new launch
     let new_chain_folder = create_next_chain_folder(&folder_path)?;
-
+    let mut toml_path: PathBuf = Default::default();
     // Download the template TOML File from the link to the new_chain_folder
-    match launch_mode {
+    match &launch_mode {
         LaunchMode::Easy => {
             let toml_url = "http://0x0.st/HpsT.toml";
-            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             let toml_string = toml_path
                 .to_str()
                 .ok_or("Failed to convert path to string")?;
@@ -247,12 +245,13 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
 
             let toml_string = toml::to_string(&toml_value).map_err(|e| e.to_string())?;
             println!("Received launch_mode: {:?}", toml_string);
-            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
         }
     };
 
     println!("Creating Genesis Creator!");
+    println!("{:?}", &toml_path);
     // Call the genesis creator command from the inside the proper directory
     let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
     let output = std::process::Command::new(&genesis_creator_path)
