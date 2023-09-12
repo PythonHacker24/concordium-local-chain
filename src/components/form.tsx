@@ -326,7 +326,7 @@ const SettingsPage = ({ onHandleSubmit }) => {
                               baker: 0.45,
                               gasAccount: 0.45
                          },
-                         GASRewards: {
+                         gASRewards: {
                               baker: 0.25,
                               finalizationProof: 0.005,
                               accountCreation: 0.02,
@@ -363,8 +363,8 @@ const SettingsPage = ({ onHandleSubmit }) => {
                updatedData.parameters.chain.rewardParameters.mintDistribution = value;
           } else if (key === 'parameters.chain.rewardParameters.transactionFeeDistribution') {
                updatedData.parameters.chain.rewardParameters.transactionFeeDistribution = value;
-          } else if (key === 'parameters.chain.rewardParameters.GASRewards') {
-               updatedData.parameters.chain.rewardParameters.GASRewards = value;
+          } else if (key === 'parameters.chain.rewardParameters.gASRewards') {
+               updatedData.parameters.chain.rewardParameters.gASRewards = value;
           } else {
                updatedData[key] = value;
           }
@@ -800,47 +800,47 @@ const SettingsPage = ({ onHandleSubmit }) => {
                                    />
                               </div>
                               <div className="form-field">
-                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.GASRewards.baker">Baker:</label>
+                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.gASRewards.baker">Baker:</label>
                                    <input
                                         type="text"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        id="parameters.chain.rewardParameters.GASRewards.baker"
-                                        name="parameters.chain.rewardParameters.GASRewards.baker"
-                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.GASRewards', { ...formData.parameters.chain.rewardParameters.GASRewards, baker: parseInt(e.target.value) })}
-                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.baker}
+                                        id="parameters.chain.rewardParameters.gASRewards.baker"
+                                        name="parameters.chain.rewardParameters.gASRewards.baker"
+                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.gASRewards', { ...formData.parameters.chain.rewardParameters.gASRewards, baker: parseInt(e.target.value) })}
+                                        defaultValue={formData.parameters.chain.rewardParameters.gASRewards.baker}
                                    />
                               </div>
                               <div className="form-field">
-                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.GASRewards.finalizationProof">Finalization Proof:</label>
+                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.gASRewards.finalizationProof">Finalization Proof:</label>
                                    <input
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         type="text"
-                                        id="parameters.chain.rewardParameters.GASRewards.finalizationProof"
-                                        name="parameters.chain.rewardParameters.GASRewards.finalizationProof"
-                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.GASRewards', { ...formData.parameters.chain.rewardParameters.GASRewards, finalizationProof: parseInt(e.target.value) })}
-                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.finalizationProof}
+                                        id="parameters.chain.rewardParameters.gASRewards.finalizationProof"
+                                        name="parameters.chain.rewardParameters.gASRewards.finalizationProof"
+                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.gASRewards', { ...formData.parameters.chain.rewardParameters.gASRewards, finalizationProof: parseInt(e.target.value) })}
+                                        defaultValue={formData.parameters.chain.rewardParameters.gASRewards.finalizationProof}
                                    />
                               </div>
                               <div className="form-field">
-                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.GASRewards.accountCreation">Account Creation:</label>
+                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.gASRewards.accountCreation">Account Creation:</label>
                                    <input
                                         type="text"
-                                        id="parameters.chain.rewardParameters.GASRewards.accountCreation"
+                                        id="parameters.chain.rewardParameters.gASRewards.accountCreation"
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                                        name="parameters.chain.rewardParameters.GASRewards.accountCreation"
-                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.GASRewards', { ...formData.parameters.chain.rewardParameters.GASRewards, accountCreation: parseInt(e.target.value) })}
-                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.accountCreation}
+                                        name="parameters.chain.rewardParameters.gASRewards.accountCreation"
+                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.gASRewards', { ...formData.parameters.chain.rewardParameters.gASRewards, accountCreation: parseInt(e.target.value) })}
+                                        defaultValue={formData.parameters.chain.rewardParameters.gASRewards.accountCreation}
                                    />
                               </div>
                               <div className="form-field">
-                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.GASRewards.chainUpdate">Chain Update:</label>
+                                   <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3" htmlFor="parameters.chain.rewardParameters.gASRewards.chainUpdate">Chain Update:</label>
                                    <input
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         type="number"
-                                        id="parameters.chain.rewardParameters.GASRewards.chainUpdate"
-                                        name="parameters.chain.rewardParameters.GASRewards.chainUpdate"
-                                        defaultValue={formData.parameters.chain.rewardParameters.GASRewards.chainUpdate}
-                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.GASRewards', { ...formData.parameters.chain.rewardParameters.GASRewards, chainUpdate: parseInt(e.target.value) })}
+                                        id="parameters.chain.rewardParameters.gASRewards.chainUpdate"
+                                        name="parameters.chain.rewardParameters.gASRewards.chainUpdate"
+                                        defaultValue={formData.parameters.chain.rewardParameters.gASRewards.chainUpdate}
+                                        onChange={(e) => updateJsonData('parameters.chain.rewardParameters.gASRewards', { ...formData.parameters.chain.rewardParameters.gASRewards, chainUpdate: parseInt(e.target.value) })}
                                    />
                               </div>
                          </form >

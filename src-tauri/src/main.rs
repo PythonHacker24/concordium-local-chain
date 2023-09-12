@@ -233,6 +233,7 @@ async fn launch_template(
         LaunchMode::Advanced(json_str) | LaunchMode::Expert(json_str) => {
             let json_value: JsonValue =
                 serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
+            println!("{:?}", json_value);
             let toml_value = json_to_toml(&json_value).ok_or("Failed to convert JSON to TOML")?;
 
             let toml_string = toml::to_string(&toml_value).map_err(|e| e.to_string())?;
