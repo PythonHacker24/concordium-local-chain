@@ -1,6 +1,5 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-
 use std::error::Error;
 // Imports
 use dirs;
@@ -17,8 +16,6 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use toml::Value as TomlValue;
-
-
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -165,7 +162,6 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
     Ok(())
 }
 
-
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
 fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
     match json_value {
@@ -203,12 +199,6 @@ enum LaunchMode {
     Advanced(String),
     Expert(String),
 }
-#[tauri::command]
-async fn launch_template(
-    app_state: tauri::State<'_, Arc<Mutex<AppState>>>,
-    launch_mode: LaunchMode,
-) -> Result<(), String> {
-
 #[tauri::command]
 async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<(), String> {
     
