@@ -3,19 +3,22 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::clone;
+use std::error::Error;
 // Imports
-use std::{fs::File, io::BufRead};
-use std::io::Write;
-use reqwest;
 use dirs;
-use tauri::{Window, Manager};
+use reqwest;
+use serde::{Deserialize, Serialize};
+use serde_json::Value as JsonValue;
+use std::fs::File;
+use std::io::Write;
 use std::path::{Path, PathBuf};
-use tokio::io::{BufReader, AsyncBufReadExt};
-use tokio::process::Command as AsyncCommand;
 use std::sync::{Arc, Mutex};
-use tokio::process::Child;
 use tauri::regex::Regex;
+use tauri::{Manager, Window};
+use tokio::io::{AsyncBufReadExt, BufReader};
+use tokio::process::Child;
+use tokio::process::Command as AsyncCommand;
+use toml::Value as TomlValue;
 
 
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
@@ -166,7 +169,47 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
 
 
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
-
+fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
+    match json_value {
+        JsonValue::Null => Some(TomlValue::String("".to_string())),
+        JsonValue::Bool(b) => Some(TomlValue::Boolean(*b)),
+        JsonValue::Number(n) => {
+            if n.is_f64() {
+                Some(TomlValue::Float(n.as_f64().unwrap()))
+            } else if n.is_i64() {
+                Some(TomlValue::Integer(n.as_i64().unwrap()))
+            } else {
+                None
+            }
+        }
+        JsonValue::String(s) => Some(TomlValue::String(s.clone())),
+        JsonValue::Array(arr) => {
+            let toml_arr: Vec<TomlValue> = arr.iter().filter_map(|v| json_to_toml(v)).collect();
+            Some(TomlValue::Array(toml_arr))
+        }
+        JsonValue::Object(obj) => {
+            let mut toml_table = toml::value::Table::new();
+            for (k, v) in obj.iter() {
+                if let Some(toml_v) = json_to_toml(v) {
+                    toml_table.insert(k.clone(), toml_v);
+                }
+            }
+            Some(TomlValue::Table(toml_table))
+        }
+    }
+}
+#[derive(Debug, Serialize, Deserialize)]
+#[serde(rename_all = "PascalCase")]
+enum LaunchMode {
+    Easy,
+    Advanced(String),
+    Expert(String),
+}
+#[tauri::command]
+async fn launch_template(
+    app_state: tauri::State<'_, Arc<Mutex<AppState>>>,
+    launch_mode: LaunchMode,
+) -> Result<(), String> {
 
 #[tauri::command]
 async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<(), String> {
@@ -185,13 +228,28 @@ async fn template_launch(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> R
     let new_chain_folder = create_next_chain_folder(&folder_path)?;
 
     // Download the template TOML File from the link to the new_chain_folder
-    let toml_url = "https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml";
-    let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
-    let toml_string = toml_path.to_str().ok_or("Failed to convert path to string")?;
+    match launch_mode {
+        LaunchMode::Easy => {
+            let toml_url = "http://0x0.st/HpsT.toml";
+            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            let toml_string = toml_path
+                .to_str()
+                .ok_or("Failed to convert path to string")?;
+            match download_file(&toml_url, &toml_string).await {
+                Ok(_) => Ok(()),
+                Err(e) => Err(e.to_string()),
+            };
+        }
+        LaunchMode::Advanced(json_str) | LaunchMode::Expert(json_str) => {
+            let json_value: JsonValue =
+                serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
+            let toml_value = json_to_toml(&json_value).ok_or("Failed to convert JSON to TOML")?;
 
-    match download_file(&toml_url, &toml_string).await {
-        Ok(_) => Ok(()),
-        Err(e) => Err(e.to_string()),
+            let toml_string = toml::to_string(&toml_value).map_err(|e| e.to_string())?;
+            println!("Received launch_mode: {:?}", toml_string);
+            let toml_path = new_chain_folder.join("desired_toml_file_name.toml");
+            std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
+        }
     };
 
     println!("Creating Genesis Creator!");
@@ -344,14 +402,13 @@ fn main() {
         .setup(move |app| {
             // Get a reference to the main window
             let main_window = app.get_window("main").unwrap();
-    
             // Store the window reference in the app state
             let mut state = app_state.lock().unwrap();
             state.main_window = Some(main_window);
-    
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![install, verify_installation, install_genesis_creator, template_launch, kill_chain])
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+        
