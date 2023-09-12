@@ -10,10 +10,9 @@ import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { CAlert, CButton } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
-import "./App.css";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import SettingsPage from "./components/form";
-
+import ExpertSettingsPage from "./components/expert-form";
+import AdvancedSettingsPage from "./components/advanced-form";
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
 function Installer() {
@@ -59,6 +58,8 @@ function Installer() {
                setVerificationError(null); // clear any previous errors
                setVerificationSuccess(true);
                setInstallationSuccess(true);
+               console.error("Verification Failed: ", error);
+               setVerificationError("Verification Failed: " + error);
           } finally {
                setVerifying(false);
           }
@@ -158,11 +159,16 @@ function GenesisBuilder() {
      const [launching, setLaunching] = useState(false);
      const [launched, setLaunched] = useState(false);
      const [formData, setformData] = useState(null);
+     const [tomlData, settomlData] = useState(null);
 
      const navigate = useNavigate();
      const HandleSubmit = (formData: any) => {
           console.log(formData)
           setformData(formData)
+     }
+     const expertHandleSubmit = (tomlData: any) => {
+          console.log(formData)
+          settomlData(tomlData)
      }
 
      function dashboard() {
@@ -196,20 +202,15 @@ function GenesisBuilder() {
      const AdvancedConfig = () => (
           <div>
                <EasyConfig />
-               <SettingsPage onHandleSubmit={HandleSubmit} />
+               {(launching || launched) ? "" : <AdvancedSettingsPage onHandleSubmit={HandleSubmit} />}
           </div>
+
      );
 
      const ExpertConfig = () => (
           <div>
-               <AdvancedConfig />
-               <label className="block mb-2 text-3xl/2 font-semibold text-black mt-3">
-                    Advanced Setting:
-                    <input
-                         type="text"
-                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-white dark:focus:ring-blue-500 dark:focus:border-blue-500"
-                    />
-               </label>
+               <EasyConfig />
+               {(launching || launched) ? "" : <ExpertSettingsPage onHandleSubmit={expertHandleSubmit} />}
           </div>
      );
 
@@ -223,7 +224,7 @@ function GenesisBuilder() {
           } else if (configLevel === "advanced") {
                launch_mode = { Advanced: JSON.stringify(formData) };
           } else {
-               launch_mode = { Expert: JSON.stringify(formData) };
+               launch_mode = { Expert: tomlData };
           }
           try {
                console.log(launch_mode)
@@ -238,7 +239,7 @@ function GenesisBuilder() {
 
      return (
           <>
-               <CAlert color="primary" className="m-10 text-lg text-white">
+               <CAlert color="primary" className="m-10 text-lg text-ctp-black">
                     <FontAwesomeIcon icon={faCircleInfo} className="mr-2" />
                     This determines the complexity of the configuration options available to
                     you.
@@ -314,6 +315,7 @@ function GenesisBuilder() {
 function Dashboard() {
      const [latestHash, setLatestHash] = useState("");
      const [blocks, setBlocks] = useState("");
+     const [amount, setAmount] = useState("");
 
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
@@ -351,17 +353,20 @@ function Dashboard() {
      }
 
      return (
-          <div className="w-34 mx-auto rounded-xl shadow-xl overflow-hidden md:max-w-5xl">
+          <div className="w-34 mx-auto rounded-xl shadow-xl overflow-hidden md:max-w-5xl bg-ctp-overlay0/50 shadow-ctp-overlay0/50">
                <div className="md:flex">
                     <div className="p-8">
-                         <div className="uppercase tracking-wide text-xl text-indigo-500 font-semibold">
+                         <div className="uppercase tracking-wide text-xl text-ctp-lavender font-semibold">
                               Information
                          </div>
-                         <p className="block mt-3 text-3xl/2 leading-tight font-medium text-black">
+                         <p className="block mt-3 text-3xl/2 leading-tight font-medium text-white">
                               Block Number: {blocks}
                          </p>
-                         <p className="mt-2 text-3xl/2 text-gray-500">
+                         <p className="mt-2 text-3xl/2 text-ctp-text">
                               Latest Hash: {latestHash}
+                         </p>
+                         <p className="mt-2 text-3xl/2 text-ctp-text">
+                              Amount: {amount}
                          </p>
                          <div className="mt-4">
                               <button
@@ -392,4 +397,3 @@ function App() {
 }
 
 export default App;
-
