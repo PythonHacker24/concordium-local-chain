@@ -363,20 +363,21 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
                updatedData.parameters.chain.rewardParameters.transactionFeeDistribution = value;
           } else if (key === 'parameters.chain.rewardParameters.gASRewards') {
                updatedData.parameters.chain.rewardParameters.gASRewards = value;
-          } else {
+          } else if(key === 'accounts') {
+               updatedData[key][0] = value;
+               console.log("accounts = ", value);
+          }else{
                console.log("sasa = ",key, value);
-               // updatedData = value;
+               updatedData[key] = value;
           }
           // Update the state with the modified JSON object
           setFormData(updatedData);
      };
 
-
      const handleSubmit = (event: any) => {
           event.preventDefault();
           onHandleSubmit(formData);
           console.log("its daya = ",formData);
-          
           localStorage.setItem('advancedConfig', JSON.stringify(formData));
      }
      return (
