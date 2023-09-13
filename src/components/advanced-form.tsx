@@ -1,13 +1,11 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { CButton, CModalFooter, CModal, CModalHeader, CModalBody, CModalTitle } from "@coreui/react";
 import '@coreui/coreui/dist/css/coreui.min.css'
 
 
-// function SettingsPage(onHandleSubmit:any) {
 const AdvancedSettingsPage = ({ onHandleSubmit }) => {
      const [visible, setVisible] = useState(false);
-
-     const [formData, setFormData] = useState({
+     const [formData, setFormData] = useState(localStorage.getItem('advancedConfig')?JSON.parse(localStorage.getItem('advancedConfig') as any):{
           protocolVersion: "5",
           out: {
                updateKeys: "./update-keys",
@@ -366,16 +364,20 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
           } else if (key === 'parameters.chain.rewardParameters.gASRewards') {
                updatedData.parameters.chain.rewardParameters.gASRewards = value;
           } else {
-               updatedData[key] = value;
+               console.log("sasa = ",key, value);
+               // updatedData = value;
           }
           // Update the state with the modified JSON object
           setFormData(updatedData);
      };
 
+
      const handleSubmit = (event: any) => {
           event.preventDefault();
-          // console.log(formData);
           onHandleSubmit(formData);
+          console.log("its daya = ",formData);
+          
+          localStorage.setItem('advancedConfig', JSON.stringify(formData));
      }
      return (
           <>
@@ -396,8 +398,8 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
                                         type="number"
                                         id="accounts[0].balance"
                                         name="accounts[0].balance"
-                                        onChange={(e) => updateJsonData('parameters', { ...formData.accounts[0], balance: parseInt(e.target.value) })}
-                                        defaultValue={formData.accounts[0].balance}
+                                        onChange={(e) => updateJsonData("accounts", { ...formData.accounts[0], balance: e.target.value })}
+                                       defaultValue={formData.accounts[0].balance}
 
                                    />
                               </div>
@@ -419,7 +421,7 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
                                         className="bg-gray-50 border border-gray-300 text-gray-900 text-sm rounded-lg focus:ring-blue-500 focus:border-blue-500 block w-full p-2.5 dark:bg-gray-700 dark:border-gray-600 dark:placeholder-gray-400 dark:text-black dark:focus:ring-blue-500 dark:focus:border-blue-500"
                                         id="accounts[1].balance"
                                         name="accounts[1].balance"
-                                        onChange={(e) => updateJsonData('parameters', { ...formData.accounts[1], balance: e.target.value })}
+                                        onChange={(e) => updateJsonData('accounts[1]', { ...formData, balance: e.target.value })}
                                         defaultValue={formData.accounts[1].balance}
                                    />
                               </div>
