@@ -1,12 +1,13 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
-use std::error::Error;
 // Imports
 use dirs;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::fs::read_dir;
 use std::fs::File;
+use std::fs::ReadDir;
 use std::io::Write;
 use std::path::{Path, PathBuf};
 use std::sync::{Arc, Mutex};
@@ -162,6 +163,27 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
     Ok(())
 }
 
+#[tauri::command]
+async fn list_chain_folders() -> Result<Vec<String>, String> {
+    let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
+    let folder_path = home_dir.join(".concordium-lc1c");
+    let mut chain_folders = Vec::new();
+
+    if folder_path.exists() {
+        for entry in std::fs::read_dir(folder_path).unwrap() {
+            let path = entry.unwrap().path();
+            if path.is_dir() {
+                let folder_name = path.file_name().unwrap().to_str().unwrap().to_string();
+                if folder_name.starts_with("chain-") {
+                    chain_folders.push(folder_name);
+                }
+            }
+        }
+    }
+
+    Ok(chain_folders)
+}
+
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
 fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
     match json_value {
@@ -192,12 +214,14 @@ fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
         }
     }
 }
+
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
 enum LaunchMode {
     Easy,
     Advanced(String),
     Expert(String),
+    FromExisting(String),
 }
 #[tauri::command]
 async fn launch_template(
@@ -216,7 +240,6 @@ async fn launch_template(
     // Create a new folder for the new launch
     let new_chain_folder = create_next_chain_folder(&folder_path)?;
     let mut toml_path: PathBuf = Default::default();
-    // Download the template TOML File from the link to the new_chain_folder
     match &launch_mode {
         LaunchMode::Easy => {
             let toml_url = "http://0x0.st/HpsT.toml";
@@ -229,7 +252,7 @@ async fn launch_template(
                 Err(e) => Err(e.to_string()),
             };
         }
-        LaunchMode::Advanced(json_str)  => {
+        LaunchMode::Advanced(json_str) => {
             let json_value: JsonValue =
                 serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
             println!("{:?}", json_value);
@@ -240,12 +263,22 @@ async fn launch_template(
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
         }
-        LaunchMode::Expert(toml_str)=>{
+        LaunchMode::Expert(toml_str) => {
             // let toml_string = toml::to_string(&toml_str).map_err(|e| e.to_string())?;
             println!("Received launch_mode: {:?}", toml_str);
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_str).map_err(|e| e.to_string())?;
-}
+        }
+        LaunchMode::FromExisting(folder_name) => {
+            println!("{:?}", folder_name);
+            let folder_path = folder_path.join(folder_name);
+            toml_path = folder_path.join("desired_toml_file_name.toml");
+            if !toml_path.exists() {
+                return Err(
+                    "TOML configuration file does not exist in the selected folder".to_string(),
+                );
+            }
+        }
     };
 
     println!("Creating Genesis Creator!");
@@ -406,6 +439,7 @@ fn main() {
             verify_installation,
             install_genesis_creator,
             launch_template,
+            list_chain_folders,
             kill_chain
         ])
         .run(tauri::generate_context!())

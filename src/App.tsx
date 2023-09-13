@@ -160,6 +160,10 @@ function GenesisBuilder() {
      const [launched, setLaunched] = useState(false);
      const [formData, setformData] = useState(null);
      const [tomlData, settomlData] = useState(null);
+     const [chainFolders, setChainFolders] = useState<string[]>([]);
+     const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
+
+     // Populate chainFolders on mount
 
      const navigate = useNavigate();
      const HandleSubmit = (formData: any) => {
@@ -167,7 +171,7 @@ function GenesisBuilder() {
           setformData(formData)
      }
      const expertHandleSubmit = (tomlData: any) => {
-          console.log(formData)
+          console.log(tomlData)
           settomlData(tomlData)
      }
 
@@ -214,6 +218,22 @@ function GenesisBuilder() {
           </div>
      );
 
+     const FromExisting = () => (
+          <div className="mt-4">
+               <label className="text-white">Select a chain folder:</label>
+               <select
+                    className="ml-2 px-4 py-2 bg-white text-black"
+                    value={selectedFolder || ""}
+                    onChange={e => setSelectedFolder(e.target.value)}
+               >
+                    <option value="" disabled>Select folder</option>
+                    {chainFolders.map(folder => (
+                         <option key={folder} value={folder}>{folder}</option>
+                    ))}
+               </select>
+          </div>
+     )
+
      async function launch() {
           setLaunching(true);
           let launch_mode = null;
@@ -223,6 +243,8 @@ function GenesisBuilder() {
                launch_mode = { Easy: null };
           } else if (configLevel === "advanced") {
                launch_mode = { Advanced: JSON.stringify(formData) };
+          } else if (configLevel === "existing") {
+               launch_mode = { FromExisting: selectedFolder };
           } else {
                launch_mode = { Expert: tomlData };
           }
@@ -236,6 +258,17 @@ function GenesisBuilder() {
                setLaunching(false);
           }
      }
+     useEffect(() => {
+          async function fetchChainFolders() {
+               try {
+                    const folders = await invoke('list_chain_folders');
+                    setChainFolders(folders as any);
+               } catch (error) {
+                    console.error("Error fetching chain folders:", error);
+               }
+          }
+          fetchChainFolders();
+     }, []);
 
      return (
           <>
@@ -271,11 +304,20 @@ function GenesisBuilder() {
                          >
                               Expert
                          </CButton>
+                         <CButton
+                              className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50"
+                              onClick={() => setConfigLevel("existing")}
+                              disabled={launched}
+                         >
+                             Load Config 
+                         </CButton>
+
                     </div>
                     <div className="config-container">
                          {configLevel === "easy" && <EasyConfig />}
                          {configLevel === "advanced" && <AdvancedConfig />}
                          {configLevel === "expert" && <ExpertConfig />}
+                         {configLevel === "existing" && <FromExisting />}
                     </div>
 
                     <div className=" mt-8">
