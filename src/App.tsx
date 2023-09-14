@@ -397,9 +397,9 @@ function Dashboard() {
      return (
           <div className="">
                <div className="">
-                    <div className="" style={{ position: 'absolute', top: '2vw', left: 0, color: 'whitesmoke', fontSize: 'larger', padding: '0 2.5vw 0 2.5vw' }}>
-                         <div className="heading" style={{ display: 'flex', justifyContent: 'space-between', width: '95vw', alignItems:'center' }}>
-                              <div className="" style={{fontSize:'larger'}}>
+                    <div className="" style={{ position: 'absolute', top: '3vh', left: 0, color: 'whitesmoke', fontSize: 'larger', padding: '0 2.5vw 0 2.5vw' }}>
+                         <div className="heading" style={{ display: 'flex', justifyContent: 'space-between', width: '95vw', alignItems: 'center', marginBottom: '2vh' }}>
+                              <div className="" style={{ fontSize: 'larger' }}>
                                    Information
                               </div>
                               <div className="">
@@ -411,16 +411,16 @@ function Dashboard() {
                                    </button>
                               </div>
                          </div>
-                         <div className="main" style={{ position: 'absolute', top: '7vh', color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
+                         <div className="main" style={{ color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
                                    {/* <div className="left">
 
                                    </div> */}
                                    <div className="right" style={{ color: '#de14d9' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
                                              BLOCK NUMBER
                                         </p>
-                                        <p className="" style={{fontSize:'40px'}}>
+                                        <p className="" style={{ fontSize: '40px' }}>
                                              {blocks}123
                                         </p>
                                    </div>
@@ -430,10 +430,10 @@ function Dashboard() {
 
                                    </div> */}
                                    <div className="right" style={{ color: '#09e030' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
                                              LATEST HASH
                                         </p>
-                                        <p className="" style={{fontSize:'40px'}}>
+                                        <p className="" style={{ fontSize: '40px' }}>
                                              {latestHash}
                                              123
                                         </p>
@@ -444,16 +444,55 @@ function Dashboard() {
 
                                    </div> */}
                                    <div className="right" style={{ color: '#ed130c' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
                                              AMOUNT
                                         </p>
-                                        <p className="" style={{fontSize:'40px'}}>
+                                        <p className="" style={{ fontSize: '40px' }}>
                                              {amount}123
                                         </p>
                                    </div>
                               </div>
                          </div>
+                         <div className="table" style={{marginTop:'3vh', backgroundColor:'transparent', borderRadius:'10px!important'}}>
+                              <table style={{textAlign:"left", width:'95vw', backgroundColor:'#1c2445!important', borderRadius:'10px',border:'1px solid #1c2445',overflow:'hidden', color:'white!important'}}>
+                                   <tr>
+                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Company</th>
+                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Contact</th>
+                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Country</th>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Alfreds Futterkiste</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Maria Anders</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Germany</td>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Centro comercial Moctezuma</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Francisco Chang</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Mexico</td>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Ernst Handel</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Roland Mendel</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Austria</td>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Island Trading</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Helen Bennett</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>UK</td>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Laughing Bacchus Winecellars</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Yoshi Tannamuri</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Canada</td>
+                                   </tr>
+                                   <tr>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Magazzini Alimentari Riuniti</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Giovanni Rovelli</td>
+                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Italy</td>
+                                   </tr>
+                              </table>
 
+                         </div>
                     </div>
                </div>
           </div>
