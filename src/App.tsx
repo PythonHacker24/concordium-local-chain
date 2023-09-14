@@ -309,7 +309,7 @@ function GenesisBuilder() {
                               onClick={() => setConfigLevel("existing")}
                               disabled={launched}
                          >
-                             Load Config 
+                              Load Config
                          </CButton>
 
                     </div>
