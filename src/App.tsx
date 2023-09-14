@@ -413,42 +413,32 @@ function Dashboard() {
                          </div>
                          <div className="main" style={{ color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
-                                   {/* <div className="left">
-
-                                   </div> */}
                                    <div className="right" style={{ color: '#de14d9' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
+                                        <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              BLOCK NUMBER
                                         </p>
-                                        <p className="" style={{ fontSize: '40px' }}>
-                                             {blocks}123
+                                        <p className="" style={{ fontSize: '20px' }}>
+                                             {blocks}
                                         </p>
                                    </div>
                               </div>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
-                                   {/* <div className="left">
-
-                                   </div> */}
                                    <div className="right" style={{ color: '#09e030' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
+                                        <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              LATEST HASH
                                         </p>
-                                        <p className="" style={{ fontSize: '40px' }}>
+                                        <p className="" style={{ fontSize: '20px' }}>
                                              {latestHash}
-                                             123
                                         </p>
                                    </div>
                               </div>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '15px', width: '30vw' }}>
-                                   {/* <div className="left">
-
-                                   </div> */}
                                    <div className="right" style={{ color: '#ed130c' }}>
-                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom: '10px' }}>
+                                        <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              AMOUNT
                                         </p>
-                                        <p className="" style={{ fontSize: '40px' }}>
-                                             {amount}123
+                                        <p className="" style={{ fontSize: '20px' }}>
+                                             {amount}
                                         </p>
                                    </div>
                               </div>
