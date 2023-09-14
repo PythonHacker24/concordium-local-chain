@@ -309,7 +309,7 @@ function GenesisBuilder() {
                               onClick={() => setConfigLevel("existing")}
                               disabled={launched}
                          >
-                             Load Config 
+                              Load Config
                          </CButton>
 
                     </div>
@@ -395,29 +395,65 @@ function Dashboard() {
      }
 
      return (
-          <div className="w-34 mx-auto rounded-xl shadow-xl overflow-hidden md:max-w-5xl bg-ctp-overlay0/50 shadow-ctp-overlay0/50">
-               <div className="md:flex">
-                    <div className="p-8">
-                         <div className="uppercase tracking-wide text-xl text-ctp-lavender font-semibold">
-                              Information
+          <div className="">
+               <div className="">
+                    <div className="" style={{ position: 'absolute', top: '2vw', left: 0, color: 'whitesmoke', fontSize: 'larger', padding: '0 2.5vw 0 2.5vw' }}>
+                         <div className="heading" style={{ display: 'flex', justifyContent: 'space-between', width: '95vw', alignItems:'center' }}>
+                              <div className="" style={{fontSize:'larger'}}>
+                                   Information
+                              </div>
+                              <div className="">
+                                   <button
+                                        className=""
+                                        onClick={killChain}
+                                   >
+                                        Kill Local Chain
+                                   </button>
+                              </div>
                          </div>
-                         <p className="block mt-3 text-3xl/2 leading-tight font-medium text-white">
-                              Block Number: {blocks}
-                         </p>
-                         <p className="mt-2 text-3xl/2 text-ctp-text">
-                              Latest Hash: {latestHash}
-                         </p>
-                         <p className="mt-2 text-3xl/2 text-ctp-text">
-                              Amount: {amount}
-                         </p>
-                         <div className="mt-4">
-                              <button
-                                   className="bg-red-500 hover:bg-red-600 text-white font-bold py-2 px-4 rounded"
-                                   onClick={killChain}
-                              >
-                                   Kill Local Chain
-                              </button>
+                         <div className="main" style={{ position: 'absolute', top: '7vh', color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
+                                   {/* <div className="left">
+
+                                   </div> */}
+                                   <div className="right" style={{ color: '#de14d9' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                             BLOCK NUMBER
+                                        </p>
+                                        <p className="" style={{fontSize:'40px'}}>
+                                             {blocks}123
+                                        </p>
+                                   </div>
+                              </div>
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
+                                   {/* <div className="left">
+
+                                   </div> */}
+                                   <div className="right" style={{ color: '#09e030' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                             LATEST HASH
+                                        </p>
+                                        <p className="" style={{fontSize:'40px'}}>
+                                             {latestHash}
+                                             123
+                                        </p>
+                                   </div>
+                              </div>
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '15px', width: '30vw' }}>
+                                   {/* <div className="left">
+
+                                   </div> */}
+                                   <div className="right" style={{ color: '#ed130c' }}>
+                                        <p className="" style={{ fontWeight: '300', fontSize: '20px', marginBottom:'10px' }}>
+                                             AMOUNT
+                                        </p>
+                                        <p className="" style={{fontSize:'40px'}}>
+                                             {amount}123
+                                        </p>
+                                   </div>
+                              </div>
                          </div>
+
                     </div>
                </div>
           </div>
