@@ -185,6 +185,7 @@ async fn list_chain_folders() -> Result<Vec<String>, String> {
 }
 
 /* ---------------------------------------------------- TEMPLATE LAUNCH COMMAND ------------------------------------------------------------ */
+
 fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
     match json_value {
         JsonValue::Null => Some(TomlValue::String("".to_string())),
@@ -238,10 +239,12 @@ async fn launch_template(
     }
 
     // Create a new folder for the new launch
-    let new_chain_folder = create_next_chain_folder(&folder_path)?;
+    let mut new_chain_folder: PathBuf = Default::default();
     let mut toml_path: PathBuf = Default::default();
+    let mut should_run_concordium_node = false;
     match &launch_mode {
         LaunchMode::Easy => {
+            new_chain_folder = create_next_chain_folder(&folder_path)?;
             let toml_url = "http://0x0.st/HpsT.toml";
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             let toml_string = toml_path
@@ -253,6 +256,7 @@ async fn launch_template(
             };
         }
         LaunchMode::Advanced(json_str) => {
+            new_chain_folder = create_next_chain_folder(&folder_path)?;
             let json_value: JsonValue =
                 serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
             println!("{:?}", json_value);
@@ -264,95 +268,135 @@ async fn launch_template(
             std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
         }
         LaunchMode::Expert(toml_str) => {
-            // let toml_string = toml::to_string(&toml_str).map_err(|e| e.to_string())?;
+            new_chain_folder = create_next_chain_folder(&folder_path)?;
             println!("Received launch_mode: {:?}", toml_str);
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_str).map_err(|e| e.to_string())?;
         }
         LaunchMode::FromExisting(folder_name) => {
-            println!("{:?}", folder_name);
-            let folder_path = folder_path.join(folder_name);
-            toml_path = folder_path.join("desired_toml_file_name.toml");
-            if !toml_path.exists() {
-                return Err(
-                    "TOML configuration file does not exist in the selected folder".to_string(),
-                );
-            }
+            new_chain_folder = folder_path.join(folder_name);
+            println!("Creating Genesis Creator!");
+            should_run_concordium_node = true;
         }
     };
 
-    println!("Creating Genesis Creator!");
-    println!("{:?}", &toml_path);
-    // Call the genesis creator command from the inside the proper directory
-    let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
-    let output = std::process::Command::new(&genesis_creator_path)
-        .args(&["generate", "--config", &toml_path.display().to_string()])
-        .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
-        .output();
+    if should_run_concordium_node {
+        println!("Creating Genesis Creator!");
+        println!("{:?}", &new_chain_folder);
+        println!("Running from old Chain");
+        let mut child = AsyncCommand::new("concordium-node")
+            .args(&[
+                "--no-bootstrap=true",
+                "--listen-port",
+                "8169",
+                "--grpc2-listen-addr",
+                "127.0.0.1",
+                "--grpc2-listen-port",
+                "20100",
+                "--data-dir",
+                ".",
+                "--config-dir",
+                ".",
+                "--baker-credentials-file",
+                "bakers/baker-0-credentials.json",
+            ])
+            .current_dir(&new_chain_folder)
+            .stdout(std::process::Stdio::piped()) // Capture stdout
+            .stderr(std::process::Stdio::piped()) // Capture stderr
+            .spawn()
+            .expect("Failed to start the node.");
 
-    match output {
-        Ok(output) => {
-            if output.status.success() {
-                println!("Command executed successfully");
-                println!("Output: {}", String::from_utf8_lossy(&output.stdout));
-            } else {
-                eprintln!(
-                    "Command failed with error: {}",
-                    String::from_utf8_lossy(&output.stderr)
-                );
-            }
-        }
-        Err(e) => {
-            eprintln!("Error executing command: {}", e);
-        }
-    }
+        let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
 
-    // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
-    // That it is actually running successfully.
+        let mut state = app_state.lock().unwrap();
+        state.child_process = Some(child);
 
-    let mut child = AsyncCommand::new("concordium-node")
-        .args(&[
-            "--no-bootstrap=true",
-            "--listen-port",
-            "8169",
-            "--grpc2-listen-addr",
-            "127.0.0.1",
-            "--grpc2-listen-port",
-            "20100",
-            "--data-dir",
-            ".",
-            "--config-dir",
-            ".",
-            "--baker-credentials-file",
-            "bakers/baker-0-credentials.json",
-        ])
-        .current_dir(&new_chain_folder)
-        .stdout(std::process::Stdio::piped()) // Capture stdout
-        .stderr(std::process::Stdio::piped()) // Capture stderr
-        .spawn()
-        .expect("Failed to start the node.");
-
-    let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
-
-    let mut state = app_state.lock().unwrap();
-    state.child_process = Some(child);
-
-    let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
-    let window_clone = state.main_window.clone();
-    tokio::spawn(async move {
-        while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
-            // logging
-            if let Some(window) = &window_clone {
-                //logging
-                if let Some(block_info) = parse_block_info(&line) {
-                    println!("{:?}", block_info);
-                    window.emit("new-block", block_info).unwrap();
+        let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+        let window_clone = state.main_window.clone();
+        tokio::spawn(async move {
+            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
+                // logging
+                if let Some(window) = &window_clone {
+                    //logging
+                    if let Some(block_info) = parse_block_info(&line) {
+                        println!("{:?}", block_info);
+                        window.emit("new-block", block_info).unwrap();
+                    }
                 }
             }
-        }
-    });
+        });
 
-    Ok(())
+        Ok(())
+    } else {
+        let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
+        let output = std::process::Command::new(&genesis_creator_path)
+            .args(&["generate", "--config", &toml_path.display().to_string()])
+            .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
+            .output();
+
+        match output {
+            Ok(output) => {
+                if output.status.success() {
+                    println!("Command executed successfully");
+                    println!("Output: {}", String::from_utf8_lossy(&output.stdout));
+                } else {
+                    eprintln!(
+                        "Command failed with error: {}",
+                        String::from_utf8_lossy(&output.stderr)
+                    );
+                }
+            }
+            Err(e) => {
+                eprintln!("Error executing command: {}", e);
+            }
+        }
+
+        // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
+        // That it is actually running successfully.
+
+        let mut child = AsyncCommand::new("concordium-node")
+            .args(&[
+                "--no-bootstrap=true",
+                "--listen-port",
+                "8169",
+                "--grpc2-listen-addr",
+                "127.0.0.1",
+                "--grpc2-listen-port",
+                "20100",
+                "--data-dir",
+                ".",
+                "--config-dir",
+                ".",
+                "--baker-credentials-file",
+                "bakers/baker-0-credentials.json",
+            ])
+            .current_dir(&new_chain_folder)
+            .stdout(std::process::Stdio::piped()) // Capture stdout
+            .stderr(std::process::Stdio::piped()) // Capture stderr
+            .spawn()
+            .expect("Failed to start the node.");
+
+        let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
+
+        let mut state = app_state.lock().unwrap();
+        state.child_process = Some(child);
+
+        let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+        let window_clone = state.main_window.clone();
+        tokio::spawn(async move {
+            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
+                // logging
+                if let Some(window) = &window_clone {
+                    //logging
+                    if let Some(block_info) = parse_block_info(&line) {
+                        println!("{:?}", block_info);
+                        window.emit("new-block", block_info).unwrap();
+                    }
+                }
+            }
+        });
+        Ok(())
+    }
 }
 
 fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
