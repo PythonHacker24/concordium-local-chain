@@ -364,12 +364,11 @@ function Dashboard() {
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
-               console.log("fuckkkl");
-
                console.log("Received new block event:", event.payload.numbers);
                console.log(blocks);
                setBlocks(event.payload.number);
                setLatestHash(event.payload.hash);
+               setAmount(event.payload.amount);
           })
                .then((unlisten) => {
                     unlistenFn = unlisten;

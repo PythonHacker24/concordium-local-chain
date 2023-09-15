@@ -1,22 +1,39 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
+
+use std::{any, clone, hash};
 // Imports
+use concordium_rust_sdk::cis2::Cis2ErrorRejectReason;
+use concordium_rust_sdk::smart_contracts::common::{AccountAddress, AccountBalance, Amount};
+use concordium_rust_sdk::types::hashes::HashBytes;
+use concordium_rust_sdk::types::AccountIndex;
+use concordium_rust_sdk::v2::{self, AccountIdentifier, QueryError, QueryResponse};
+use concordium_rust_sdk::{
+    endpoints::{self, Endpoint},
+    types::hashes::BlockHash,
+};
 use dirs;
+use futures::future::ok;
+use futures::StreamExt;
+use futures::{Future, FutureExt};
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
-use std::fs::read_dir;
-use std::fs::File;
-use std::fs::ReadDir;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::str::FromStr;
 use std::sync::{Arc, Mutex};
+use std::{fs::File, io::BufRead};
+use structopt::StructOpt;
+use tauri::http::status;
 use tauri::regex::Regex;
+use tauri::utils::config::parse::ConfigError;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use toml::Value as TomlValue;
+
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -162,7 +179,6 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
     // TODO: Add for other OS as well
     Ok(())
 }
-
 #[tauri::command]
 async fn list_chain_folders() -> Result<Vec<String>, String> {
     let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
@@ -237,8 +253,6 @@ async fn launch_template(
     if !folder_path.exists() {
         std::fs::create_dir_all(&folder_path).map_err(|e| e.to_string())?;
     }
-
-    // Create a new folder for the new launch
     let mut new_chain_folder: PathBuf = Default::default();
     let mut toml_path: PathBuf = Default::default();
     let mut should_run_concordium_node = false;
@@ -259,11 +273,9 @@ async fn launch_template(
             new_chain_folder = create_next_chain_folder(&folder_path)?;
             let json_value: JsonValue =
                 serde_json::from_str(&json_str).map_err(|e| e.to_string())?;
-            println!("{:?}", json_value);
             let toml_value = json_to_toml(&json_value).ok_or("Failed to convert JSON to TOML")?;
 
             let toml_string = toml::to_string(&toml_value).map_err(|e| e.to_string())?;
-            println!("Received launch_mode: {:?}", toml_string);
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_string).map_err(|e| e.to_string())?;
         }
@@ -281,9 +293,6 @@ async fn launch_template(
     };
 
     if should_run_concordium_node {
-        println!("Creating Genesis Creator!");
-        println!("{:?}", &new_chain_folder);
-        println!("Running from old Chain");
         let mut child = AsyncCommand::new("concordium-node")
             .args(&[
                 "--no-bootstrap=true",
@@ -318,17 +327,16 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     //logging
-                    if let Some(block_info) = parse_block_info(&line) {
+                    if let Some(block_info) = parse_block_info(&line).await {
                         println!("{:?}", block_info);
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
         });
-
-        Ok(())
     } else {
         let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
+        println!("itna to chlra hai");
         let output = std::process::Command::new(&genesis_creator_path)
             .args(&["generate", "--config", &toml_path.display().to_string()])
             .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
@@ -388,15 +396,16 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     //logging
-                    if let Some(block_info) = parse_block_info(&line) {
+                    if let Some(block_info) = parse_block_info(&line).await {
                         println!("{:?}", block_info);
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
         });
-        Ok(())
     }
+
+    Ok(())
 }
 
 fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
@@ -437,32 +446,75 @@ async fn kill_chain(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
 #[derive(Clone, serde::Serialize, Debug)]
-struct BlockInfo {
+struct UiBlockInfo {
     hash: String,
     number: u64,
+    amount: Amount,
 }
 
 // Parse to get hash and number
-fn parse_block_info(line: &str) -> Option<BlockInfo> {
+
+async fn parse_block_info(line: &str) -> Option<UiBlockInfo> {
     // logging
+
     println!("Processing line: {}", line); // Add this
-
-    // Define a regular expression pattern to capture the block hash and height
+                                           // Define a regular expression pattern to capture the block hash and height
     let re = Regex::new(r"Block ([0-9a-f]{64}) is finalized at height (\d+)").unwrap();
-
     if let Some(captures) = re.captures(line) {
-        let hash = captures.get(1).map_or("", |m| m.as_str()).to_string();
         let number = captures
             .get(2)
             .map_or("", |m| m.as_str())
             .parse::<u64>()
             .unwrap_or(0);
-        // logging
-        println!("Matched block hash: {}, height: {}", hash, number); // Modify this
 
-        return Some(BlockInfo { hash, number });
+        let hash_par = block_hash().await.ok().unwrap();
+        let hash = block_hash().await.ok().unwrap().to_string();
+        let amount = account_info(hash_par).await.ok().unwrap();
+
+        return Some(UiBlockInfo {
+            hash,
+            number,
+            amount,
+        });
     }
     None
+}
+
+async fn block_hash() -> anyhow::Result<BlockHash> {
+    let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
+    let mut client = v2::Client::new(endpoint_node).await?;
+    // let block= client.get_block_info(&finalized_block).await?;
+    let mut accounts = client
+        .get_account_list(&v2::BlockIdentifier::LastFinal)
+        .await?;
+    let mut account_addr: Option<AccountAddress> = None;
+    while let Some(a) = accounts.response.next().await {
+        account_addr = a.ok();
+    }
+    if account_addr == None {}
+    let addr = AccountIdentifier::Address(account_addr.unwrap());
+    let info = client
+        .get_account_info(&addr, &v2::BlockIdentifier::LastFinal)
+        .await?;
+    let block_hash = info.block_hash;
+    Ok(block_hash)
+}
+async fn account_info(hash: BlockHash) -> anyhow::Result<Amount> {
+    let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
+    let mut client = v2::Client::new(endpoint_node).await?;
+    // let block= client.get_block_info(&finalized_block).await?;
+    let mut accounts = client
+        .get_account_list(&v2::BlockIdentifier::LastFinal)
+        .await?;
+    let mut account_addr: Option<AccountAddress> = None;
+    while let Some(a) = accounts.response.next().await {
+        account_addr = a.ok();
+    }
+    if account_addr == None {}
+    let addr = AccountIdentifier::Address(account_addr.unwrap());
+    let info = client.get_account_info(&addr, hash).await?;
+    let account_amount = info.response.account_amount;
+    Ok(account_amount)
 }
 
 fn main() {
@@ -473,9 +525,11 @@ fn main() {
         .setup(move |app| {
             // Get a reference to the main window
             let main_window = app.get_window("main").unwrap();
+
             // Store the window reference in the app state
             let mut state = app_state.lock().unwrap();
             state.main_window = Some(main_window);
+
             Ok(())
         })
         .invoke_handler(tauri::generate_handler![

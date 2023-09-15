@@ -5,7 +5,7 @@ import '@coreui/coreui/dist/css/coreui.min.css'
 
 const AdvancedSettingsPage = ({ onHandleSubmit }) => {
      const [visible, setVisible] = useState(false);
-     const [formData, setFormData] = useState(localStorage.getItem('advancedConfig')?JSON.parse(localStorage.getItem('advancedConfig') as any):{
+     const [formData, setFormData] = useState(localStorage.getItem('advancedConfig') ? JSON.parse(localStorage.getItem('advancedConfig') as any) : {
           protocolVersion: "5",
           out: {
                updateKeys: "./update-keys",
@@ -363,11 +363,11 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
                updatedData.parameters.chain.rewardParameters.transactionFeeDistribution = value;
           } else if (key === 'parameters.chain.rewardParameters.gASRewards') {
                updatedData.parameters.chain.rewardParameters.gASRewards = value;
-          } else if(key === 'accounts') {
+          } else if (key === 'accounts') {
                updatedData[key][0] = value;
                console.log("accounts = ", value);
-          }else{
-               console.log("sasa = ",key, value);
+          } else {
+               console.log("sasa = ", key, value);
                updatedData[key] = value;
           }
           // Update the state with the modified JSON object
@@ -377,7 +377,6 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
      const handleSubmit = (event: any) => {
           event.preventDefault();
           onHandleSubmit(formData);
-          console.log("its daya = ",formData);
           localStorage.setItem('advancedConfig', JSON.stringify(formData));
      }
      return (
@@ -400,8 +399,7 @@ const AdvancedSettingsPage = ({ onHandleSubmit }) => {
                                         id="accounts[0].balance"
                                         name="accounts[0].balance"
                                         onChange={(e) => updateJsonData("accounts", { ...formData.accounts[0], balance: e.target.value })}
-                                       defaultValue={formData.accounts[0].balance}
-
+                                        defaultValue="3500000000000000"
                                    />
                               </div>
                               <div className="form-field">
