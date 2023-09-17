@@ -1,37 +1,30 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-use std::{any, clone, hash};
-// Imports
-use concordium_rust_sdk::cis2::Cis2ErrorRejectReason;
-use concordium_rust_sdk::smart_contracts::common::{AccountAddress, AccountBalance, Amount};
-use concordium_rust_sdk::types::hashes::HashBytes;
-use concordium_rust_sdk::types::AccountIndex;
-use concordium_rust_sdk::v2::{self, AccountIdentifier, QueryError, QueryResponse};
-use concordium_rust_sdk::{
-    endpoints::{self, Endpoint},
-    types::hashes::BlockHash,
-};
+use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
+use concordium_rust_sdk::v2::{self, AccountIdentifier};
+use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
-use futures::future::ok;
 use futures::StreamExt;
-use futures::{Future, FutureExt};
+use nix::sys::signal::Signal;
+use nix::unistd::Pid;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
+use std::collections::HashMap;
+use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
+use std::process::Command;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
-use std::{fs::File, io::BufRead};
-use structopt::StructOpt;
-use tauri::http::status;
 use tauri::regex::Regex;
-use tauri::utils::config::parse::ConfigError;
+use tauri::State;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
+use tokio::task;
 use toml::Value as TomlValue;
 
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
@@ -75,15 +68,12 @@ async fn install() -> Result<(), String> {
         return Err("Unsupported OS".into());
     };
 
-    // Download the appropriate Concordium node binary for the detected OS
-
     let downloads_folder = dirs::download_dir()
         .unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"));
     let destination = downloads_folder.join(file_name);
     let destination_str = destination
         .to_str()
         .ok_or("Failed to convert path to string")?;
-
     match download_file(&download_url, &destination_str).await {
         Ok(_) => Ok(()),
         Err(e) => Err(e.to_string()),
@@ -281,7 +271,6 @@ async fn launch_template(
         }
         LaunchMode::Expert(toml_str) => {
             new_chain_folder = create_next_chain_folder(&folder_path)?;
-            println!("Received launch_mode: {:?}", toml_str);
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
             std::fs::write(&toml_path, &toml_str).map_err(|e| e.to_string())?;
         }
@@ -328,7 +317,6 @@ async fn launch_template(
                 if let Some(window) = &window_clone {
                     //logging
                     if let Some(block_info) = parse_block_info(&line).await {
-                        println!("{:?}", block_info);
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -336,7 +324,6 @@ async fn launch_template(
         });
     } else {
         let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
-        println!("itna to chlra hai");
         let output = std::process::Command::new(&genesis_creator_path)
             .args(&["generate", "--config", &toml_path.display().to_string()])
             .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
@@ -395,7 +382,7 @@ async fn launch_template(
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
-                    //logging
+                    // Logging
                     if let Some(block_info) = parse_block_info(&line).await {
                         println!("{:?}", block_info);
                         window.emit("new-block", block_info).unwrap();
@@ -426,9 +413,8 @@ fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
 }
 
 /* ---------------------------------------------------- KILL CHAIN COMMAND ------------------------------------------------------------------------ */
-
 #[tauri::command]
-async fn kill_chain(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     // Check if there's a child process to kill.
     let child_to_kill = {
         let mut state = app_state.lock().unwrap();
@@ -439,27 +425,44 @@ async fn kill_chain(app_state: tauri::State<'_, Arc<Mutex<AppState>>>) -> Result
         child.kill().await.map_err(|e| e.to_string())?;
         Ok("Killed blockchain process.".to_string())
     } else {
-        Err("No running blockchain process to kill.".to_string())
+        // If no child process was stored in AppState, try to find and kill the concordium-node-collector process.
+        task::spawn_blocking(|| {
+            let output = Command::new("pgrep")
+                .arg("concordium-node")
+                .output()
+                .expect("Failed to execute command");
+
+            if output.status.success() {
+                let pid_str = String::from_utf8_lossy(&output.stdout);
+                let pid: i32 = pid_str.trim().parse().expect("Failed to parse PID as i32");
+
+                // Kill the process
+                nix::sys::signal::kill(Pid::from_raw(pid), Signal::SIGKILL)
+                    .expect("Failed to kill process");
+                Ok("Killed concordium-node-collector process.".to_string())
+            } else {
+                Err("No running concordium-node-collector process to kill.".to_string())
+            }
+        })
+        .await
+        .unwrap()
     }
 }
 
+
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
-#[derive(Clone, serde::Serialize, Debug)]
+#[derive(Debug, serde::Serialize, Clone)]
 struct UiBlockInfo {
     hash: String,
     number: u64,
-    amount: Amount,
+    amounts: HashMap<AccountAddress, Amount>,
 }
 
-// Parse to get hash and number
-
 async fn parse_block_info(line: &str) -> Option<UiBlockInfo> {
-    // logging
-
-    println!("Processing line: {}", line); // Add this
-                                           // Define a regular expression pattern to capture the block hash and height
+    println!("Processing line: {}", line);
     let re = Regex::new(r"Block ([0-9a-f]{64}) is finalized at height (\d+)").unwrap();
+
     if let Some(captures) = re.captures(line) {
         let number = captures
             .get(2)
@@ -467,54 +470,68 @@ async fn parse_block_info(line: &str) -> Option<UiBlockInfo> {
             .parse::<u64>()
             .unwrap_or(0);
 
-        let hash_par = block_hash().await.ok().unwrap();
-        let hash = block_hash().await.ok().unwrap().to_string();
-        let amount = account_info(hash_par).await.ok().unwrap();
-
-        return Some(UiBlockInfo {
-            hash,
-            number,
-            amount,
-        });
+        match account_info().await {
+            Ok(block_hash) => {
+                let hash = block_hash.to_string();
+                match amount_info(block_hash).await {
+                    Ok(amounts_map) => {
+                        return Some(UiBlockInfo {
+                            hash,
+                            number,
+                            amounts: amounts_map,
+                        });
+                    }
+                    Err(e) => {
+                        eprintln!("An error occurred: {}", e);
+                        return None;
+                    }
+                }
+            }
+            Err(e) => {
+                eprintln!("An error occurred: {}", e);
+                return None;
+            }
+        }
     }
     None
 }
 
-async fn block_hash() -> anyhow::Result<BlockHash> {
+async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
-    // let block= client.get_block_info(&finalized_block).await?;
-    let mut accounts = client
-        .get_account_list(&v2::BlockIdentifier::LastFinal)
-        .await?;
-    let mut account_addr: Option<AccountAddress> = None;
+    let mut accounts = client.get_account_list(&hash).await?;
+
+    let mut amounts_map = HashMap::new();
     while let Some(a) = accounts.response.next().await {
-        account_addr = a.ok();
+        match a {
+            Ok(account_addr) => {
+                let addr = AccountIdentifier::Address(account_addr.clone());
+                let info = client.get_account_info(&addr, hash).await?;
+                let amt = info.response.account_amount;
+                amounts_map.insert(a?, amt);
+            }
+            Err(e) => return Err(anyhow::anyhow!("Failed to get account address: {}", e)),
+        }
     }
-    if account_addr == None {}
-    let addr = AccountIdentifier::Address(account_addr.unwrap());
-    let info = client
-        .get_account_info(&addr, &v2::BlockIdentifier::LastFinal)
-        .await?;
-    let block_hash = info.block_hash;
-    Ok(block_hash)
+    Ok(amounts_map)
 }
-async fn account_info(hash: BlockHash) -> anyhow::Result<Amount> {
+
+async fn account_info() -> anyhow::Result<BlockHash> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
-    // let block= client.get_block_info(&finalized_block).await?;
     let mut accounts = client
         .get_account_list(&v2::BlockIdentifier::LastFinal)
         .await?;
+    let block = accounts.block_hash;
     let mut account_addr: Option<AccountAddress> = None;
     while let Some(a) = accounts.response.next().await {
         account_addr = a.ok();
     }
     if account_addr == None {}
     let addr = AccountIdentifier::Address(account_addr.unwrap());
-    let info = client.get_account_info(&addr, hash).await?;
-    let account_amount = info.response.account_amount;
-    Ok(account_amount)
+    let info = client.get_account_info(&addr, block).await?;
+    let hash = info.block_hash;
+    Ok(hash)
 }
 
 fn main() {

@@ -1,4 +1,5 @@
 import React, { useEffect, useState } from "react";
+import { CModalFooter, CModal, CModalHeader, CModalBody, CModalTitle } from "@coreui/react";
 import {
      BrowserRouter as Router,
      Route,
@@ -8,7 +9,7 @@ import {
 import { invoke } from "@tauri-apps/api/tauri";
 import { faCircleInfo } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { CAlert, CButton } from "@coreui/react";
+import { CAlert, CButton, CFormLabel, CFormSelect } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ExpertSettingsPage from "./components/expert-form";
@@ -219,18 +220,23 @@ function GenesisBuilder() {
      );
 
      const FromExisting = () => (
-          <div className="mt-4">
-               <label className="text-white">Select a chain folder:</label>
-               <select
+          <div className="mt-4 d-flex align-items-center">
+               <CFormLabel htmlFor="select-option" className="text-white mb-0">Select a chain folder:</CFormLabel>
+               <CFormSelect
+                    id="select-option"
                     className="ml-2 px-4 py-2 bg-white text-black"
                     value={selectedFolder || ""}
-                    onChange={e => setSelectedFolder(e.target.value)}
+                    onChange={(e) => setSelectedFolder(e.target.value)}
                >
-                    <option value="" disabled>Select folder</option>
-                    {chainFolders.map(folder => (
-                         <option key={folder} value={folder}>{folder}</option>
+                    <option value="" disabled>
+                         Select folder
+                    </option>
+                    {chainFolders.map((folder) => (
+                         <option key={folder} value={folder}>
+                              {folder}
+                         </option>
                     ))}
-               </select>
+               </CFormSelect>
           </div>
      )
 
@@ -281,9 +287,9 @@ function GenesisBuilder() {
                     <h2 className="text-2xl font-semibold mb-4 text-center">
                          Choose Level of Expertise:
                     </h2>
-                    <div className="space-x-4 mb-8">
+                    <div className="space-x-4 mb-8 md:w-full w-1/2 flex justify-center items-center gap-1 m-10">
                          <CButton
-                              className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50 transition-colors duration-300 focus:bg-blue-600 active:bg-blue-700"
+                              className="flex-grow w-40 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50 transition-colors duration-300 focus:bg-blue-600 active:bg-blue-700"
                               onClick={() => setConfigLevel("easy")}
                               disabled={launched}
                          >
@@ -291,21 +297,21 @@ function GenesisBuilder() {
                          </CButton>
 
                          <CButton
-                              className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50"
+                              className="flex-grow w-40 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50 transition-colors duration-300 focus:bg-blue-600 active:bg-blue-700"
                               onClick={() => setConfigLevel("advanced")}
                               disabled={launched}
                          >
                               Advanced
                          </CButton>
                          <CButton
-                              className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50"
+                              className="flex-grow w-40 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50 transition-colors duration-300 focus:bg-blue-600 active:bg-blue-700"
                               onClick={() => setConfigLevel("expert")}
                               disabled={launched}
                          >
                               Expert
                          </CButton>
                          <CButton
-                              className="px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50"
+                              className="flex-grow w-40 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg disabled:opacity-50 transition-colors duration-300 focus:bg-blue-600 active:bg-blue-700"
                               onClick={() => setConfigLevel("existing")}
                               disabled={launched}
                          >
@@ -364,11 +370,11 @@ function Dashboard() {
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
-               console.log("Received new block event:", event.payload.numbers);
-               console.log(blocks);
+               const blockInfo = event.payload;
+               console.log(blockInfo)
                setBlocks(event.payload.number);
                setLatestHash(event.payload.hash);
-               setAmount(event.payload.amount);
+               setAmount(event.payload.amounts);
           })
                .then((unlisten) => {
                     unlistenFn = unlisten;
@@ -384,10 +390,41 @@ function Dashboard() {
                }
           };
      }, []);
+
+     const killPopup = () => {
+          const [visible, setVisible] = useState(false)
+          const openModalAndKillChain = async () => {
+               setVisible(true);
+               await killChain();
+          }
+          return (
+               <>
+                    <CButton className="bg-red-800 border-red-800 hover:bg-red-800 hover:border-red-800 w-40" onClick={openModalAndKillChain}>Kill Chain</CButton>
+                    <CModal
+                         className="rounded-2xl"
+                         alignment="center"
+                         backdrop="static"
+                         visible={visible}
+                    >
+                         <CModalHeader closeButton={false} className="bg-slate-800 text-white font-bold  border-black">
+                              <CModalTitle className="text-xl">Note:</CModalTitle>
+                         </CModalHeader>
+                         <CModalBody className="bg-slate-800 text-white">
+                              <p>Chain has been killed.</p>
+                         </CModalBody>
+                         <CModalFooter className="bg-slate-800 border-black">
+                              <CButton color="primary" className="rounded-full border-rose-500 bg-rose-500 hover:bg-rose-800 hover:border-rose-800 " onClick={() => window.location.href = "/genesis-builder"}>Go to Genesis Builder</CButton>
+                         </CModalFooter>
+                    </CModal>
+               </>
+          )
+     }
      // Function to invoke killing blockchain
      async function killChain() {
           try {
                await invoke("kill_chain");
+               console.log("killed chain")
+               // window.location.href = "/genesis-builder";
           } catch (error) {
                console.error("Kill error:", error);
           }
@@ -401,14 +438,7 @@ function Dashboard() {
                               <div className="" style={{ fontSize: 'larger' }}>
                                    Information
                               </div>
-                              <div className="">
-                                   <button
-                                        className=""
-                                        onClick={killChain}
-                                   >
-                                        Kill Local Chain
-                                   </button>
-                              </div>
+                              {killPopup()}
                          </div>
                          <div className="main" style={{ color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
@@ -437,47 +467,47 @@ function Dashboard() {
                                              AMOUNT
                                         </p>
                                         <p className="" style={{ fontSize: '20px' }}>
-                                             {amount}
+
                                         </p>
                                    </div>
                               </div>
                          </div>
-                         <div className="table" style={{marginTop:'3vh', backgroundColor:'transparent', borderRadius:'10px!important'}}>
-                              <table style={{textAlign:"left", width:'95vw', backgroundColor:'#1c2445!important', borderRadius:'10px',border:'1px solid #1c2445',overflow:'hidden', color:'white!important'}}>
+                         <div className="table" style={{ marginTop: '3vh', backgroundColor: 'transparent', borderRadius: '10px!important' }}>
+                              <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', overflow: 'hidden', color: 'white!important' }}>
                                    <tr>
-                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Company</th>
-                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Contact</th>
-                                        <th style={{backgroundColor:'#1c244550', color:'white'}}>Country</th>
+                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Company</th>
+                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Contact</th>
+                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Country</th>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Alfreds Futterkiste</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Maria Anders</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Germany</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Alfreds Futterkiste</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Maria Anders</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Germany</td>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Centro comercial Moctezuma</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Francisco Chang</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Mexico</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Centro comercial Moctezuma</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Francisco Chang</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Mexico</td>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Ernst Handel</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Roland Mendel</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Austria</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Ernst Handel</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Roland Mendel</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Austria</td>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Island Trading</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Helen Bennett</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>UK</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Island Trading</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Helen Bennett</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>UK</td>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Laughing Bacchus Winecellars</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Yoshi Tannamuri</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Canada</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Laughing Bacchus Winecellars</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Yoshi Tannamuri</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Canada</td>
                                    </tr>
                                    <tr>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Magazzini Alimentari Riuniti</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Giovanni Rovelli</td>
-                                        <td style={{backgroundColor:'#1c244550', color:'white',fontWeight:'200'}}>Italy</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Magazzini Alimentari Riuniti</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Giovanni Rovelli</td>
+                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Italy</td>
                                    </tr>
                               </table>
 

@@ -19,6 +19,7 @@ reqwest = "0.11"
 tokio = { version = "1", features = ["full"] }
 dirs = "3.0"
 serde_json = "1.0"
+nix = "0.20"
 concordium-rust-sdk = "3.0.1"
 anyhow = "1.0.75"
 clap = "4.4.2"
