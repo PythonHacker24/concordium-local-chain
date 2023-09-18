@@ -2,6 +2,7 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
+use concordium_rust_sdk::types::AbsoluteBlockHeight;
 use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
@@ -187,6 +188,12 @@ async fn list_chain_folders() -> Result<Vec<String>, String> {
         }
     }
 
+    chain_folders.sort_by(|a, b| {
+        let a_num: i32 = a["chain-".len()..].parse().unwrap_or(0);
+        let b_num: i32 = b["chain-".len()..].parse().unwrap_or(0);
+        a_num.cmp(&b_num)
+    });
+    println!("{:#?}", chain_folders);
     Ok(chain_folders)
 }
 
@@ -316,7 +323,7 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     //logging
-                    if let Some(block_info) = parse_block_info(&line).await {
+                    if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -383,7 +390,7 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     // Logging
-                    if let Some(block_info) = parse_block_info(&line).await {
+                    if let Some(block_info) = parse_block_info().await {
                         println!("{:?}", block_info);
                         window.emit("new-block", block_info).unwrap();
                     }
@@ -449,51 +456,38 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
     }
 }
 
-
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
 #[derive(Debug, serde::Serialize, Clone)]
 struct UiBlockInfo {
     hash: String,
-    number: u64,
+    number: AbsoluteBlockHeight,
     amounts: HashMap<AccountAddress, Amount>,
 }
 
-async fn parse_block_info(line: &str) -> Option<UiBlockInfo> {
-    println!("Processing line: {}", line);
-    let re = Regex::new(r"Block ([0-9a-f]{64}) is finalized at height (\d+)").unwrap();
-
-    if let Some(captures) = re.captures(line) {
-        let number = captures
-            .get(2)
-            .map_or("", |m| m.as_str())
-            .parse::<u64>()
-            .unwrap_or(0);
-
-        match account_info().await {
-            Ok(block_hash) => {
-                let hash = block_hash.to_string();
-                match amount_info(block_hash).await {
-                    Ok(amounts_map) => {
-                        return Some(UiBlockInfo {
-                            hash,
-                            number,
-                            amounts: amounts_map,
-                        });
-                    }
-                    Err(e) => {
-                        eprintln!("An error occurred: {}", e);
-                        return None;
-                    }
+async fn parse_block_info() -> Option<UiBlockInfo> {
+    match account_info().await {
+        Ok((block_hash, number)) => {
+            let hash = block_hash.to_string();
+            match amount_info(block_hash).await {
+                Ok(amounts_map) => {
+                    return Some(UiBlockInfo {
+                        hash,
+                        number,
+                        amounts: amounts_map,
+                    });
+                }
+                Err(e) => {
+                    eprintln!("An error occurred: {}", e);
+                    return None;
                 }
             }
-            Err(e) => {
-                eprintln!("An error occurred: {}", e);
-                return None;
-            }
+        }
+        Err(e) => {
+            eprintln!("An error occurred: {}", e);
+            return None;
         }
     }
-    None
 }
 
 async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, Amount>> {
@@ -516,7 +510,7 @@ async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, 
     Ok(amounts_map)
 }
 
-async fn account_info() -> anyhow::Result<BlockHash> {
+async fn account_info() -> anyhow::Result<(BlockHash, AbsoluteBlockHeight)> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
     let mut accounts = client
@@ -531,7 +525,9 @@ async fn account_info() -> anyhow::Result<BlockHash> {
     let addr = AccountIdentifier::Address(account_addr.unwrap());
     let info = client.get_account_info(&addr, block).await?;
     let hash = info.block_hash;
-    Ok(hash)
+    let blocks = client.get_block_info(&block).await?;
+    let block_number = blocks.response.block_height;
+    Ok((hash, block_number))
 }
 
 fn main() {

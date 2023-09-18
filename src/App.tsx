@@ -205,26 +205,30 @@ function GenesisBuilder() {
      );
 
      const AdvancedConfig = () => (
-          <div>
-               <EasyConfig />
+          <div className="text-white text-normal text-center">
+               <p>
+                    This is config settings for Advanced users.
+               </p>
                {(launching || launched) ? "" : <AdvancedSettingsPage onHandleSubmit={HandleSubmit} />}
           </div>
 
      );
 
      const ExpertConfig = () => (
-          <div>
-               <EasyConfig />
+          <div className="text-white text-normal text-center">
+               <p>
+                    This is config settings for Expert users.
+               </p>
                {(launching || launched) ? "" : <ExpertSettingsPage onHandleSubmit={expertHandleSubmit} />}
           </div>
      );
 
      const FromExisting = () => (
-          <div className="mt-4 d-flex align-items-center">
-               <CFormLabel htmlFor="select-option" className="text-white mb-0">Select a chain folder:</CFormLabel>
+          <div className="mt-4 ">
+               <CFormLabel htmlFor="select-option" className="text-white text-xl mb-3 ml-1">Select a chain folder:</CFormLabel>
                <CFormSelect
                     id="select-option"
-                    className="ml-2 px-4 py-2 bg-white text-black"
+                    className="ml-2 px-4 py-2 bg-white text-black w-full"
                     value={selectedFolder || ""}
                     onChange={(e) => setSelectedFolder(e.target.value)}
                >
@@ -319,7 +323,7 @@ function GenesisBuilder() {
                          </CButton>
 
                     </div>
-                    <div className="config-container">
+                    <div className="config-container w-4/5">
                          {configLevel === "easy" && <EasyConfig />}
                          {configLevel === "advanced" && <AdvancedConfig />}
                          {configLevel === "expert" && <ExpertConfig />}
