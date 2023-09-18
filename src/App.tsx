@@ -369,19 +369,17 @@ function Dashboard() {
      const [blocks, setBlocks] = useState("");
      const [amountDict, setAmounts] = useState({});
      const [amountDictFilter, setAmountsFilter] = useState({});
-     const [filterValue,setFilter] = useState('');
-     const [tempDict,setTempDict] = useState({});
+     const [filterValue, setFilter] = useState('');
+     const [tempDict, setTempDict] = useState({});
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
                setBlocks(event.payload.number);
-               console.log(event.payload.number);
                setLatestHash(event.payload.hash);
                setAmounts(event.payload.amounts);
-               if(filterValue.length == 0){
-                    console.log("tes");
+               if (filterValue.length == 0) {
                     setTempDict(event.payload.amounts);
                }
           })
@@ -440,18 +438,17 @@ function Dashboard() {
                console.error("Kill error:", error);
           }
      }
-     
-     function filter(e: any){
+
+     function filter(e: any) {
           setFilter(e.target.value);
           localStorage.setItem('dictionary', JSON.stringify(amountDict));
           var dictionary = JSON.parse(localStorage.getItem('dictionary') as string);
 
-          Object.keys(dictionary).map(x=>{
-               if(x.indexOf(e.target.value) == -1){
+          Object.keys(dictionary).map(x => {
+               if (x.indexOf(e.target.value) == -1) {
                     delete dictionary[x];
                }
           })
-          console.log("dictionary = ",dictionary);
           setAmountsFilter(dictionary);
      }
 
@@ -488,37 +485,68 @@ function Dashboard() {
                               </div>
                          </div>
                          <br />
-                         <div className="search" id="search" style={{ width: '95vw',display:'flex' }}>
-                              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50" viewBox="0 0 24 24" style={{flex:'none', width:'5vw'}}>
-                                   <path d="M22 20L20 22 14 16 14 14 16 14z" style={{fill:'whitesmoke'}}></path>
-                                   <path d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z" style={{fill:'whitesmoke'}}>
+                         <div className="search" id="search" style={{ width: '95vw', display: 'flex' }}>
+                              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50" viewBox="0 0 24 24" style={{ flex: 'none', width: '5vw' }}>
+                                   <path d="M22 20L20 22 14 16 14 14 16 14z" style={{ fill: 'whitesmoke' }}></path>
+                                   <path d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z" style={{ fill: 'whitesmoke' }}>
                                    </path>
-                                   <path d="M13.7 12.5H14.7V16H13.7z" transform="rotate(-44.992 14.25 14.25)" style={{fill:'whitesmoke'}}>
+                                   <path d="M13.7 12.5H14.7V16H13.7z" transform="rotate(-44.992 14.25 14.25)" style={{ fill: 'whitesmoke' }}>
                                    </path>
                               </svg>
-                              <input type="text" name="search" id="search" style={{ width: '90vw' }} onChange={filter}/>
+                              <input type="text" name="search" id="search" style={{ width: '90vw' }} onChange={filter} />
                          </div>
-                         <div className="table" style={{ marginTop: '3vh', backgroundColor: 'transparent', borderRadius: '10px!important', height: '30vh', overflow: 'hidden', overflowY: 'scroll' }}>
-                              <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', color: 'white!important' }}>
-                                   <tr>
-                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
-                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
-                                   </tr>
-                                   {filterValue.length == 0 && Object.keys(amountDict).map(x => {
-                                        return (<><tr key={x}>
-                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
-                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
-                                        </tr></>)
-                                   })}
-                                   {filterValue.length ? Object.keys(amountDictFilter).map(x => {
-                                        return (<><tr key={x}>
-                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
-                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
-                                        </tr></>)
-                                   }):<></>}
-                              </table>
+                         <div style={{ height: '70vh', overflow: 'hidden', overflowY: 'scroll', marginTop: '3vh' }}>
+                              <div className="table" style={{ borderRadius: '10px!important' }}>
+                                   <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', color: 'white!important' }}>
+                                        <tr>
+                                             <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
+                                             <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
+                                        </tr>
+                                        {filterValue.length == 0 && Object.keys(amountDict).map(x => {
+                                             return (<><tr key={x}>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
+                                             </tr></>)
+                                        })}
+                                        {filterValue.length ? Object.keys(amountDictFilter).map(x => {
+                                             return (<><tr key={x}>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
+                                             </tr></>)
+                                        }) : <></>}
+                                   </table>
+                              </div>
+                              {Object.keys(amountDict).length == 0 && <div className="loader" style={{ width: '95vw', transform: 'scale(0.2)', position: 'absolute', top: '-20%', left: '7%' }}>
+                                   <svg version="1.1" id="L4" xmlns="http://www.w3.org/2000/svg" xmlns: xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                        viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml: space="preserve">
+                                        <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.1" />
+                                        </circle>
+                                        <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.2" />
+                                        </circle>
+                                        <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.3" />
+                                        </circle>
+                                   </svg>
+                              </div>}
+                         </div>
 
-                         </div>
                     </div>
                </div>
           </div>
