@@ -368,18 +368,21 @@ function Dashboard() {
      const [latestHash, setLatestHash] = useState("");
      const [blocks, setBlocks] = useState("");
      const [amountDict, setAmounts] = useState({});
+     const [amountDictFilter, setAmountsFilter] = useState({});
      const [filterValue,setFilter] = useState('');
-
+     const [tempDict,setTempDict] = useState({});
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
                setBlocks(event.payload.number);
+               console.log(event.payload.number);
                setLatestHash(event.payload.hash);
                setAmounts(event.payload.amounts);
                if(filterValue.length == 0){
-                    console.log('true');
+                    console.log("tes");
+                    setTempDict(event.payload.amounts);
                }
           })
                .then((unlisten) => {
@@ -426,9 +429,6 @@ function Dashboard() {
           )
      }
 
-     useEffect(()=>{
-          console.log("loading = ",filterValue);
-     },[filterValue])
 
      // Function to invoke killing blockchain
      async function killChain() {
@@ -442,18 +442,17 @@ function Dashboard() {
      }
      
      function filter(e: any){
-          console.log(e.target.value);
-          
           setFilter(e.target.value);
+          localStorage.setItem('dictionary', JSON.stringify(amountDict));
+          var dictionary = JSON.parse(localStorage.getItem('dictionary') as string);
 
-          var dictionary = amountDict;
           Object.keys(dictionary).map(x=>{
                if(x.indexOf(e.target.value) == -1){
                     delete dictionary[x];
                }
           })
-          console.log(dictionary);
-          setAmounts(dictionary);
+          console.log("dictionary = ",dictionary);
+          setAmountsFilter(dictionary);
      }
 
      return (
@@ -505,12 +504,18 @@ function Dashboard() {
                                         <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
                                         <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
                                    </tr>
-                                   {Object.keys(amountDict).map(x => {
+                                   {filterValue.length == 0 && Object.keys(amountDict).map(x => {
                                         return (<><tr key={x}>
                                              <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
                                              <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
                                         </tr></>)
                                    })}
+                                   {filterValue.length ? Object.keys(amountDictFilter).map(x => {
+                                        return (<><tr key={x}>
+                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
+                                        </tr></>)
+                                   }):<></>}
                               </table>
 
                          </div>
