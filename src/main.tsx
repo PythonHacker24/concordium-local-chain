@@ -9,13 +9,13 @@ const layoutStyles = {
      flexDirection: "column",
      justifyContent: "center",
      alignItems: "center",
-     minHeight: "100vh",
      padding: "0%",
+     minHeight: "100vh",
 };
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
      <React.StrictMode>
-          <div className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6" style={layoutStyles as React.CSSProperties}>
+          <div className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6 bg-fixed" style={layoutStyles as React.CSSProperties}>
                <App />
           </div>
      </React.StrictMode>,

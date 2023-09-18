@@ -367,20 +367,20 @@ function GenesisBuilder() {
 function Dashboard() {
      const [latestHash, setLatestHash] = useState("");
      const [blocks, setBlocks] = useState("");
-     const [amount, setAmount] = useState("");
      const [amountDict, setAmounts] = useState({});
+     const [filterValue,setFilter] = useState('');
 
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
-               // console.log(blockInfo)
                setBlocks(event.payload.number);
                setLatestHash(event.payload.hash);
-               setAmount(event.payload.amounts);
                setAmounts(event.payload.amounts);
-               console.log(event.payload.amounts);
+               if(filterValue.length == 0){
+                    console.log('true');
+               }
           })
                .then((unlisten) => {
                     unlistenFn = unlisten;
@@ -425,6 +425,11 @@ function Dashboard() {
                </>
           )
      }
+
+     useEffect(()=>{
+          console.log("loading = ",filterValue);
+     },[filterValue])
+
      // Function to invoke killing blockchain
      async function killChain() {
           try {
@@ -435,11 +440,21 @@ function Dashboard() {
                console.error("Kill error:", error);
           }
      }
+     
+     function filter(e: any){
+          console.log(e.target.value);
+          
+          setFilter(e.target.value);
 
-     // function NumberList(amountDict: any) {
-     //      Object.keys(amountDict).map((x: any) => console.log(x,amountDict[x]));
-     // }
-
+          var dictionary = amountDict;
+          Object.keys(dictionary).map(x=>{
+               if(x.indexOf(e.target.value) == -1){
+                    delete dictionary[x];
+               }
+          })
+          console.log(dictionary);
+          setAmounts(dictionary);
+     }
 
      return (
           <div className="">
@@ -472,26 +487,26 @@ function Dashboard() {
                                         </p>
                                    </div>
                               </div>
-                              {/* <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '15px', width: '30vw' }}>
-                                   <div className="right" style={{ color: '#ed130c' }}>
-                                        <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
-                                             AMOUNT
-                                        </p>
-                                        <p className="" style={{ fontSize: '20px' }}>
-
-                                        </p>
-                                   </div>
-                              </div> */}
                          </div>
-                         
-                         <div className="table" style={{ marginTop: '3vh', backgroundColor: 'transparent', borderRadius: '10px!important' }}>
-                              <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', overflow: 'hidden', color: 'white!important' }}>
+                         <br />
+                         <div className="search" id="search" style={{ width: '95vw',display:'flex' }}>
+                              <svg xmlns="http://www.w3.org/2000/svg" x="0px" y="0px" width="50" height="50" viewBox="0 0 24 24" style={{flex:'none', width:'5vw'}}>
+                                   <path d="M22 20L20 22 14 16 14 14 16 14z" style={{fill:'whitesmoke'}}></path>
+                                   <path d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z" style={{fill:'whitesmoke'}}>
+                                   </path>
+                                   <path d="M13.7 12.5H14.7V16H13.7z" transform="rotate(-44.992 14.25 14.25)" style={{fill:'whitesmoke'}}>
+                                   </path>
+                              </svg>
+                              <input type="text" name="search" id="search" style={{ width: '90vw' }} onChange={filter}/>
+                         </div>
+                         <div className="table" style={{ marginTop: '3vh', backgroundColor: 'transparent', borderRadius: '10px!important', height: '30vh', overflow: 'hidden', overflowY: 'scroll' }}>
+                              <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', color: 'white!important' }}>
                                    <tr>
                                         <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
                                         <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
                                    </tr>
                                    {Object.keys(amountDict).map(x => {
-                                   return (<><tr key={x}>
+                                        return (<><tr key={x}>
                                              <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
                                              <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
                                         </tr></>)
