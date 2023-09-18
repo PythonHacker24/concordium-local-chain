@@ -368,17 +368,19 @@ function Dashboard() {
      const [latestHash, setLatestHash] = useState("");
      const [blocks, setBlocks] = useState("");
      const [amount, setAmount] = useState("");
+     const [amountDict, setAmounts] = useState({});
 
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
 
           // Set up the listener for the 'new-block' event
           listen("new-block", (event: any) => {
-               const blockInfo = event.payload;
-               console.log(blockInfo)
+               // console.log(blockInfo)
                setBlocks(event.payload.number);
                setLatestHash(event.payload.hash);
                setAmount(event.payload.amounts);
+               setAmounts(event.payload.amounts);
+               console.log(event.payload.amounts);
           })
                .then((unlisten) => {
                     unlistenFn = unlisten;
@@ -434,6 +436,11 @@ function Dashboard() {
           }
      }
 
+     // function NumberList(amountDict: any) {
+     //      Object.keys(amountDict).map((x: any) => console.log(x,amountDict[x]));
+     // }
+
+
      return (
           <div className="">
                <div className="">
@@ -445,7 +452,7 @@ function Dashboard() {
                               {killPopup()}
                          </div>
                          <div className="main" style={{ color: 'whitesmoke', fontSize: 'larger', display: 'flex', justifyContent: 'space-between', width: '95vw' }}>
-                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '46.3vw' }}>
                                    <div className="right" style={{ color: '#de14d9' }}>
                                         <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              BLOCK NUMBER
@@ -455,7 +462,7 @@ function Dashboard() {
                                         </p>
                                    </div>
                               </div>
-                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '30vw' }}>
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '46.3vw' }}>
                                    <div className="right" style={{ color: '#09e030' }}>
                                         <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              LATEST HASH
@@ -465,7 +472,7 @@ function Dashboard() {
                                         </p>
                                    </div>
                               </div>
-                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '15px', width: '30vw' }}>
+                              {/* <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '15px', width: '30vw' }}>
                                    <div className="right" style={{ color: '#ed130c' }}>
                                         <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              AMOUNT
@@ -474,45 +481,21 @@ function Dashboard() {
 
                                         </p>
                                    </div>
-                              </div>
+                              </div> */}
                          </div>
+                         
                          <div className="table" style={{ marginTop: '3vh', backgroundColor: 'transparent', borderRadius: '10px!important' }}>
                               <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', overflow: 'hidden', color: 'white!important' }}>
                                    <tr>
-                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Company</th>
-                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Contact</th>
-                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Country</th>
+                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
+                                        <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
                                    </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Alfreds Futterkiste</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Maria Anders</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Germany</td>
-                                   </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Centro comercial Moctezuma</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Francisco Chang</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Mexico</td>
-                                   </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Ernst Handel</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Roland Mendel</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Austria</td>
-                                   </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Island Trading</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Helen Bennett</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>UK</td>
-                                   </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Laughing Bacchus Winecellars</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Yoshi Tannamuri</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Canada</td>
-                                   </tr>
-                                   <tr>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Magazzini Alimentari Riuniti</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Giovanni Rovelli</td>
-                                        <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>Italy</td>
-                                   </tr>
+                                   {Object.keys(amountDict).map(x => {
+                                   return (<><tr key={x}>
+                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                             <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
+                                        </tr></>)
+                                   })}
                               </table>
 
                          </div>
