@@ -40,6 +40,7 @@ export default {
           },
      },
      plugins: [
+          require('tailwind-scrollbar'),
           require("@catppuccin/tailwindcss")({
                defaultFlavour: "mocha",
                prefix: "ctp",

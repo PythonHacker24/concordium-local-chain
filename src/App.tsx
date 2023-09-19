@@ -14,6 +14,7 @@ import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ExpertSettingsPage from "./components/expert-form";
 import AdvancedSettingsPage from "./components/advanced-form";
+import SettingsPage from "./components/form";
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
 function Installer() {
@@ -155,21 +156,349 @@ function Installer() {
 
 /* --------------------------------------------------------- GENESIS BUILDER PAGE ----------------------------------------------------------------------*/
 
+
 function GenesisBuilder() {
      const [configLevel, setConfigLevel] = useState<string | null>(null);
      const [launching, setLaunching] = useState(false);
      const [launched, setLaunched] = useState(false);
-     const [formData, setformData] = useState(null);
      const [tomlData, settomlData] = useState(null);
      const [chainFolders, setChainFolders] = useState<string[]>([]);
      const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
-     // Populate chainFolders on mount
+     const [formData, setFormData] = useState({
+          protocolVersion: "5",
+          out: {
+               updateKeys: "./update-keys",
+               accountKeys: "./accounts",
+               bakerKeys: "./bakers",
+               identityProviders: "./idps",
+               anonymityRevokers: "./ars",
+               genesis: "./genesis.dat",
+               cryptographicParameters: "./global",
+               deleteExisting: true,
+               genesisHash: "./genesis_hash"
+          },
+          cryptographicParameters: {
+               kind: "generate",
+               genesisString: "Local genesis parameters."
+          },
+          anonymityRevokers: [
+               {
+                    kind: "fresh",
+                    id: 1,
+                    repeat: 3
+               }
+          ],
+          identityProviders: [
+               {
+                    kind: "fresh",
+                    id: 0,
+                    repeat: 3
+               }
+          ],
+          accounts: [
+               {
+                    kind: "fresh",
+                    balance: "3500000000000000",
+                    stake: "3000000000000000",
+                    template: "baker",
+                    identityProvider: 0,
+                    numKeys: 1,
+                    threshold: 1,
+                    repeat: 1
+               },
+               {
+                    kind: "fresh",
+                    balance: "10000000000000000",
+                    template: "foundation",
+                    identityProvider: 0,
+                    numKeys: 1,
+                    threshold: 1,
+                    repeat: 1,
+                    foundation: true
+               },
+               {
+                    kind: "fresh",
+                    balance: "2000000000000",
+                    template: "stagenet",
+                    identityProvider: 0,
+                    numKeys: 1,
+                    threshold: 1,
+                    repeat: 100
+               }
+          ],
+          updates: {
+               root: {
+                    threshold: 5,
+                    keys: [
+                         {
+                              kind: "fresh",
+                              repeat: 7
+                         }
+                    ]
+               },
+               level1: {
+                    threshold: 7,
+                    keys: [
+                         {
+                              kind: "fresh",
+                              repeat: 15
+                         }
+                    ]
+               },
+               level2: {
+                    keys: [
+                         {
+                              kind: "fresh",
+                              repeat: 7
+                         }
+                    ],
+                    emergency: { 
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    protocol: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    electionDifficulty: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    euroPerEnergy: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    microCCDPerEuro: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    foundationAccount: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    mintDistribution: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    transactionFeeDistribution: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    gasRewards: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    poolParameters: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    addAnonymityRevoker: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    addIdentityProvider: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    cooldownParameters: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    },
+                    timeParameters: {
+                         authorizedKeys: [
+                              0,
+                              1,
+                              2,
+                              3,
+                              4,
+                              5,
+                              6
+                         ],
+                         threshold: 7
+                    }
+               }
+          },
+          parameters: {
+               slotDuration: 250,
+               leadershipElectionNonce: "d1bc8d3ba4afc7e109612cb73acbdddac052c93025aa1f82942edabb7deb82a1",
+               epochLength: 900,
+               maxBlockEnergy: 3000000,
+               finalization: {
+                    minimumSkip: 0,
+                    committeeMaxSize: 1000,
+                    waitingTime: 100,
+                    skipShrinkFactor: 0.5,
+                    skipGrowFactor: 2,
+                    delayShrinkFactor: 0.5,
+                    delayGrowFactor: 2,
+                    allowZeroDelay: true
+               },
+               chain: {
+                    version: "v1",
+                    electionDifficulty: 0.05,
+                    euroPerEnergy: 0.000001,
+                    microCCDPerEuro: 100000000,
+                    accountCreationLimit: 10,
+                    timeParameters: {
+                         rewardPeriodLength: 4,
+                         mintPerPayday: 0.000261157877
+                    },
+                    poolParameters: {
+                         passiveFinalizationCommission: 1,
+                         passiveBakingCommission: 0.1,
+                         passiveTransactionCommission: 0.1,
+                         finalizationCommissionRange: {
+                              min: 0.5,
+                              max: 1
+                         },
+                         bakingCommissionRange: {
+                              min: 0.05,
+                              max: 0.1
+                         },
+                         transactionCommissionRange: {
+                              min: 0.05,
+                              max: 0.2
+                         },
+                         minimumEquityCapital: "100",
+                         capitalBound: 0.25,
+                         leverageBound: {
+                              numerator: 3,
+                              denominator: 1
+                         }
+                    },
+                    cooldownParameters: {
+                         poolOwnerCooldown: 3600,
+                         delegatorCooldown: 1800
+                    },
+                    rewardParameters: {
+                         mintDistribution: {
+                              bakingReward: 0.6,
+                              finalizationReward: 0.3
+                         },
+                         transactionFeeDistribution: {
+                              baker: 0.45,
+                              gasAccount: 0.45
+                         },
+                         gASRewards: {
+                              baker: 0.25,
+                              finalizationProof: 0.005,
+                              accountCreation: 0.02,
+                              chainUpdate: 0.005
+                         }
+                    }
+               }
+          }
+     });
 
      const navigate = useNavigate();
      const HandleSubmit = (formData: any) => {
           console.log(formData)
-          setformData(formData)
+          setFormData(formData)
      }
      const expertHandleSubmit = (tomlData: any) => {
           console.log(tomlData)
@@ -209,7 +538,7 @@ function GenesisBuilder() {
                <p>
                     This is config settings for Advanced users.
                </p>
-               {(launching || launched) ? "" : <AdvancedSettingsPage onHandleSubmit={HandleSubmit} />}
+               {(launching || launched) ? "" : <SettingsPage formData={formData} setFormData={setFormData} onHandleSubmit={HandleSubmit} />}
           </div>
 
      );
@@ -271,6 +600,7 @@ function GenesisBuilder() {
      useEffect(() => {
           async function fetchChainFolders() {
                try {
+                    localStorage.clear();
                     const folders = await invoke('list_chain_folders');
                     setChainFolders(folders as any);
                } catch (error) {
@@ -402,6 +732,7 @@ function Dashboard() {
           const [visible, setVisible] = useState(false)
           const openModalAndKillChain = async () => {
                setVisible(true);
+               localStorage.clear();
                await killChain();
           }
           return (
@@ -474,11 +805,11 @@ function Dashboard() {
                                    </div>
                               </div>
                               <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '46.3vw' }}>
-                                   <div className="right" style={{ color: '#09e030' }}>
+                                   <div className="right " style={{ color: '#09e030' }}>
                                         <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
                                              LATEST HASH
                                         </p>
-                                        <p className="" style={{ fontSize: '20px' }}>
+                                        <p className="overflow-x-scroll scrollbar-thin" style={{ fontSize: '20px' }}>
                                              {latestHash}
                                         </p>
                                    </div>
@@ -499,19 +830,19 @@ function Dashboard() {
                               <div className="table" style={{ borderRadius: '10px!important' }}>
                                    <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', color: 'white!important' }}>
                                         <tr>
-                                             <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
+                                             <th style={{ backgroundColor: '#1c244550', color: 'white', width: "50vw" }}>Account Address</th>
                                              <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
                                         </tr>
                                         {filterValue.length == 0 && Object.keys(amountDict).map(x => {
                                              return (<><tr key={x}>
-                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
-                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
+                                                  <td className="overflow-x-scroll scollbar-thin" style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td className="overflow-x-scroll scollbar-thin" style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
                                              </tr></>)
                                         })}
                                         {filterValue.length ? Object.keys(amountDictFilter).map(x => {
                                              return (<><tr key={x}>
-                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
-                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
+                                                  <td className="overflow-x-scroll scollbar-thin" style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td className="overflow-x-scroll scollbar-thin" style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
                                              </tr></>)
                                         }) : <></>}
                                    </table>
