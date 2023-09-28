@@ -108,10 +108,10 @@ function Installer() {
                     onClick={install}
                     disabled={installing || installationSuccess}
                     className={`  hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${installing
-                              ? "bg-secondary-dark hover:bg-secondary-dark"
-                              : installationSuccess || verificationSuccess
-                                   ? "bg-success"
-                                   : "bg-primary-light hover:bg-primary-dark"
+                         ? "bg-secondary-dark hover:bg-secondary-dark"
+                         : installationSuccess || verificationSuccess
+                              ? "bg-success"
+                              : "bg-primary-light hover:bg-primary-dark"
                          }`}
                >
                     {installationSuccess ? (
@@ -139,10 +139,10 @@ function Installer() {
 
                <button
                     className={`  hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${verifying
-                              ? "bg-secondary-dark hover:bg-secondary-dark"
-                              : verificationSuccess
-                                   ? "bg-success"
-                                   : "bg-primary-light hover:bg-primary-dark"
+                         ? "bg-secondary-dark hover:bg-secondary-dark"
+                         : verificationSuccess
+                              ? "bg-success"
+                              : "bg-primary-light hover:bg-primary-dark"
                          }`}
                     onClick={verifyInstallation}
                     disabled={verifying || verificationSuccess}
@@ -171,10 +171,10 @@ function Installer() {
 
                <button
                     className={`   hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${installingCreator
-                              ? "bg-secondary-dark hover:bg-secondary-dark"
-                              : installationSuccessCreator
-                                   ? "bg-success"
-                                   : "bg-primary-light hover:bg-primary-dark"
+                         ? "bg-secondary-dark hover:bg-secondary-dark"
+                         : installationSuccessCreator
+                              ? "bg-success"
+                              : "bg-primary-light hover:bg-primary-dark"
                          }`}
                     onClick={installCreator}
                     disabled={installingCreator || installationSuccessCreator}
@@ -671,9 +671,12 @@ function Dashboard() {
      const [latestHash, setLatestHash] = useState("");
      const [blocks, setBlocks] = useState("");
      const [amountDict, setAmounts] = useState({});
+     const [contractsDict, setContracts] = useState({});
+     const [transactionsDict, setTransactions] = useState({});
      const [amountDictFilter, setAmountsFilter] = useState({});
      const [filterValue, setFilter] = useState("");
      const [tempDict, setTempDict] = useState({});
+     const [activeTab, setActiveTab] = useState('contracts');  // Tab state
      useEffect(() => {
           let unlistenFn: UnlistenFn | undefined;
 
@@ -681,7 +684,8 @@ function Dashboard() {
           listen("new-block", (event: any) => {
                setBlocks(event.payload.number);
                setLatestHash(event.payload.hash);
-               setAmounts(event.payload.amounts);
+               setTransactions(event.payload.transactions);
+               setContracts(event.payload.contracts);
                if (filterValue.length == 0) {
                     setTempDict(event.payload.amounts);
                }
@@ -866,194 +870,317 @@ function Dashboard() {
                               </div>
                          </div>
                          <br />
-                         <div
-                              className="search"
-                              id="search"
-                              style={{ width: "95vw", display: "flex" }}
-                         >
-                              <svg
-                                   xmlns="http://www.w3.org/2000/svg"
-                                   x="0px"
-                                   y="0px"
-                                   width="50"
-                                   height="50"
-                                   viewBox="0 0 24 24"
-                                   style={{ flex: "none", width: "5vw" }}
-                              >
-                                   <path
-                                        d="M22 20L20 22 14 16 14 14 16 14z"
-                                        style={{ fill: "whitesmoke" }}
-                                   ></path>
-                                   <path
-                                        d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z"
-                                        style={{ fill: "whitesmoke" }}
-                                   ></path>
-                                   <path
-                                        d="M13.7 12.5H14.7V16H13.7z"
-                                        transform="rotate(-44.992 14.25 14.25)"
-                                        style={{ fill: "whitesmoke" }}
-                                   ></path>
-                              </svg>
-                              <input
-                                   type="text"
-                                   name="search"
-                                   id="search"
-                                   style={{ width: "90vw" }}
-                                   onChange={filter}
-                              />
+                         <div className="flex gap-4 mb-5 justify-center">
+                              <CButton
+                                   onClick={() => setActiveTab('contracts')}
+                                   color={`${activeTab === 'contracts' ? 'primary' : 'secondary'}`}
+                                   className="py-2 px-4 text-black">
+                                   Contracts
+                              </CButton>
+                              <CButton
+                                   onClick={() => setActiveTab('transactions')}
+                                   color={`${activeTab === 'transactions' ? 'primary' : 'secondary'}`}
+                                   className="py-2 px-4 text-black">
+                                   Transactions
+                              </CButton>
+                              <CButton
+                                   onClick={() => setActiveTab('accounts')}
+                                   color={`${activeTab === 'accounts' ? 'primary' : 'secondary'}`}
+                                   className="py-2 px-4 text-black">
+                                   Accounts
+                              </CButton>
                          </div>
-                         <div
-                              style={{
-                                   height: "70vh",
-                                   overflow: "hidden",
-                                   overflowY: "scroll",
-                                   marginTop: "3vh",
-                              }}
-                         >
-                              <div className="table" style={{ borderRadius: "10px!important" }}>
-                                   <table
+
+                         {activeTab === 'contracts' && (
+                              <>
+                                   <div
                                         style={{
-                                             textAlign: "left",
-                                             width: "95vw",
-                                             backgroundColor: "#1c2445!important",
-                                             borderRadius: "10px",
-                                             border: "1px solid #1c2445",
-                                             color: "white!important",
+                                             height: "70vh",
+                                             overflow: "hidden",
+                                             overflowY: "scroll",
+                                             marginTop: "3vh",
                                         }}
                                    >
-                                        <tr>
-                                             <th
+                                        <div className="table" style={{ borderRadius: "10px!important" }}>
+                                             <table
                                                   style={{
-                                                       backgroundColor: "#1c244550",
-                                                       color: "white",
-                                                       width: "50vw",
+                                                       textAlign: "left",
+                                                       width: "95vw",
+                                                       backgroundColor: "#1c2445!important",
+                                                       borderRadius: "10px",
+                                                       border: "1px solid #1c2445",
+                                                       color: "white!important",
                                                   }}
                                              >
-                                                  Account Address
-                                             </th>
-                                             <th style={{ backgroundColor: "#1c244550", color: "white" }}>
-                                                  Amount
-                                             </th>
-                                        </tr>
-                                        {filterValue.length == 0 &&
-                                             Object.keys(amountDict).map((x) => {
-                                                  return (
-                                                       <>
-                                                            <tr key={x}>
-                                                                 <td
-                                                                      className="overflow-x-scroll scollbar-thin"
-                                                                      style={{
-                                                                           backgroundColor: "#1c244550",
-                                                                           color: "white",
-                                                                           fontWeight: "200",
-                                                                      }}
-                                                                 >
-                                                                      {x}
-                                                                 </td>
-                                                                 <td
-                                                                      className="overflow-x-scroll scollbar-thin"
-                                                                      style={{
-                                                                           backgroundColor: "#1c244550",
-                                                                           color: "white",
-                                                                           fontWeight: "200",
-                                                                      }}
-                                                                 >
-                                                                      {amountDict[x as any]}
-                                                                 </td>
-                                                            </tr>
-                                                       </>
-                                                  );
-                                             })}
-                                        {filterValue.length ? (
-                                             Object.keys(amountDictFilter).map((x) => {
-                                                  return (
-                                                       <>
-                                                            <tr key={x}>
-                                                                 <td
-                                                                      className="overflow-x-scroll scollbar-thin"
-                                                                      style={{
-                                                                           backgroundColor: "#1c244550",
-                                                                           color: "white",
-                                                                           fontWeight: "200",
-                                                                      }}
-                                                                 >
-                                                                      {x}
-                                                                 </td>
-                                                                 <td
-                                                                      className="overflow-x-scroll scollbar-thin"
-                                                                      style={{
-                                                                           backgroundColor: "#1c244550",
-                                                                           color: "white",
-                                                                           fontWeight: "200",
-                                                                      }}
-                                                                 >
-                                                                      {amountDictFilter[x as any]}
-                                                                 </td>
-                                                            </tr>
-                                                       </>
-                                                  );
-                                             })
-                                        ) : (
-                                             <></>
+                                                  <tr>
+                                                       <th
+                                                            style={{
+                                                                 backgroundColor: "#1c244550",
+                                                                 color: "white",
+                                                                 width: "50vw",
+                                                            }}
+                                                       >
+                                                            Contract Address
+                                                       </th>
+                                                       <th style={{ backgroundColor: "#1c244550", color: "white" }}>
+                                                            Amount
+                                                       </th>
+                                                  </tr>
+                                                  {Object.keys(contractsDict).map(x => {
+                                                       return (<><tr key={x}>
+                                                            <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                            <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{contractsDict[x as any]}</td>
+                                                       </tr></>)
+                                                  })}
+                                             </table>
+                                        </div>
+                                        {Object.keys(amountDict).length == 0 && (
+                                             <div
+                                                  className="loader"
+                                                  style={{
+                                                       width: "95vw",
+                                                       transform: "scale(0.2)",
+                                                       position: "absolute",
+                                                       top: "-20%",
+                                                       left: "7%",
+                                                  }}
+                                             >
+                                                  <svg
+                                                       version="1.1"
+                                                       id="L4"
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       xmlns: xlink="http://www.w3.org/1999/xlink"
+                                                       x="0px"
+                                                       y="0px"
+                                                       viewBox="0 0 100 100"
+                                                       enable-background="new 0 0 0 0"
+                                                       xml: space="preserve"
+                                                  >
+                                                       <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.1" />
+                                                       </circle>
+                                                       <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.2" />
+                                                       </circle>
+                                                       <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.3" />
+                                                       </circle>
+                                                  </svg>
+                                             </div>
                                         )}
-                                   </table>
-                              </div>
-                              {Object.keys(amountDict).length == 0 && (
-                                   <div
-                                        className="loader"
-                                        style={{
-                                             width: "95vw",
-                                             transform: "scale(0.2)",
-                                             position: "absolute",
-                                             top: "-20%",
-                                             left: "7%",
-                                        }}
-                                   >
-                                        <svg
-                                             version="1.1"
-                                             id="L4"
-                                             xmlns="http://www.w3.org/2000/svg"
-                                             xmlns: xlink="http://www.w3.org/1999/xlink"
-                                             x="0px"
-                                             y="0px"
-                                             viewBox="0 0 100 100"
-                                             enable-background="new 0 0 0 0"
-                                             xml: space="preserve"
-                                        >
-                                             <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
-                                                  <animate
-                                                       attributeName="opacity"
-                                                       dur="1s"
-                                                       values="0;1;0"
-                                                       repeatCount="indefinite"
-                                                       begin="0.1"
-                                                  />
-                                             </circle>
-                                             <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
-                                                  <animate
-                                                       attributeName="opacity"
-                                                       dur="1s"
-                                                       values="0;1;0"
-                                                       repeatCount="indefinite"
-                                                       begin="0.2"
-                                                  />
-                                             </circle>
-                                             <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
-                                                  <animate
-                                                       attributeName="opacity"
-                                                       dur="1s"
-                                                       values="0;1;0"
-                                                       repeatCount="indefinite"
-                                                       begin="0.3"
-                                                  />
-                                             </circle>
-                                        </svg>
+                                   </div></>
+
+                         )}
+                         {activeTab === 'transactions' && (
+                              <>
+                                   <div className="mt-4 p-4 bg-white rounded border">
+                                        <pre className="whitespace-pre-wrap text-black">{JSON.stringify(transactionsDict, null, 2)}</pre>
                                    </div>
-                              )}
-                         </div>
+                              </>
+
+                         )}
+                         {activeTab === 'accounts' && (
+                              <><div
+                                   className="search"
+                                   id="search"
+                                   style={{ width: "95vw", display: "flex" }}
+                              >
+                                   <svg
+                                        xmlns="http://www.w3.org/2000/svg"
+                                        x="0px"
+                                        y="0px"
+                                        width="50"
+                                        height="50"
+                                        viewBox="0 0 24 24"
+                                        style={{ flex: "none", width: "5vw" }}
+                                   >
+                                        <path
+                                             d="M22 20L20 22 14 16 14 14 16 14z"
+                                             style={{ fill: "whitesmoke" }}
+                                        ></path>
+                                        <path
+                                             d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z"
+                                             style={{ fill: "whitesmoke" }}
+                                        ></path>
+                                        <path
+                                             d="M13.7 12.5H14.7V16H13.7z"
+                                             transform="rotate(-44.992 14.25 14.25)"
+                                             style={{ fill: "whitesmoke" }}
+                                        ></path>
+                                   </svg>
+                                   <input
+                                        type="text"
+                                        name="search"
+                                        id="search"
+                                        style={{ width: "90vw" }}
+                                        onChange={filter} />
+                              </div><div
+                                   style={{
+                                        height: "70vh",
+                                        overflow: "hidden",
+                                        overflowY: "scroll",
+                                        marginTop: "3vh",
+                                   }}
+                              >
+                                        <div className="table" style={{ borderRadius: "10px!important" }}>
+                                             <table
+                                                  style={{
+                                                       textAlign: "left",
+                                                       width: "95vw",
+                                                       backgroundColor: "#1c2445!important",
+                                                       borderRadius: "10px",
+                                                       border: "1px solid #1c2445",
+                                                       color: "white!important",
+                                                  }}
+                                             >
+                                                  <tr>
+                                                       <th
+                                                            style={{
+                                                                 backgroundColor: "#1c244550",
+                                                                 color: "white",
+                                                                 width: "50vw",
+                                                            }}
+                                                       >
+                                                            Account Address
+                                                       </th>
+                                                       <th style={{ backgroundColor: "#1c244550", color: "white" }}>
+                                                            Amount
+                                                       </th>
+                                                  </tr>
+                                                  {filterValue.length == 0 &&
+                                                       Object.keys(amountDict).map((x) => {
+                                                            return (
+                                                                 <>
+                                                                      <tr key={x}>
+                                                                           <td
+                                                                                className="overflow-x-scroll scollbar-thin"
+                                                                                style={{
+                                                                                     backgroundColor: "#1c244550",
+                                                                                     color: "white",
+                                                                                     fontWeight: "200",
+                                                                                }}
+                                                                           >
+                                                                                {x}
+                                                                           </td>
+                                                                           <td
+                                                                                className="overflow-x-scroll scollbar-thin"
+                                                                                style={{
+                                                                                     backgroundColor: "#1c244550",
+                                                                                     color: "white",
+                                                                                     fontWeight: "200",
+                                                                                }}
+                                                                           >
+                                                                                {amountDict[x as any]}
+                                                                           </td>
+                                                                      </tr>
+                                                                 </>
+                                                            );
+                                                       })}
+                                                  {filterValue.length ? (
+                                                       Object.keys(amountDictFilter).map((x) => {
+                                                            return (
+                                                                 <>
+                                                                      <tr key={x}>
+                                                                           <td
+                                                                                className="overflow-x-scroll scollbar-thin"
+                                                                                style={{
+                                                                                     backgroundColor: "#1c244550",
+                                                                                     color: "white",
+                                                                                     fontWeight: "200",
+                                                                                }}
+                                                                           >
+                                                                                {x}
+                                                                           </td>
+                                                                           <td
+                                                                                className="overflow-x-scroll scollbar-thin"
+                                                                                style={{
+                                                                                     backgroundColor: "#1c244550",
+                                                                                     color: "white",
+                                                                                     fontWeight: "200",
+                                                                                }}
+                                                                           >
+                                                                                {amountDictFilter[x as any]}
+                                                                           </td>
+                                                                      </tr>
+                                                                 </>
+                                                            );
+                                                       })
+                                                  ) : (
+                                                       <></>
+                                                  )}
+                                             </table>
+                                        </div>
+                                        {Object.keys(amountDict).length == 0 && (
+                                             <div
+                                                  className="loader"
+                                                  style={{
+                                                       width: "95vw",
+                                                       transform: "scale(0.2)",
+                                                       position: "absolute",
+                                                       top: "-20%",
+                                                       left: "7%",
+                                                  }}
+                                             >
+                                                  <svg
+                                                       version="1.1"
+                                                       id="L4"
+                                                       xmlns="http://www.w3.org/2000/svg"
+                                                       xmlns: xlink="http://www.w3.org/1999/xlink"
+                                                       x="0px"
+                                                       y="0px"
+                                                       viewBox="0 0 100 100"
+                                                       enable-background="new 0 0 0 0"
+                                                       xml: space="preserve"
+                                                  >
+                                                       <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.1" />
+                                                       </circle>
+                                                       <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.2" />
+                                                       </circle>
+                                                       <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
+                                                            <animate
+                                                                 attributeName="opacity"
+                                                                 dur="1s"
+                                                                 values="0;1;0"
+                                                                 repeatCount="indefinite"
+                                                                 begin="0.3" />
+                                                       </circle>
+                                                  </svg>
+                                             </div>
+                                        )}
+                                   </div></>
+
+                         )}
+
                     </div>
                </div>
-          </div>
+          </div >
      );
 }
 
