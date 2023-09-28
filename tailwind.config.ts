@@ -37,8 +37,36 @@ export default {
       md: "768px",
       // => @media (min-width: 768px) { ... }
 
+<<<<<<< HEAD
       lg: "1024px",
       // => @media (min-width: 1024px) { ... }
+=======
+               'lg': '1024px',
+               // => @media (min-width: 1024px) { ... }
+
+               'xl': '1280px',
+               // => @media (min-width: 1280px) { ... }
+
+               '2xl': '1536px',
+               // => @media (min-width: 1536px) { ... }
+          },
+          extend: {
+               width: {
+                    '62': '62em',
+                    '34': '34em',
+                    '44': '40em',
+               }
+          },
+     },
+     plugins: [
+          require("@catppuccin/tailwindcss")({
+               defaultFlavour: "mocha",
+               prefix: "ctp",
+          })
+
+     ],
+}
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
 
       xl: "1280px",
       // => @media (min-width: 1280px) { ... }

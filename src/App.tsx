@@ -28,8 +28,12 @@ import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 
 import ExpertSettingsPage from "./components/expert-form";
+<<<<<<< HEAD
 import SettingsPage from "./components/form";
 import ConcordiumImg from "../public/concordium.svg";
+=======
+import AdvancedSettingsPage from "./components/advanced-form";
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
 function Installer() {
@@ -230,10 +234,12 @@ function GenesisBuilder() {
      const [configLevel, setConfigLevel] = useState<string | null>(null);
      const [launching, setLaunching] = useState(false);
      const [launched, setLaunched] = useState(false);
+     const [formData, setformData] = useState(null);
      const [tomlData, settomlData] = useState(null);
      const [chainFolders, setChainFolders] = useState<string[]>([]);
      const [selectedFolder, setSelectedFolder] = useState<string | null>(null);
 
+<<<<<<< HEAD
      const [formData, setFormData] = useState({
           protocolVersion: "5",
           out: {
@@ -458,6 +464,15 @@ function GenesisBuilder() {
           console.log(formData);
           setFormData(formData);
      };
+=======
+     // Populate chainFolders on mount
+
+     const navigate = useNavigate();
+     const HandleSubmit = (formData: any) => {
+          console.log(formData)
+          setformData(formData)
+     }
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
      const expertHandleSubmit = (tomlData: any) => {
           console.log(tomlData);
           settomlData(tomlData);
@@ -496,6 +511,7 @@ function GenesisBuilder() {
 
      const AdvancedConfig = () => (
           <div className="text-white text-normal text-center">
+<<<<<<< HEAD
                <p>This is config settings for Advanced users.</p>
                {launching || launched ? (
                     ""
@@ -506,6 +522,12 @@ function GenesisBuilder() {
                          onHandleSubmit={HandleSubmit}
                     />
                )}
+=======
+               <p>
+                    This is config settings for Advanced users.
+               </p>
+               {(launching || launched) ? "" : <AdvancedSettingsPage onHandleSubmit={HandleSubmit} />}
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
           </div>
      );
 
@@ -570,8 +592,12 @@ function GenesisBuilder() {
      useEffect(() => {
           async function fetchChainFolders() {
                try {
+<<<<<<< HEAD
                     localStorage.clear();
                     const folders = await invoke("list_chain_folders");
+=======
+                    const folders = await invoke('list_chain_folders');
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
                     setChainFolders(folders as any);
                } catch (error) {
                     console.error("Error fetching chain folders:", error);
@@ -709,7 +735,6 @@ function Dashboard() {
           const [visible, setVisible] = useState(false);
           const openModalAndKillChain = async () => {
                setVisible(true);
-               localStorage.clear();
                await killChain();
           };
           return (
@@ -839,6 +864,7 @@ function Dashboard() {
                                         </p>
                                    </div>
                               </div>
+<<<<<<< HEAD
                               <div
                                    className=""
                                    style={{
@@ -864,6 +890,14 @@ function Dashboard() {
                                              className="overflow-x-scroll scrollbar-thin"
                                              style={{ fontSize: "20px" }}
                                         >
+=======
+                              <div className="" style={{ border: '1px solid #12172b', borderRadius: '10px', backgroundColor: '#1c2445', padding: '20px', width: '46.3vw' }}>
+                                   <div className="right" style={{ color: '#09e030' }}>
+                                        <p className="" style={{ fontWeight: '500', fontSize: '20px', marginBottom: '10px' }}>
+                                             LATEST HASH
+                                        </p>
+                                        <p className="" style={{ fontSize: '20px' }}>
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
                                              {latestHash}
                                         </p>
                                    </div>
@@ -890,6 +924,7 @@ function Dashboard() {
                                    Accounts
                               </CButton>
                          </div>
+<<<<<<< HEAD
 
                          {activeTab === 'contracts' && (
                               <>
@@ -1022,6 +1057,56 @@ function Dashboard() {
                                              transform="rotate(-44.992 14.25 14.25)"
                                              style={{ fill: "whitesmoke" }}
                                         ></path>
+=======
+                         <div style={{ height: '70vh', overflow: 'hidden', overflowY: 'scroll', marginTop: '3vh' }}>
+                              <div className="table" style={{ borderRadius: '10px!important' }}>
+                                   <table style={{ textAlign: "left", width: '95vw', backgroundColor: '#1c2445!important', borderRadius: '10px', border: '1px solid #1c2445', color: 'white!important' }}>
+                                        <tr>
+                                             <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Account Address</th>
+                                             <th style={{ backgroundColor: '#1c244550', color: 'white' }}>Amount</th>
+                                        </tr>
+                                        {filterValue.length == 0 && Object.keys(amountDict).map(x => {
+                                             return (<><tr key={x}>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDict[x as any]}</td>
+                                             </tr></>)
+                                        })}
+                                        {filterValue.length ? Object.keys(amountDictFilter).map(x => {
+                                             return (<><tr key={x}>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{x}</td>
+                                                  <td style={{ backgroundColor: '#1c244550', color: 'white', fontWeight: '200' }}>{amountDictFilter[x as any]}</td>
+                                             </tr></>)
+                                        }) : <></>}
+                                   </table>
+                              </div>
+                              {Object.keys(amountDict).length == 0 && <div className="loader" style={{ width: '95vw', transform: 'scale(0.2)', position: 'absolute', top: '-20%', left: '7%' }}>
+                                   <svg version="1.1" id="L4" xmlns="http://www.w3.org/2000/svg" xmlns: xlink="http://www.w3.org/1999/xlink" x="0px" y="0px"
+                                        viewBox="0 0 100 100" enable-background="new 0 0 0 0" xml: space="preserve">
+                                        <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.1" />
+                                        </circle>
+                                        <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.2" />
+                                        </circle>
+                                        <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
+                                             <animate
+                                                  attributeName="opacity"
+                                                  dur="1s"
+                                                  values="0;1;0"
+                                                  repeatCount="indefinite"
+                                                  begin="0.3" />
+                                        </circle>
+>>>>>>> parent of 79854cc (backend done only dashboard UI left)
                                    </svg>
                                    <input
                                         type="text"
