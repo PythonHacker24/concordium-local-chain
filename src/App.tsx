@@ -12,8 +12,8 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { CAlert, CButton, CFormLabel, CFormSelect } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
+
 import ExpertSettingsPage from "./components/expert-form";
-import AdvancedSettingsPage from "./components/advanced-form";
 import SettingsPage from "./components/form";
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
@@ -60,8 +60,8 @@ function Installer() {
                setVerificationError(null); // clear any previous errors
                setVerificationSuccess(true);
                setInstallationSuccess(true);
-               console.error("Verification Failed: ", error);
-               setVerificationError("Verification Failed: " + error);
+               console.error("Verification Failed: ", Error);
+               setVerificationError("Verification Failed: " + Error);
           } finally {
                setVerifying(false);
           }
