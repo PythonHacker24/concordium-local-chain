@@ -194,7 +194,6 @@ async fn list_chain_folders() -> Result<Vec<String>, String> {
         let b_num: i32 = b["chain-".len()..].parse().unwrap_or(0);
         a_num.cmp(&b_num)
     });
-    println!("{:#?}", chain_folders);
     Ok(chain_folders)
 }
 
@@ -391,12 +390,7 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     // Logging
-<<<<<<< HEAD
                     if let Some(block_info) = parse_block_info(line).await {
-=======
-                    if let Some(block_info) = parse_block_info().await {
-                        println!("{:?}", block_info);
->>>>>>> parent of 79854cc (backend done only dashboard UI left)
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
