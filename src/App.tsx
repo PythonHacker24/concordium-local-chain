@@ -931,7 +931,7 @@ function Dashboard() {
             <table className="w-full text-sm  text-left text-background-light dark:text-background-dark bg-background-light ">
               <thead className="uppercase">
                 <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
-                  <th className="px-4 rounded   py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
+                  <th className="px-4 py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
                     Account Address
                   </th>
                   <th className="px-4   py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
