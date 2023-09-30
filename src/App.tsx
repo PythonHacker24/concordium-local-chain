@@ -21,6 +21,7 @@ import {
   faCircleInfo,
   faCloudDownload,
   faDownload,
+  faSearch,
 } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { CAlert, CFormLabel, CFormSelect } from "@coreui/react";
@@ -866,41 +867,19 @@ function Dashboard() {
           Concordium and explore the network.
         </div>
       </div>
-      <div className="flex flex-col xs:flex-row justify-evenly ">
-        <div
-          className="flex items-center bg-primary-dark bg-opacity-75 w-50 md:w-1/3 rounded h-16 mb-5"
-          id="search"
-        >
+      <div className="flex flex-col xs:flex-row justify-evenly items-center ">
+        <div className="flex items-center w-50 md:w-1/3 rounded" id="search">
           <input
             type="text"
+            placeholder="Search by transaction hash"
             name="search"
-            className="w-full ms-3"
+            className="w-full ms-3 p-2 py-3 rounded-start  bg-primary-dark bg-opacity-75"
             id="search"
             onChange={filter}
           />
-          <svg
-            xmlns="http://www.w3.org/2000/svg"
-            x="0px"
-            y="0px"
-            width="50"
-            height="50"
-            viewBox="0 0 24 24"
-            className="w-7 m-3"
-          >
-            <path
-              d="M22 20L20 22 14 16 14 14 16 14z"
-              style={{ fill: "whitesmoke" }}
-            ></path>
-            <path
-              d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z"
-              style={{ fill: "whitesmoke" }}
-            ></path>
-            <path
-              d="M13.7 12.5H14.7V16H13.7z"
-              transform="rotate(-44.992 14.25 14.25)"
-              style={{ fill: "whitesmoke" }}
-            ></path>
-          </svg>
+          <div className=" rounded-r  border-background-light bg-background-dark text-primary-light m-0">
+            <FontAwesomeIcon icon={faSearch} className="p-3" fontSize={25} />
+          </div>
         </div>
         <div className="border-1 border-primary-dark bg-background-light bg-opacity-50 rounded p-3 sm:p-0 min-w-[15%] max-w-[15%]">
           <div className="text-lg  mb-1 xs:text-sm ">BLOCK NUMBER</div>
@@ -916,31 +895,25 @@ function Dashboard() {
       <br />
       {activeTab === "contracts" && (
         <div className="overflow-x-auto container-fluid">
-          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light ">
-            <thead className="uppercase">
-              <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
-                <th className="px-6 py-3 text-primary-dark">
-                  Contract Address
-                </th>
-                <th className="px-6 py-3 text-primary-dark">Amount</th>
-              </tr>
-            </thead>
-            <tbody>
-              {Object.keys(contractsDict).map((x) => (
-                <tr
-                  key={x}
-                  className="hover:bg-primary-dark hover:bg-opacity-25 "
-                >
-                  <td className="py-2 border-1 border-black px-4  text-primary-dark">
-                    {x}
-                  </td>
-                  <td className="py-2 border-1 border-black px-4  text-primary-dark">
-                    {contractsDict[x]}
-                  </td>
-                </tr>
-              ))}
-            </tbody>
-          </table>
+          <div className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
+            <div className="uppercase bg-primary-dark bg-opacity-25 rounded ">
+              <div className="px-6 py-3 text-primary-dark">
+                Contract Address
+              </div>
+              <div className="px-6 py-3 text-primary-dark">Amount</div>
+            </div>
+            {Object.keys(amountDict).map((x) => (
+              <div
+                key={x}
+                className="flex hover:bg-primary-dark hover:bg-opacity-25 "
+              >
+                <div className="w-1/2 py-2 px-4 text-primary-dark">{x}</div>
+                <div className="w-1/2 py-2 px-4 text-primary-dark">
+                  {amountDict[x]}
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
       )}
       {activeTab === "transactions" && (
@@ -955,10 +928,10 @@ function Dashboard() {
       {activeTab === "accounts" && (
         <>
           <div className="shadow-md overflow-x-auto container-fluid">
-            <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light ">
+            <table className="w-full text-sm  text-left text-background-light dark:text-background-dark bg-background-light ">
               <thead className="uppercase">
                 <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
-                  <th className="px-4 rounded-l  py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
+                  <th className="px-4 rounded   py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
                     Account Address
                   </th>
                   <th className="px-4   py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
