@@ -23,7 +23,7 @@ import {
   faDownload,
 } from "@fortawesome/free-solid-svg-icons";
 import { listen, UnlistenFn } from "@tauri-apps/api/event";
-import { CAlert, CButton, CFormLabel, CFormSelect } from "@coreui/react";
+import { CAlert, CFormLabel, CFormSelect } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
 import ExpertSettingsPage from "./components/expert-form";
@@ -94,20 +94,22 @@ function Installer() {
     }
   }
   return (
-    <div className="container mx-auto p-4">
+    <div className="container mx-auto p-4 m-[10%]">
       <div className="flex justify-content-center">
         <CCardImage src={ConcordiumImg} style={{ width: 120 }}></CCardImage>
       </div>
-      <h1 className="text-5xl  text-primary-dark text-bold">Concordium LC1C</h1>
+      <div className="text-5xl  text-center text-primary-dark text-bold">
+        Concordium LC1C
+      </div>
 
-      <p className="my-5 text-xl text-slate-300">
+      <p className="my-5 text-xl text-primary-dark text-center">
         Follow the below steps to complete installation and running of a local
         node.
       </p>
       <button
         onClick={install}
         disabled={installing || installationSuccess}
-        className={`  hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+        className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           installing
             ? "bg-secondary-dark hover:bg-secondary-dark"
             : installationSuccess || verificationSuccess
@@ -129,7 +131,7 @@ function Installer() {
           </div>
         )}
 
-        <div className={`border-none px-2 sm:w-80 md:w-34 text-lg `}>
+        <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
           {installing
             ? "Installing..."
             : installationSuccess || verificationSuccess
@@ -139,7 +141,7 @@ function Installer() {
       </button>
 
       <button
-        className={`  hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+        className={`  hover:text-white rounded-3 flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           verifying
             ? "bg-secondary-dark hover:bg-secondary-dark"
             : verificationSuccess
@@ -162,7 +164,7 @@ function Installer() {
             />
           </div>
         )}
-        <div className={`border-none px-2 sm:w-80 md:w-34 text-lg `}>
+        <div className={`border-none px-2 rounded-3 sm:w-80 md:w-34 text-lg `}>
           {verifying
             ? "Verifying Installation..."
             : verificationSuccess
@@ -172,7 +174,7 @@ function Installer() {
       </button>
 
       <button
-        className={`   hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+        className={`   hover:text-white flex p-0 rounded-3 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           installingCreator
             ? "bg-secondary-dark hover:bg-secondary-dark"
             : installationSuccessCreator
@@ -206,7 +208,7 @@ function Installer() {
 
       {installationSuccess && installationSuccessCreator && (
         <button
-          className="  hover:bg-primary-dark bg-primary-light hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]"
+          className="  hover:bg-primary-dark rounded-3 bg-primary-light hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]"
           onClick={goToGenesisBuilder}
         >
           <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
@@ -585,7 +587,7 @@ function GenesisBuilder() {
 
   return (
     <>
-      <div className="container mx-auto ">
+      <div className="container m-[10%] mx-auto items-center justify-center h-screen">
         <CAlert
           color="secondary"
           className="text-lg w-75 flex justify-center mx-auto items-center"
@@ -600,7 +602,7 @@ function GenesisBuilder() {
           </div>
           <div className="gap-3 my-4 w-full  flex justify-center items-center ">
             <button
-              className={`flex-grow  bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg hover:bg-primary-dark duration-300  ${
+              className={`flex-grow  py-2 bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg hover:bg-primary-dark duration-300  ${
                 launched ? "hover:bg-primary-light hover:text-16" : ""
               }`}
               onClick={() => setConfigLevel("easy")}
@@ -609,7 +611,7 @@ function GenesisBuilder() {
               Easy
             </button>
             <button
-              className={`flex-grow   bg-primary-light hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]    font-semibold rounded-lg hover:bg-primary-dark duration-300 ${
+              className={`flex-grow  py-2  bg-primary-light hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]    font-semibold rounded-lg hover:bg-primary-dark duration-300 ${
                 launched ? "hover:bg-primary-light hover:text-16" : ""
               }`}
               onClick={() => setConfigLevel("advanced")}
@@ -618,7 +620,7 @@ function GenesisBuilder() {
               Advanced
             </button>
             <button
-              className={`flex-grow  bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg hover:bg-primary-dark duration-300 ${
+              className={`flex-grow  py-2 bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg hover:bg-primary-dark duration-300 ${
                 launched ? "hover:bg-primary-light hover:text-16" : ""
               }`}
               onClick={() => setConfigLevel("expert")}
@@ -627,7 +629,7 @@ function GenesisBuilder() {
               Expert
             </button>
             <button
-              className={`flex-grow  bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg  hover:bg-primary-dark duration-300 ${
+              className={`flex-grow py-2  bg-primary-light  hover:text-[15] border-primary-dark shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]   font-semibold rounded-lg  hover:bg-primary-dark duration-300 ${
                 launched ? "hover:bg-primary-light hover:text-16" : ""
               }`}
               onClick={() => setConfigLevel("existing")}
@@ -678,10 +680,13 @@ function GenesisBuilder() {
 function Dashboard() {
   const [latestHash, setLatestHash] = useState("");
   const [blocks, setBlocks] = useState("");
-  const [amountDict, setAmounts] = useState({});
+  // const [amountDict, setAmounts] = useState({});
+  const [contractsDict, setContracts] = useState<any>({});
+  const [transactionsDict, setTransactions] = useState({});
   const [amountDictFilter, setAmountsFilter] = useState({});
   const [filterValue, setFilter] = useState("");
-  const [tempDict, setTempDict] = useState({});
+  const [amountDict, setTempDict] = useState({});
+  const [activeTab, setActiveTab] = useState("accounts");
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
 
@@ -689,7 +694,8 @@ function Dashboard() {
     listen("new-block", (event: any) => {
       setBlocks(event.payload.number);
       setLatestHash(event.payload.hash);
-      setAmounts(event.payload.amounts);
+      setTransactions(event.payload.transactions);
+      setContracts(event.payload.contracts);
       if (filterValue.length == 0) {
         setTempDict(event.payload.amounts);
       }
@@ -717,13 +723,13 @@ function Dashboard() {
       await killChain();
     };
     return (
-      <>
-        <CButton
-          className="bg-red-800 border-red-800 hover:bg-red-800 hover:border-red-800 w-40"
+      <div>
+        <button
+          className="px-3 py-1 my-2 rounded  bg-fail hover:bg-opacity-75"
           onClick={openModalAndKillChain}
         >
           Kill Chain
-        </CButton>
+        </button>
 
         <CModal
           className="rounded-2xl"
@@ -733,24 +739,23 @@ function Dashboard() {
         >
           <CModalHeader
             closeButton={false}
-            className="bg-slate-700 text-white font-bold border-slate-600"
+            className="bg-primary-dark text-white font-bold border-slate-600"
           >
             <CModalTitle className="text-xl">Note:</CModalTitle>
           </CModalHeader>
-          <CModalBody className="bg-slate-800 text-white">
+          <CModalBody className="bg-background-light text-md text-primary-dark">
             <p>Chain has been killed.</p>
           </CModalBody>
-          <CModalFooter className="bg-slate-800 border-slate-800">
-            <CButton
-              color="primary"
-              className="rounded-full border-rose-500 bg-rose-500 hover:bg-rose-800 hover:border-rose-800"
+          <CModalFooter className="bg-background-light  border-background-light ">
+            <button
+              className="rounded-full py-2 px-4 bg-primary-light hover:bg-primary-dark hover:text-background-light"
               onClick={() => (window.location.href = "/genesis-builder")}
             >
               Go to Genesis Builder
-            </CButton>
+            </button>
           </CModalFooter>
         </CModal>
-      </>
+      </div>
     );
   };
 
@@ -779,288 +784,226 @@ function Dashboard() {
   }
 
   return (
-    <div className="">
-      <div className="">
-        <div
-          className=""
-          style={{
-            position: "absolute",
-            top: "3vh",
-            left: 0,
-            color: "whitesmoke",
-            fontSize: "larger",
-            padding: "0 2.5vw 0 2.5vw",
-          }}
-        >
-          <div
-            className="heading"
-            style={{
-              display: "flex",
-              justifyContent: "space-between",
-              width: "95vw",
-              alignItems: "center",
-              marginBottom: "2vh",
-            }}
+    <div className="bg-secondary-light w-100 h-50 py-2">
+      <div className="flex justify-content-between px-5">
+        <div className="flex justify-content-between">
+          <CCardImage src={ConcordiumImg} style={{ width: 70 }}></CCardImage>
+        </div>
+        <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
+          <li
+            onClick={() => setActiveTab("accounts")}
+            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
           >
-            <div className="" style={{ fontSize: "larger" }}>
-              Information
-            </div>
-            {killPopup()}
-          </div>
-          <div
-            className="main"
-            style={{
-              color: "whitesmoke",
-              fontSize: "larger",
-              display: "flex",
-              justifyContent: "space-between",
-              width: "95vw",
-            }}
-          >
-            <div
-              className=""
-              style={{
-                border: "1px solid #12172b",
-                borderRadius: "10px",
-                backgroundColor: "#1c2445",
-                padding: "20px",
-                width: "46.3vw",
-              }}
-            >
-              <div className="right" style={{ color: "#de14d9" }}>
-                <p
-                  className=""
-                  style={{
-                    fontWeight: "500",
-                    fontSize: "20px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  BLOCK NUMBER
-                </p>
-                <p className="" style={{ fontSize: "20px" }}>
-                  {blocks}
-                </p>
-              </div>
-            </div>
-            <div
-              className=""
-              style={{
-                border: "1px solid #12172b",
-                borderRadius: "10px",
-                backgroundColor: "#1c2445",
-                padding: "20px",
-                width: "46.3vw",
-              }}
-            >
-              <div className="right " style={{ color: "#09e030" }}>
-                <p
-                  className=""
-                  style={{
-                    fontWeight: "500",
-                    fontSize: "20px",
-                    marginBottom: "10px",
-                  }}
-                >
-                  LATEST HASH
-                </p>
-                <p
-                  className="overflow-x-scroll scrollbar-thin"
-                  style={{ fontSize: "20px" }}
-                >
-                  {latestHash}
-                </p>
-              </div>
-            </div>
-          </div>
-          <br />
-          <div
-            className="search"
-            id="search"
-            style={{ width: "95vw", display: "flex" }}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              x="0px"
-              y="0px"
-              width="50"
-              height="50"
-              viewBox="0 0 24 24"
-              style={{ flex: "none", width: "5vw" }}
-            >
-              <path
-                d="M22 20L20 22 14 16 14 14 16 14z"
-                style={{ fill: "whitesmoke" }}
-              ></path>
-              <path
-                d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z"
-                style={{ fill: "whitesmoke" }}
-              ></path>
-              <path
-                d="M13.7 12.5H14.7V16H13.7z"
-                transform="rotate(-44.992 14.25 14.25)"
-                style={{ fill: "whitesmoke" }}
-              ></path>
-            </svg>
-            <input
-              type="text"
-              name="search"
-              id="search"
-              style={{ width: "90vw" }}
-              onChange={filter}
-            />
-          </div>
-          <div
-            style={{
-              height: "70vh",
-              overflow: "hidden",
-              overflowY: "scroll",
-              marginTop: "3vh",
-            }}
-          >
-            <div className="table" style={{ borderRadius: "10px!important" }}>
-              <table
-                style={{
-                  textAlign: "left",
-                  width: "95vw",
-                  backgroundColor: "#1c2445!important",
-                  borderRadius: "10px",
-                  border: "1px solid #1c2445",
-                  color: "white!important",
-                }}
+            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+              <svg
+                className="w-5 h-5 mr-2 text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-500"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 20 20"
               >
-                <tr>
-                  <th
-                    style={{
-                      backgroundColor: "#1c244550",
-                      color: "white",
-                      width: "50vw",
-                    }}
-                  >
-                    Account Address
-                  </th>
-                  <th style={{ backgroundColor: "#1c244550", color: "white" }}>
-                    Amount
-                  </th>
-                </tr>
-                {filterValue.length == 0 &&
-                  Object.keys(amountDict).map((x) => {
-                    return (
-                      <>
-                        <tr key={x}>
-                          <td
-                            className="overflow-x-scroll scollbar-thin"
-                            style={{
-                              backgroundColor: "#1c244550",
-                              color: "white",
-                              fontWeight: "200",
-                            }}
-                          >
-                            {x}
-                          </td>
-                          <td
-                            className="overflow-x-scroll scollbar-thin"
-                            style={{
-                              backgroundColor: "#1c244550",
-                              color: "white",
-                              fontWeight: "200",
-                            }}
-                          >
-                            {amountDict[x as any]}
-                          </td>
-                        </tr>
-                      </>
-                    );
-                  })}
-                {filterValue.length ? (
-                  Object.keys(amountDictFilter).map((x) => {
-                    return (
-                      <>
-                        <tr key={x}>
-                          <td
-                            className="overflow-x-scroll scollbar-thin"
-                            style={{
-                              backgroundColor: "#1c244550",
-                              color: "white",
-                              fontWeight: "200",
-                            }}
-                          >
-                            {x}
-                          </td>
-                          <td
-                            className="overflow-x-scroll scollbar-thin"
-                            style={{
-                              backgroundColor: "#1c244550",
-                              color: "white",
-                              fontWeight: "200",
-                            }}
-                          >
-                            {amountDictFilter[x as any]}
-                          </td>
-                        </tr>
-                      </>
-                    );
-                  })
-                ) : (
-                  <></>
-                )}
-              </table>
+                {/* SVG Path */}
+              </svg>
+              Accounts
             </div>
-            {Object.keys(amountDict).length == 0 && (
-              <div
-                className="loader"
-                style={{
-                  width: "95vw",
-                  transform: "scale(0.2)",
-                  position: "absolute",
-                  top: "-20%",
-                  left: "7%",
-                }}
-              >
-                <svg
-                  version="1.1"
-                  id="L4"
-                  xmlns="http://www.w3.org/2000/svg"
-                  xmlns:xlink="http://www.w3.org/1999/xlink"
-                  x="0px"
-                  y="0px"
-                  viewBox="0 0 100 100"
-                  enable-background="new 0 0 0 0"
-                  xml:space="preserve"
-                >
-                  <circle fill="#ffffff10" stroke="none" cx="10" cy="10" r="6">
-                    <animate
-                      attributeName="opacity"
-                      dur="1s"
-                      values="0;1;0"
-                      repeatCount="indefinite"
-                      begin="0.1"
-                    />
-                  </circle>
-                  <circle fill="#ffffff10" stroke="none" cx="25" cy="10" r="6">
-                    <animate
-                      attributeName="opacity"
-                      dur="1s"
-                      values="0;1;0"
-                      repeatCount="indefinite"
-                      begin="0.2"
-                    />
-                  </circle>
-                  <circle fill="#ffffff10" stroke="none" cx="40" cy="10" r="6">
-                    <animate
-                      attributeName="opacity"
-                      dur="1s"
-                      values="0;1;0"
-                      repeatCount="indefinite"
-                      begin="0.3"
-                    />
-                  </circle>
-                </svg>
-              </div>
+            {activeTab === "accounts" && (
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
             )}
+          </li>
+          <li
+            onClick={() => setActiveTab("contracts")}
+            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
+          >
+            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+              <svg
+                className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-500"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 18 18"
+              >
+                {/* SVG Path */}
+              </svg>
+              Contracts
+            </div>
+            {activeTab === "contracts" && (
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
+            )}
+          </li>
+
+          <li
+            onClick={() => setActiveTab("transactions")}
+            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
+          >
+            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+              <svg
+                className="w-5 h-5 mr-2 text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-500"
+                aria-hidden="true"
+                xmlns="http://www.w3.org/2000/svg"
+                fill="currentColor"
+                viewBox="0 0 18 20"
+              >
+                {/* SVG Path */}
+              </svg>
+              Transactions
+            </div>
+            {activeTab === "transactions" && (
+              <div className="absolute bottom-0 left-0  h-1 bg-primary-dark dark:bg-primary-light"></div>
+            )}
+          </li>
+        </ul>
+        <div className="mt-2"> {killPopup()}</div>
+      </div>{" "}
+      <hr className="h-px my-2 bg-primary-dark  border-0"></hr>
+      <div className="mx-5 my-4">
+        {" "}
+        <div className="text-5xl font-bold text-primary-dark  my-2">
+          Concordium Explorer
+        </div>
+        <div className="text-lg font-bolder text-primary-dark  mb-4">
+          Concordium Block Explorer provides all the information to deep dive
+          into transactions, blocks, contracts, and much more. Deep dive into
+          Concordium and explore the network.
+        </div>
+      </div>
+      <div className="flex flex-col xs:flex-row justify-evenly ">
+        <div
+          className="flex items-center bg-primary-dark bg-opacity-75 w-50 md:w-1/3 rounded h-16 mb-5"
+          id="search"
+        >
+          <input
+            type="text"
+            name="search"
+            className="w-full ms-3"
+            id="search"
+            onChange={filter}
+          />
+          <svg
+            xmlns="http://www.w3.org/2000/svg"
+            x="0px"
+            y="0px"
+            width="50"
+            height="50"
+            viewBox="0 0 24 24"
+            className="w-7 m-3"
+          >
+            <path
+              d="M22 20L20 22 14 16 14 14 16 14z"
+              style={{ fill: "whitesmoke" }}
+            ></path>
+            <path
+              d="M9,16c-3.9,0-7-3.1-7-7c0-3.9,3.1-7,7-7c3.9,0,7,3.1,7,7C16,12.9,12.9,16,9,16z M9,4C6.2,4,4,6.2,4,9c0,2.8,2.2,5,5,5 c2.8,0,5-2.2,5-5C14,6.2,11.8,4,9,4z"
+              style={{ fill: "whitesmoke" }}
+            ></path>
+            <path
+              d="M13.7 12.5H14.7V16H13.7z"
+              transform="rotate(-44.992 14.25 14.25)"
+              style={{ fill: "whitesmoke" }}
+            ></path>
+          </svg>
+        </div>
+        <div className="border-1 border-primary-dark bg-background-light bg-opacity-50 rounded p-3 sm:p-0 min-w-[15%] max-w-[15%]">
+          <div className="text-lg  mb-1 xs:text-sm ">BLOCK NUMBER</div>
+          <div className="text-lg text-primary-light font-bold">{blocks}</div>
+        </div>
+        <div className="border-1 border-primary-dark bg-background-light bg-opacity-50 rounded p-3 min-w-[15%] max-w-[15%]">
+          <div className="text-lg mb-1 xs:text-sm">LATEST HASH</div>
+          <div className="text-lg text-primary-light font-bolder text-lg overflow-hidden  overflow-ellipsis whitespace-nowrap">
+            {latestHash}
           </div>
         </div>
       </div>
+      <br />
+      {activeTab === "contracts" && (
+        <div className="overflow-x-auto container-fluid">
+          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light ">
+            <thead className="uppercase">
+              <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
+                <th className="px-6 py-3 text-primary-dark">
+                  Contract Address
+                </th>
+                <th className="px-6 py-3 text-primary-dark">Amount</th>
+              </tr>
+            </thead>
+            <tbody>
+              {Object.keys(contractsDict).map((x) => (
+                <tr
+                  key={x}
+                  className="hover:bg-primary-dark hover:bg-opacity-25 "
+                >
+                  <td className="py-2 border-1 border-black px-4  text-primary-dark">
+                    {x}
+                  </td>
+                  <td className="py-2 border-1 border-black px-4  text-primary-dark">
+                    {contractsDict[x]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+      {activeTab === "transactions" && (
+        <>
+          <div className="mt-4 p-4 rounded border">
+            <pre className="whitespace-pre-wrap text-black">
+              {JSON.stringify(transactionsDict, null, 2)}
+            </pre>
+          </div>
+        </>
+      )}
+      {activeTab === "accounts" && (
+        <>
+          <div className="shadow-md overflow-x-auto container-fluid">
+            <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light ">
+              <thead className="uppercase">
+                <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
+                  <th className="px-4 rounded-l  py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
+                    Account Address
+                  </th>
+                  <th className="px-4   py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
+                    Amount
+                  </th>
+                </tr>
+              </thead>
+              <tbody className="">
+                {filterValue.length === 0 &&
+                  Object.keys(amountDict).map((x) => (
+                    <tr
+                      key={x}
+                      className="hover:bg-primary-dark hover:bg-opacity-25 "
+                    >
+                      <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                        {x}
+                      </td>
+                      <td className="py-2 border-1  border-black px-4  text-primary-dark ">
+                        {amountDict[x as any]}
+                      </td>
+                    </tr>
+                  ))}
+                {filterValue.length ? (
+                  Object.keys(amountDictFilter).map((x) => (
+                    <tr
+                      key={x}
+                      className="hover:bg-primary-dark hover:bg-opacity-25 border-1
+                    "
+                    >
+                      <td className="py-2 px-4 border-1 bg-background-light text-black font-light">
+                        {x}
+                      </td>
+                      <td className="py-2 px-4 border-1 bg-background-light text-black">
+                        {amountDictFilter[x]}
+                      </td>
+                    </tr>
+                  ))
+                ) : (
+                  <></>
+                )}
+              </tbody>
+            </table>
+          </div>
+        </>
+      )}
     </div>
   );
 }

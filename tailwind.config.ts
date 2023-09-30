@@ -16,6 +16,7 @@ export default {
         dark: "#CCCCCC",
       },
       success: "#379253",
+      fail: "#cc0000",
     },
     //     fontSize: {
     //       sm: "0.8rem",
@@ -31,6 +32,7 @@ export default {
       sans: ["Poppins, sans-serif"],
     },
     screens: {
+      xs: "440px",
       sm: "640px",
       // => @media (min-width: 640px) { ... }
 

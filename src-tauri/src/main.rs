@@ -2,7 +2,9 @@
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
-use concordium_rust_sdk::types::AbsoluteBlockHeight;
+use concordium_rust_sdk::types::{
+    AbsoluteBlockHeight, BlockItemSummary, ContractAddress, ContractSubIndex, TransactionStatus,
+};
 use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
@@ -19,7 +21,6 @@ use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
-use tauri::regex::Regex;
 use tauri::State;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
@@ -322,7 +323,7 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     //logging
-                    if let Some(block_info) = parse_block_info().await {
+                    if let Some(block_info) = parse_block_info(line).await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -389,7 +390,7 @@ async fn launch_template(
                 // logging
                 if let Some(window) = &window_clone {
                     // Logging
-                    if let Some(block_info) = parse_block_info().await {
+                    if let Some(block_info) = parse_block_info(line).await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -461,20 +462,42 @@ struct UiBlockInfo {
     hash: String,
     number: AbsoluteBlockHeight,
     amounts: HashMap<AccountAddress, Amount>,
+    contracts: HashMap<ContractAddress, Amount>,
+    transactions: Vec<BlockItemSummary>,
 }
 
-async fn parse_block_info() -> Option<UiBlockInfo> {
+async fn parse_block_info(line: String) -> Option<UiBlockInfo> {
+    println!("{:?}", line);
+
     match account_info().await {
         Ok((block_hash, number)) => {
             let hash = block_hash.to_string();
             match amount_info(block_hash).await {
-                Ok(amounts_map) => {
-                    return Some(UiBlockInfo {
-                        hash,
-                        number,
-                        amounts: amounts_map,
-                    });
-                }
+                Ok(amounts_map) => match instance_list(block_hash).await {
+                    Ok(contracts_map) => match transaction_info(block_hash).await {
+                        Ok(transaction_summary) => {
+                            println!("{:#?}", contracts_map);
+                            return Some(UiBlockInfo {
+                                hash,
+                                number,
+                                amounts: amounts_map,
+                                contracts: contracts_map,
+                                transactions: transaction_summary,
+                            });
+                        }
+
+                        Err(e) => {
+                            eprintln!("An error occurred: {}", e);
+                            return None;
+                        }
+                    },
+
+                    Err(e) => {
+                        eprintln!("An error occurred: {}", e);
+                        return None;
+                    }
+                },
+
                 Err(e) => {
                     eprintln!("An error occurred: {}", e);
                     return None;
@@ -488,6 +511,40 @@ async fn parse_block_info() -> Option<UiBlockInfo> {
     }
 }
 
+async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<ContractAddress, Amount>> {
+    let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
+    let mut client = v2::Client::new(endpoint_node).await?;
+    let mut contracts = client.get_instance_list(&hash).await?;
+    let mut amounts_map = HashMap::new();
+    while let Some(a) = contracts.response.next().await {
+        match a {
+            Ok(contract_addr) => {
+                let info = client.get_instance_info(contract_addr, &hash).await?;
+                println!("{:#?}", info);
+                let amt = info.response.amount();
+                amounts_map.insert(a?, amt);
+            }
+            Err(e) => return Err(anyhow::anyhow!("Failed to get contract address: {}", e)),
+        }
+    }
+    Ok(amounts_map)
+}
+
+async fn transaction_info(hash: BlockHash) -> anyhow::Result<Vec<BlockItemSummary>> {
+    let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
+    let mut client = v2::Client::new(endpoint_node).await?;
+    let res = client.get_block_transaction_events(&hash).await?;
+    let mut summaries = Vec::new();
+    let mut transactions = res.response;
+
+    while let Some(item) = transactions.next().await {
+        match item {
+            Ok(summary) => summaries.push(summary),
+            Err(e) => return Err(anyhow::anyhow!("Error fetching transaction event: {}", e)),
+        }
+    }
+    Ok(summaries)
+}
 async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;

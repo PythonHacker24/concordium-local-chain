@@ -9,7 +9,8 @@ const layoutStyles = {
   justifyContent: "center",
   alignItems: "center",
   padding: "0%",
-  minHeight: "100vh",
+
+  // minHeight: "100vh",
 };
 
 ReactDOM.createRoot(document.getElementById("root") as HTMLElement).render(
