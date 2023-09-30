@@ -895,25 +895,28 @@ function Dashboard() {
       <br />
       {activeTab === "contracts" && (
         <div className="overflow-x-auto container-fluid">
-          <div className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
-            <div className="uppercase bg-primary-dark bg-opacity-25 rounded ">
-              <div className="px-6 py-3 text-primary-dark">
-                Contract Address
-              </div>
-              <div className="px-6 py-3 text-primary-dark">Amount</div>
-            </div>
-            {Object.keys(amountDict).map((x) => (
-              <div
-                key={x}
-                className="flex hover:bg-primary-dark hover:bg-opacity-25 "
-              >
-                <div className="w-1/2 py-2 px-4 text-primary-dark">{x}</div>
-                <div className="w-1/2 py-2 px-4 text-primary-dark">
-                  {amountDict[x]}
-                </div>
-              </div>
-            ))}
-          </div>
+          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
+            <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
+              <th className="px-6 py-3 text-primary-dark">Contract Address</th>
+              <th className="px-6 py-3 text-primary-dark">Amount</th>
+            </tr>
+            <tbody>
+              {" "}
+              {Object.keys(contractsDict).map((x) => (
+                <tr
+                  key={x}
+                  className="hover:bg-primary-dark hover:bg-opacity-25 "
+                >
+                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                    {x}
+                  </td>
+                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                    {contractsDict[x]}
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
         </div>
       )}
       {activeTab === "transactions" && (
