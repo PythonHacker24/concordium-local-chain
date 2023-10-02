@@ -317,13 +317,16 @@ async fn launch_template(
         state.child_process = Some(child);
 
         let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+        let mut transaction_summaries = Vec::new();
         let window_clone = state.main_window.clone();
         tokio::spawn(async move {
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
                     //logging
-                    if let Some(block_info) = parse_block_info(line).await {
+                    if let Some(block_info) =
+                        parse_block_info(line, &mut transaction_summaries).await
+                    {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -384,13 +387,16 @@ async fn launch_template(
         state.child_process = Some(child);
 
         let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+        let mut transaction_summaries = Vec::new();
         let window_clone = state.main_window.clone();
         tokio::spawn(async move {
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
                     // Logging
-                    if let Some(block_info) = parse_block_info(line).await {
+                    if let Some(block_info) =
+                        parse_block_info(line, &mut transaction_summaries).await
+                    {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
@@ -399,6 +405,51 @@ async fn launch_template(
     }
 
     Ok(())
+}
+async fn parse_block_info(
+    line: String,
+    summaries: &mut Vec<BlockItemSummary>,
+) -> Option<UiBlockInfo> {
+    println!("Processing line: {:?}", line);
+    let (block_hash, number) = account_info()
+        .await
+        .map_err(|e| {
+            eprintln!("Error fetching account info: {}", e);
+            e
+        })
+        .ok()?;
+
+    let amounts_map = amount_info(block_hash)
+        .await
+        .map_err(|e| {
+            eprintln!("Error fetching amount info: {}", e);
+            e
+        })
+        .ok()?;
+
+    let contracts_map = instance_list(block_hash)
+        .await
+        .map_err(|e| {
+            eprintln!("Error fetching instance list: {}", e);
+            e
+        })
+        .ok()?;
+
+    transaction_info(block_hash, summaries)
+        .await
+        .map_err(|e| {
+            eprintln!("Error fetching transaction info: {}", e);
+            e
+        })
+        .ok()?;
+
+    Some(UiBlockInfo {
+        hash: block_hash.to_string(),
+        number,
+        amounts: amounts_map,
+        contracts: contracts_map,
+        transactions: summaries.clone(),
+    })
 }
 
 fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
@@ -466,51 +517,6 @@ struct UiBlockInfo {
     transactions: Vec<BlockItemSummary>,
 }
 
-async fn parse_block_info(line: String) -> Option<UiBlockInfo> {
-    println!("{:?}", line);
-
-    match account_info().await {
-        Ok((block_hash, number)) => {
-            let hash = block_hash.to_string();
-            match amount_info(block_hash).await {
-                Ok(amounts_map) => match instance_list(block_hash).await {
-                    Ok(contracts_map) => match transaction_info(block_hash).await {
-                        Ok(transaction_summary) => {
-                            println!("{:#?}", contracts_map);
-                            return Some(UiBlockInfo {
-                                hash,
-                                number,
-                                amounts: amounts_map,
-                                contracts: contracts_map,
-                                transactions: transaction_summary,
-                            });
-                        }
-
-                        Err(e) => {
-                            eprintln!("An error occurred: {}", e);
-                            return None;
-                        }
-                    },
-
-                    Err(e) => {
-                        eprintln!("An error occurred: {}", e);
-                        return None;
-                    }
-                },
-
-                Err(e) => {
-                    eprintln!("An error occurred: {}", e);
-                    return None;
-                }
-            }
-        }
-        Err(e) => {
-            eprintln!("An error occurred: {}", e);
-            return None;
-        }
-    }
-}
-
 async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<ContractAddress, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
@@ -530,20 +536,23 @@ async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<ContractAddres
     Ok(amounts_map)
 }
 
-async fn transaction_info(hash: BlockHash) -> anyhow::Result<Vec<BlockItemSummary>> {
+async fn transaction_info(
+    hash: BlockHash,
+    summaries: &mut Vec<BlockItemSummary>,
+) -> anyhow::Result<()> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
     let res = client.get_block_transaction_events(&hash).await?;
-    let mut summaries = Vec::new();
     let mut transactions = res.response;
-
     while let Some(item) = transactions.next().await {
         match item {
-            Ok(summary) => summaries.push(summary),
+            Ok(summary) => {
+                summaries.push(summary);
+            }
             Err(e) => return Err(anyhow::anyhow!("Error fetching transaction event: {}", e)),
         }
     }
-    Ok(summaries)
+    Ok(())
 }
 async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;

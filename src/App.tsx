@@ -639,37 +639,40 @@ function GenesisBuilder() {
               Load Config
             </button>
           </div>
-          <div className="config-container w-4/5">
-            {configLevel === "easy" && <EasyConfig />}
-            {configLevel === "advanced" && <AdvancedConfig />}
-            {configLevel === "expert" && <ExpertConfig />}
-            {configLevel === "existing" && <FromExisting />}
-          </div>
-          <div className="mt-8">
+        </div>
+        <div className="config-container w-4/5">
+          {configLevel === "easy" && <EasyConfig />}
+          {configLevel === "advanced" && <AdvancedConfig />}
+          {configLevel === "expert" && <ExpertConfig />}
+          {configLevel === "existing" && <FromExisting />}
+        </div>
+
+        <div className=" mt-8">
+          <button
+            className="px-4 py-2 font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
+            onClick={launch}
+            disabled={launching || launched}
+            style={{
+              backgroundColor: launched ? "green" : undefined,
+              color: launched ? "white" : undefined,
+            }}
+          >
+            {launching
+              ? "Launching..."
+              : launched
+              ? "Chain Launched!"
+              : "Launch Local Chain"}
+          </button>
+          {launched ? (
             <button
-              className={`px-4 py-2 font-semibold text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] bg-secondary-light hover:bg-secondary-dark rounded-lg  focus:outline-none focus:ring-2 focus:ring-green-400 ${
-                launched ? "bg-success text-white" : ""
-              }`}
-              onClick={launch}
-              disabled={launching || launched}
+              className="ml-4 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
+              onClick={dashboard}
             >
-              {launching
-                ? "Launching..."
-                : launched
-                ? "Chain Launched!"
-                : "Launch Local Chain"}
+              Visit Dashboard
             </button>
-            {launched ? (
-              <button
-                className="ml-4 px-4 py-2 font-semibold   bg-primary-light hover:bg-primary-dark  shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] text-background-light rounded-lg  focus:outline-none focus:ring-2 focus:ring-blue-400"
-                onClick={dashboard}
-              >
-                Visit Dashboard
-              </button>
-            ) : (
-              ""
-            )}
-          </div>
+          ) : (
+            ""
+          )}
         </div>
       </div>
     </>
@@ -682,7 +685,7 @@ function Dashboard() {
   const [latestHash, setLatestHash] = useState("");
   const [blocks, setBlocks] = useState("");
   // const [amountDict, setAmounts] = useState({});
-  const [contractsDict, setContracts] = useState<any>({});
+  const [contractsDict, setContracts] = useState({});
   const [transactionsDict, setTransactions] = useState({});
   const [amountDictFilter, setAmountsFilter] = useState({});
   const [filterValue, setFilter] = useState("");
@@ -893,6 +896,38 @@ function Dashboard() {
         </div>
       </div>
       <br />
+      {/* <div className="flex gap-4 mb-5 justify-center">
+            <CButton
+              onClick={() => setActiveTab("accounts")}
+              className={`py-2 px-4 w-1/3 border-none  ${
+                activeTab === "accounts"
+                  ? "bg-ctp-blue text-black"
+                  : "bg-ctp-overlay0/50 text-white"
+              }`}
+            >
+              Accounts
+            </CButton>
+            <CButton
+              onClick={() => setActiveTab("contracts")}
+              className={`py-2 px-4 w-1/3 border-none  ${
+                activeTab === "contracts"
+                  ? "bg-ctp-blue text-black"
+                  : "bg-ctp-overlay0/50 text-white"
+              }`}
+            >
+              Contracts
+            </CButton>
+            <CButton
+              onClick={() => setActiveTab("transactions")}
+              className={`py-2 px-4 w-1/3 border-none  ${
+                activeTab === "transactions"
+                  ? "bg-ctp-blue text-black"
+                  : "bg-ctp-overlay0/50 text-white"
+              }`}
+            >
+              Transactions
+            </CButton>
+          </div> */}
       {activeTab === "contracts" && (
         <div className="overflow-x-auto container-fluid">
           <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
@@ -911,7 +946,7 @@ function Dashboard() {
                     {x}
                   </td>
                   <td className="py-2 border-1  border-black px-4  text-primary-dark">
-                    {contractsDict[x]}
+                    {contractsDict[x as any]}
                   </td>
                 </tr>
               ))}
