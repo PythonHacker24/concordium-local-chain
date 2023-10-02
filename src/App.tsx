@@ -639,40 +639,37 @@ function GenesisBuilder() {
               Load Config
             </button>
           </div>
-        </div>
-        <div className="config-container w-4/5">
-          {configLevel === "easy" && <EasyConfig />}
-          {configLevel === "advanced" && <AdvancedConfig />}
-          {configLevel === "expert" && <ExpertConfig />}
-          {configLevel === "existing" && <FromExisting />}
-        </div>
-
-        <div className=" mt-8">
-          <button
-            className="px-4 py-2 font-semibold text-white bg-green-500 rounded-lg hover:bg-green-600 focus:outline-none focus:ring-2 focus:ring-green-400"
-            onClick={launch}
-            disabled={launching || launched}
-            style={{
-              backgroundColor: launched ? "green" : undefined,
-              color: launched ? "white" : undefined,
-            }}
-          >
-            {launching
-              ? "Launching..."
-              : launched
-              ? "Chain Launched!"
-              : "Launch Local Chain"}
-          </button>
-          {launched ? (
+          <div className="config-container w-4/5">
+            {configLevel === "easy" && <EasyConfig />}
+            {configLevel === "advanced" && <AdvancedConfig />}
+            {configLevel === "expert" && <ExpertConfig />}
+            {configLevel === "existing" && <FromExisting />}
+          </div>
+          <div className="mt-8">
             <button
-              className="ml-4 px-4 py-2 font-semibold text-white bg-blue-500 rounded-lg hover:bg-blue-600 focus:outline-none focus:ring-2 focus:ring-blue-400"
-              onClick={dashboard}
+              className={`px-4 py-2 font-semibold text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] bg-secondary-light hover:bg-secondary-dark rounded-lg  focus:outline-none focus:ring-2 focus:ring-green-400 ${
+                launched ? "bg-success text-white" : ""
+              }`}
+              onClick={launch}
+              disabled={launching || launched}
             >
-              Visit Dashboard
+              {launching
+                ? "Launching..."
+                : launched
+                ? "Chain Launched!"
+                : "Launch Local Chain"}
             </button>
-          ) : (
-            ""
-          )}
+            {launched ? (
+              <button
+                className="ml-4 px-4 py-2 font-semibold   bg-primary-light hover:bg-primary-dark  shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] text-background-light rounded-lg  focus:outline-none focus:ring-2 focus:ring-blue-400"
+                onClick={dashboard}
+              >
+                Visit Dashboard
+              </button>
+            ) : (
+              ""
+            )}
+          </div>
         </div>
       </div>
     </>
@@ -929,7 +926,7 @@ function Dashboard() {
             </CButton>
           </div> */}
       {activeTab === "contracts" && (
-        <div className="overflow-x-auto container-fluid">
+        <div className="overflow-x-auto container-fluid overflow-y-auto">
           <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
             <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
               <th className="px-6 py-3 text-primary-dark">Contract Address</th>
