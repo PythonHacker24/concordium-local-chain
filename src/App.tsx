@@ -27,10 +27,15 @@ import { listen, UnlistenFn } from "@tauri-apps/api/event";
 import { CAlert, CFormLabel, CFormSelect } from "@coreui/react";
 import { open } from "@tauri-apps/api/shell";
 import { FontAwesomeIcon } from "@fortawesome/react-fontawesome";
-import ExpertSettingsPage from "./components/expert-form";
-import AdvancedSettingsPage from "./components/advanced-form";
-import SettingsPage from "./components/form";
-import ConcordiumImg from "../public/concordium.svg";
+
+import {
+  // AdvancedSettingsPage,
+  ExpertSettingsPage,
+  SettingsPage,
+} from "./components";
+
+import { concordiumImg } from "./";
+import { concordiumMiscTools } from "./";
 /* --------------------------------------------------------- INSTALLATION PAGE ----------------------------------------------------------------------*/
 
 function Installer() {
@@ -97,7 +102,7 @@ function Installer() {
   return (
     <div className="container mx-auto p-4 m-[10%]">
       <div className="flex justify-content-center">
-        <CCardImage src={ConcordiumImg} style={{ width: 120 }}></CCardImage>
+        <CCardImage src={concordiumImg} style={{ width: 120 }}></CCardImage>
       </div>
       <div className="text-5xl  text-center text-primary-dark text-bold">
         Concordium LC1C
@@ -475,9 +480,7 @@ function GenesisBuilder() {
 
   function handleOpenLink(event: React.MouseEvent<HTMLAnchorElement>) {
     event.preventDefault(); // Prevent the default behavior of the link
-    open(
-      "https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml"
-    ); // Replace with the link you want to open
+    open(`${concordiumMiscTools}`); // Replace with the link you want to open
   }
 
   const EasyConfig = () => (
@@ -486,7 +489,7 @@ function GenesisBuilder() {
         For easy configuration, the local chain will be loaded with a template
         genesis file found{" "}
         <a
-          href="https://raw.githubusercontent.com/Concordium/concordium-misc-tools/9d347761aadd432cbb6211a7d7ba38cdc07f1d11/genesis-creator/examples/single-baker-example-p5.toml"
+          href={concordiumMiscTools}
           onClick={handleOpenLink}
           className="text-blue-500 hover:underline"
         >
@@ -788,7 +791,7 @@ function Dashboard() {
     <div className="bg-secondary-light w-100 h-50 py-2">
       <div className="flex justify-content-between px-5">
         <div className="flex justify-content-between">
-          <CCardImage src={ConcordiumImg} style={{ width: 70 }}></CCardImage>
+          <CCardImage src={concordiumImg} style={{ width: 70 }}></CCardImage>
         </div>
         <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
           <li
