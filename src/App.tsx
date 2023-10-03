@@ -795,7 +795,7 @@ function Dashboard() {
     const amount = event?.amount;
 
     if (amount !== undefined) {
-      return amount.toString().slice(0, -6);
+      return amount / 1000000;
     }
     return "N/A";
   };
@@ -1034,7 +1034,7 @@ function Dashboard() {
                         {transaction?.hash}
                       </td>
                       <td className="py-2 border-1 border-opacity-10 border-black  px-4 text-center text-primary-dark">
-                        {transactionAmount(firstEvent)}
+                        {transactionAmount(firstEvent) + " CCD"}
                       </td>
                       {transaction?.result?.outcome === "success" ? (
                         <td className="py-2 font-monospace border-1   border-opacity-10 border-black bg-opacity-75 text-center px-4 text-primary-dark">
@@ -1083,8 +1083,8 @@ function Dashboard() {
                       <td className="py-2 border-1 font-monospace border-opacity-25 border-black px-4  text-primary-dark">
                         {x}
                       </td>
-                      <td className="py-2 border-1  border-opacity-25 border-black px-4  text-primary-dark ">
-                        {amountDict[x as any]}
+                      <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
+                        {amountDict[x as any] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))}
@@ -1098,8 +1098,8 @@ function Dashboard() {
                       <td className="py-2 px-4 font-monospace border-black border-1 border-opacity-25 bg-background-light text-black font-light">
                         {x}
                       </td>
-                      <td className="py-2 px-4 border-1 border-black border-opacity-25 bg-background-light text-black">
-                        {amountDictFilter[x]}
+                      <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
+                        {amountDictFilter[x as any] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))
