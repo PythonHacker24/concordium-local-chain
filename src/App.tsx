@@ -682,6 +682,7 @@ function GenesisBuilder() {
 /* --------------------------------------------------------- DASHBOARD PAGE ----------------------------------------------------------------------------*/
 
 function Dashboard() {
+  const [showModal, setShowModal] = useState(false);
   const [latestHash, setLatestHash] = useState("");
   const [blocks, setBlocks] = useState("");
   // const [amountDict, setAmounts] = useState({});
@@ -852,7 +853,7 @@ function Dashboard() {
               Transactions
             </div>
             {activeTab === "transactions" && (
-              <div className="absolute bottom-0 left-0  h-1 bg-primary-dark dark:bg-primary-light"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
             )}
           </li>
         </ul>
@@ -953,15 +954,67 @@ function Dashboard() {
             </tbody>
           </table>
         </div>
-      )}
-      {activeTab === "transactions" && (
+      )}{" "}
+      {showModal ? (
         <>
-          <div className="mt-4 p-4 rounded border">
-            <pre className="whitespace-pre-wrap text-black">
-              {JSON.stringify(transactionsDict, null, 2)}
-            </pre>
+          <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+            <div className="relative w-auto my-6 mx-auto max-w-3xl">
+              {/*content*/}
+              <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                {/*body*/}
+                <div className="relative flex-auto  m-2">
+                  <pre className="whitespace-pre-wrap text-black text-sm">
+                    {JSON.stringify(transactionsDict, null, 2)}
+                  </pre>
+                </div>
+                <div className="flex items-center justify-end border-t border-solid border-slate-200 rounded-b">
+                  <button
+                    className="px-3 m-2 rounded  bg-fail hover:bg-opacity-75"
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>{" "}
+            </div>
           </div>
+          <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
         </>
+      ) : null}
+      {activeTab === "transactions" && (
+        <div className="overflow-x-auto container-fluid overflow-y-auto">
+          {" "}
+          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
+            <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
+              <th className="px-6 py-3 text-primary-dark">Transactions</th>
+            </tr>
+            <tbody>
+              {Object.keys(transactionsDict).length === 0 ? (
+                <tr className="hover:bg-primary-dark hover:bg-opacity-25 ">
+                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                    No Transactions
+                  </td>
+                </tr>
+              ) : (
+                Object.keys(transactionsDict).map((x) => (
+                  <tr
+                    key={x}
+                    className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer "
+                    onClick={() => setShowModal(true)}
+                  >
+                    <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                      {x}
+                    </td>
+                    {/* <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                      {transactionsDict[x as any]}
+                    </td> */}
+                  </tr>
+                ))
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
       {activeTab === "accounts" && (
         <>
