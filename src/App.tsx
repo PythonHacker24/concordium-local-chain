@@ -683,6 +683,8 @@ function GenesisBuilder() {
 
 function Dashboard() {
   const [showModal, setShowModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
   const [latestHash, setLatestHash] = useState("");
   const [blocks, setBlocks] = useState("");
   // const [amountDict, setAmounts] = useState({});
@@ -692,6 +694,7 @@ function Dashboard() {
   const [filterValue, setFilter] = useState("");
   const [amountDict, setTempDict] = useState({});
   const [activeTab, setActiveTab] = useState("accounts");
+
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
 
@@ -964,7 +967,7 @@ function Dashboard() {
                 {/*body*/}
                 <div className="relative flex-auto  m-2">
                   <pre className="whitespace-pre-wrap text-black text-sm">
-                    {JSON.stringify(transactionsDict, null, 2)}
+                    {JSON.stringify(selectedTransaction, null, 2)}
                   </pre>
                 </div>
                 <div className="flex items-center justify-end border-t border-solid border-slate-200 rounded-b">
@@ -1001,13 +1004,19 @@ function Dashboard() {
                   <tr
                     key={x}
                     className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer "
-                    onClick={() => setShowModal(true)}
+                    onClick={() => {
+                      setShowModal(true),
+                        setSelectedTransaction(transactionsDict[x]);
+                    }}
                   >
                     <td className="py-2 border-1  border-black px-4  text-primary-dark">
                       {x}
                     </td>
-                    {/* <td className="py-2 border-1  border-black px-4  text-primary-dark">
-                      {transactionsDict[x as any]}
+                    {/* <td>
+                      {" "}
+                      <pre className="whitespace-pre-wrap text-black text-sm">
+                        {JSON.stringify(transactionsDict[x], null, 2)}
+                      </pre>
                     </td> */}
                   </tr>
                 ))
