@@ -991,13 +991,21 @@ function Dashboard() {
           <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
             <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
               <th className="px-6 py-3 text-primary-dark">Transactions</th>
+              <th className="px-6 py-3 text-primary-dark text-center">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-primary-dark text-center">
+                Outcome
+              </th>
             </tr>
             <tbody>
               {Object.keys(transactionsDict).length === 0 ? (
-                <tr className="hover:bg-primary-dark hover:bg-opacity-25 ">
-                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                <tr className="hover:bg-primary-dark border-1 border-black hover:bg-opacity-0 ">
+                  <td className="py-2 px-4  text-primary-dark">
                     No Transactions
                   </td>
+                  <td className="py-2 px-4  text-primary-dark"></td>
+                  <td className="py-2 px-4  text-primary-dark"></td>
                 </tr>
               ) : (
                 Object.keys(transactionsDict).map((x) => (
@@ -1009,15 +1017,15 @@ function Dashboard() {
                         setSelectedTransaction(transactionsDict[x]);
                     }}
                   >
-                    <td className="py-2 border-1  border-black px-4  text-primary-dark">
-                      {x}
+                    <td className="py-2 border-1   px-4  text-primary-dark">
+                      {transactionsDict[x]?.hash}
                     </td>
-                    {/* <td>
-                      {" "}
-                      <pre className="whitespace-pre-wrap text-black text-sm">
-                        {JSON.stringify(transactionsDict[x], null, 2)}
-                      </pre>
-                    </td> */}
+                    <td className="py-2 border-1   px-4  text-center text-primary-dark">
+                      {transactionsDict[x]?.result?.events[x]?.amount}
+                    </td>{" "}
+                    <td className="py-2 border-1 bg-success text-center  px-4  text-primary-dark">
+                      {transactionsDict[x]?.result?.outcome}
+                    </td>
                   </tr>
                 ))
               )}
