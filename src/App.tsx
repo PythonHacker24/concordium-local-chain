@@ -790,6 +790,15 @@ function Dashboard() {
     });
     setAmountsFilter(dictionary);
   }
+  // function to get the amount of a transaction with decimal point
+  const transactionAmount = (event: any) => {
+    const amount = event?.amount;
+
+    if (amount !== undefined) {
+      return amount.toString().slice(0, -6);
+    }
+    return "N/A";
+  };
 
   return (
     <div className="bg-secondary-light w-100 h-50 py-2">
@@ -989,8 +998,8 @@ function Dashboard() {
         <div className="overflow-x-auto container-fluid overflow-y-auto">
           {" "}
           <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
-            <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
-              <th className="px-6 py-3 text-primary-dark">Transactions</th>
+            <tr className="bg-primary-dark bg-opacity-10 rounded border-1 border-black border-opacity-25 table-bordered text-uppercase">
+              <th className="px-6 py-3 text-primary-dark ">Transactions</th>
               <th className="px-6 py-3 text-primary-dark text-center">
                 Amount
               </th>
@@ -1000,7 +1009,7 @@ function Dashboard() {
             </tr>
             <tbody>
               {Object.keys(transactionsDict).length === 0 ? (
-                <tr className="hover:bg-primary-dark border-1 border-black hover:bg-opacity-0 ">
+                <tr className="hover:bg-primary-dark hover:bg-opacity-0 ">
                   <td className="py-2 px-4  text-primary-dark">
                     No Transactions
                   </td>
@@ -1008,26 +1017,43 @@ function Dashboard() {
                   <td className="py-2 px-4  text-primary-dark"></td>
                 </tr>
               ) : (
-                Object.keys(transactionsDict).map((x) => (
-                  <tr
-                    key={x}
-                    className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer "
-                    onClick={() => {
-                      setShowModal(true),
-                        setSelectedTransaction(transactionsDict[x]);
-                    }}
-                  >
-                    <td className="py-2 border-1   px-4  text-primary-dark">
-                      {transactionsDict[x]?.hash}
-                    </td>
-                    <td className="py-2 border-1   px-4  text-center text-primary-dark">
-                      {transactionsDict[x]?.result?.events[x]?.amount}
-                    </td>{" "}
-                    <td className="py-2 border-1 bg-success text-center  px-4  text-primary-dark">
-                      {transactionsDict[x]?.result?.outcome}
-                    </td>
-                  </tr>
-                ))
+                Object.keys(transactionsDict).map((x) => {
+                  const transaction = transactionsDict[x];
+                  const firstEvent = transaction?.result?.events?.[0];
+
+                  return (
+                    <tr
+                      key={x}
+                      className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer"
+                      onClick={() => {
+                        setShowModal(true);
+                        setSelectedTransaction(transaction);
+                      }}
+                    >
+                      <td className="py-2 font-monospace border-1  border-opacity-10 border-black px-4 text-primary-dark">
+                        {transaction?.hash}
+                      </td>
+                      <td className="py-2 border-1 border-opacity-10 border-black  px-4 text-center text-primary-dark">
+                        {transactionAmount(firstEvent)}
+                      </td>
+                      {transaction?.result?.outcome === "success" ? (
+                        <td className="py-2 font-monospace border-1   border-opacity-10 border-black bg-opacity-75 text-center px-4 text-primary-dark">
+                          <div className="bg-success rounded d-inline p-1">
+                            {" "}
+                            {transaction?.result?.outcome}
+                          </div>
+                        </td>
+                      ) : (
+                        <td className="py-2 uppercase border-1    border-opacity-10 border-black text-center px-4 text-primary-dark">
+                          <div className="bg-fail rounded d-inline p-1 bg-opacity-75">
+                            {" "}
+                            {transaction?.result?.outcome}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
               )}
             </tbody>
           </table>
@@ -1038,7 +1064,7 @@ function Dashboard() {
           <div className="shadow-md overflow-x-auto container-fluid">
             <table className="w-full text-sm  text-left text-background-light dark:text-background-dark bg-background-light ">
               <thead className="uppercase">
-                <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
+                <tr className="bg-primary-dark bg-opacity-10 rounded border-1 border-black border-opacity-25">
                   <th className="px-4 py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
                     Account Address
                   </th>
@@ -1054,10 +1080,10 @@ function Dashboard() {
                       key={x}
                       className="hover:bg-primary-dark hover:bg-opacity-25 "
                     >
-                      <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                      <td className="py-2 border-1  border-opacity-25 border-black px-4  text-primary-dark">
                         {x}
                       </td>
-                      <td className="py-2 border-1  border-black px-4  text-primary-dark ">
+                      <td className="py-2 border-1  border-opacity-25 border-black px-4  text-primary-dark ">
                         {amountDict[x as any]}
                       </td>
                     </tr>
@@ -1069,10 +1095,10 @@ function Dashboard() {
                       className="hover:bg-primary-dark hover:bg-opacity-25 border-1
                     "
                     >
-                      <td className="py-2 px-4 border-1 bg-background-light text-black font-light">
+                      <td className="py-2 px-4 border-1 border-opacity-25 bg-background-light text-black font-light">
                         {x}
                       </td>
-                      <td className="py-2 px-4 border-1 bg-background-light text-black">
+                      <td className="py-2 px-4 border-1 border-opacity-25 bg-background-light text-black">
                         {amountDictFilter[x]}
                       </td>
                     </tr>
