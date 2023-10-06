@@ -682,6 +682,9 @@ function GenesisBuilder() {
 /* --------------------------------------------------------- DASHBOARD PAGE ----------------------------------------------------------------------------*/
 
 function Dashboard() {
+  const [showModal, setShowModal] = useState(false);
+  const [selectedTransaction, setSelectedTransaction] = useState(null);
+
   const [latestHash, setLatestHash] = useState("");
   const [blocks, setBlocks] = useState("");
   // const [amountDict, setAmounts] = useState({});
@@ -691,6 +694,7 @@ function Dashboard() {
   const [filterValue, setFilter] = useState("");
   const [amountDict, setTempDict] = useState({});
   const [activeTab, setActiveTab] = useState("accounts");
+
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
 
@@ -786,6 +790,15 @@ function Dashboard() {
     });
     setAmountsFilter(dictionary);
   }
+  // function to get the amount of a transaction with decimal point
+  const transactionAmount = (event: any) => {
+    const amount = event?.amount;
+
+    if (amount !== undefined) {
+      return amount / 1000000;
+    }
+    return "N/A";
+  };
 
   return (
     <div className="bg-secondary-light w-100 h-50 py-2">
@@ -852,7 +865,7 @@ function Dashboard() {
               Transactions
             </div>
             {activeTab === "transactions" && (
-              <div className="absolute bottom-0 left-0  h-1 bg-primary-dark dark:bg-primary-light"></div>
+              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
             )}
           </li>
         </ul>
@@ -931,7 +944,7 @@ function Dashboard() {
       {activeTab === "contracts" && (
         <div className="overflow-x-auto container-fluid overflow-y-auto">
           <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
-            <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black text-uppercase">
+            <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase">
               <th className="px-6 py-3 text-primary-dark">Contract Address</th>
               <th className="px-6 py-3 text-primary-dark">Amount</th>
             </tr>
@@ -942,10 +955,10 @@ function Dashboard() {
                   key={x}
                   className="hover:bg-primary-dark hover:bg-opacity-25 "
                 >
-                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                  <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4  text-primary-dark">
                     {x}
                   </td>
-                  <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                  <td className="py-2 border-1  font-monospace border-black border-1 border-opacity-25 px-4  text-primary-dark">
                     {contractsDict[x as any]}
                   </td>
                 </tr>
@@ -953,22 +966,105 @@ function Dashboard() {
             </tbody>
           </table>
         </div>
-      )}
-      {activeTab === "transactions" && (
+      )}{" "}
+      {showModal ? (
         <>
-          <div className="mt-4 p-4 rounded border">
-            <pre className="whitespace-pre-wrap text-black">
-              {JSON.stringify(transactionsDict, null, 2)}
-            </pre>
+          <div className="justify-center items-center flex overflow-x-hidden overflow-y-auto fixed inset-0 z-50 outline-none focus:outline-none">
+            <div className="relative w-auto my-6 mx-auto max-w-3xl">
+              {/*content*/}
+              <div className="border-0 rounded-lg shadow-lg relative flex flex-col w-full bg-white outline-none focus:outline-none">
+                {/*body*/}
+                <div className="relative flex-auto  m-2">
+                  <pre className="whitespace-pre-wrap text-black text-sm">
+                    {JSON.stringify(selectedTransaction, null, 2)}
+                  </pre>
+                </div>
+                <div className="flex items-center justify-end border-t border-solid border-slate-200 rounded-b">
+                  <button
+                    className="px-3 m-2 rounded  bg-fail hover:bg-opacity-75"
+                    type="button"
+                    onClick={() => setShowModal(false)}
+                  >
+                    Close
+                  </button>
+                </div>
+              </div>{" "}
+            </div>
           </div>
+          <div className="opacity-25 fixed inset-0 z-40 bg-black"></div>
         </>
+      ) : null}
+      {activeTab === "transactions" && (
+        <div className="overflow-x-auto container-fluid overflow-y-auto">
+          {" "}
+          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
+            <tr className="bg-primary-dark bg-opacity-10 rounded border-1 border-black border-opacity-25 table-bordered text-uppercase">
+              <th className="px-6 py-3 text-primary-dark ">Transactions</th>
+              <th className="px-6 py-3 text-primary-dark text-center">
+                Amount
+              </th>
+              <th className="px-6 py-3 text-primary-dark text-center">
+                Outcome
+              </th>
+            </tr>
+            <tbody>
+              {Object.keys(transactionsDict).length === 0 ? (
+                <tr className="hover:bg-primary-dark hover:bg-opacity-0 ">
+                  <td className="py-2 px-4  text-primary-dark">
+                    No Transactions
+                  </td>
+                  <td className="py-2 px-4  text-primary-dark"></td>
+                  <td className="py-2 px-4  text-primary-dark"></td>
+                </tr>
+              ) : (
+                Object.keys(transactionsDict).map((x) => {
+                  const transaction = transactionsDict[x];
+                  const firstEvent = transaction?.result?.events?.[0];
+
+                  return (
+                    <tr
+                      key={x}
+                      className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer"
+                      onClick={() => {
+                        setShowModal(true);
+                        setSelectedTransaction(transaction);
+                      }}
+                    >
+                      <td className="py-2 font-monospace border-1  border-opacity-10 border-black px-4 text-primary-dark">
+                        {transaction?.hash}
+                      </td>
+                      <td className="py-2 border-1 border-opacity-10 border-black  px-4 text-center text-primary-dark">
+                        {transactionAmount(firstEvent) + " CCD"}
+                      </td>
+                      {transaction?.result?.outcome === "success" ? (
+                        <td className="py-2 font-monospace border-1   border-opacity-10 border-black bg-opacity-75 text-center px-4 text-primary-dark">
+                          <div className="bg-success rounded d-inline p-1">
+                            {" "}
+                            {transaction?.result?.outcome}
+                          </div>
+                        </td>
+                      ) : (
+                        <td className="py-2 uppercase border-1    border-opacity-10 border-black text-center px-4 text-primary-dark">
+                          <div className="bg-fail rounded d-inline p-1 bg-opacity-75">
+                            {" "}
+                            {transaction?.result?.outcome}
+                          </div>
+                        </td>
+                      )}
+                    </tr>
+                  );
+                })
+              )}
+            </tbody>
+          </table>
+        </div>
       )}
       {activeTab === "accounts" && (
         <>
           <div className="shadow-md overflow-x-auto container-fluid">
             <table className="w-full text-sm  text-left text-background-light dark:text-background-dark bg-background-light ">
               <thead className="uppercase">
-                <tr className="bg-primary-dark bg-opacity-25 rounded border-1 border-black">
+                <tr className="bg-primary-dark bg-opacity-10 rounded border-1 border-black border-opacity-25">
                   <th className="px-4 py-3 text-bold text-md text-primary-dark whitespace-nowrap ">
                     Account Address
                   </th>
@@ -984,11 +1080,11 @@ function Dashboard() {
                       key={x}
                       className="hover:bg-primary-dark hover:bg-opacity-25 "
                     >
-                      <td className="py-2 border-1  border-black px-4  text-primary-dark">
+                      <td className="py-2 border-1 font-monospace border-opacity-25 border-black px-4  text-primary-dark">
                         {x}
                       </td>
-                      <td className="py-2 border-1  border-black px-4  text-primary-dark ">
-                        {amountDict[x as any]}
+                      <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
+                        {amountDict[x as any] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))}
@@ -999,11 +1095,11 @@ function Dashboard() {
                       className="hover:bg-primary-dark hover:bg-opacity-25 border-1
                     "
                     >
-                      <td className="py-2 px-4 border-1 bg-background-light text-black font-light">
+                      <td className="py-2 px-4 font-monospace border-black border-1 border-opacity-25 bg-background-light text-black font-light">
                         {x}
                       </td>
-                      <td className="py-2 px-4 border-1 bg-background-light text-black">
-                        {amountDictFilter[x]}
+                      <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
+                        {amountDictFilter[x as any] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))
