@@ -108,10 +108,10 @@ function Installer() {
         Concordium LC1C
       </div>
 
-      <p className="my-5 text-xl text-primary-dark text-center">
+      <div className="my-5 text-xl text-primary-dark text-center">
         Follow the below steps to complete installation and running of a local
         node.
-      </p>
+      </div>
       <button
         onClick={install}
         disabled={installing || installationSuccess}
@@ -688,11 +688,11 @@ function Dashboard() {
   const [latestHash, setLatestHash] = useState("");
   const [blockHeight, setBlockHeight] = useState("");
   // const [amountDict, setAmounts] = useState({});
-  const [contractsDict, setContracts] = useState({});
-  const [transactionsDict, setTransactions] = useState({});
-  const [amountDictFilter, setAmountsFilter] = useState({});
+  const [contractsDict, setContracts] = useState<any>({});
+  const [transactionsDict, setTransactions] = useState<any>({});
+  const [amountDictFilter, setAmountsFilter] = useState<any>({});
   const [filterValue, setFilter] = useState("");
-  const [amountDict, setTempDict] = useState({});
+  const [amountDict, setTempDict] = useState<any>({});
   const [activeTab, setActiveTab] = useState("accounts");
 
   useEffect(() => {
@@ -809,66 +809,108 @@ function Dashboard() {
         <ul className="flex flex-wrap -mb-px text-sm font-medium text-center">
           <li
             onClick={() => setActiveTab("accounts")}
-            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
+            className={`cursor-pointer transition-all duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow ${
+              activeTab === "accounts" ? "scale-105" : ""
+            }`}
           >
-            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+            <div
+              className={`inline-flex items-center justify-center pt-4 px-6 group ${
+                activeTab === "accounts"
+                  ? "text-primary-dark"
+                  : "hover:text-primary-dark"
+              } transform transition-transform duration-300 ease-in-out`}
+            >
               <svg
-                className="w-5 h-5 mr-2 text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-500"
-                aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
                 fill="currentColor"
-                viewBox="0 0 20 20"
+                className="bi mx-1 bi-person-circle"
+                viewBox="0 0 16 16"
               >
-                {/* SVG Path */}
+                <path d="M11 6a3 3 0 1 1-6 0 3 3 0 0 1 6 0z" />
+                <path
+                  fillRule="evenodd"
+                  d="M0 8a8 8 0 1 1 16 0A8 8 0 0 1 0 8zm8-7a7 7 0 0 0-5.468 11.37C3.242 11.226 4.805 10 8 10s4.757 1.225 5.468 2.37A7 7 0 0 0 8 1z"
+                />
               </svg>
               Accounts
             </div>
             {activeTab === "accounts" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
+              <div
+                style={{ left: "0", right: "0", margin: "auto" }}
+                className="absolute bottom-0 w-2/4  sm:w-3/4 md:w-3/4 lg:w-3/4  h-1 bg-primary-dark dark:bg-primary-light transition-width duration-300 ease-in-out "
+              ></div>
             )}
           </li>
           <li
             onClick={() => setActiveTab("contracts")}
-            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
+            className={`cursor-pointer transition-all duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow ${
+              activeTab === "contracts" ? "scale-105" : ""
+            }`}
           >
-            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+            <div
+              className={`inline-flex items-center justify-center pt-4 px-6 group ${
+                activeTab === "contracts"
+                  ? "text-primary-dark"
+                  : "hover:text-primary-dark"
+              } transform transition-transform duration-300 ease-in-out`}
+            >
               <svg
-                className="w-5 h-5 mr-2 text-blue-600 dark:text-blue-500"
-                aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
                 fill="currentColor"
-                viewBox="0 0 18 18"
+                className="bi mx-1 bi-file-earmark-medical"
+                viewBox="0 0 16 16"
               >
-                {/* SVG Path */}
+                <path d="M7.5 5.5a.5.5 0 0 0-1 0v.634l-.549-.317a.5.5 0 1 0-.5.866L6 7l-.549.317a.5.5 0 1 0 .5.866l.549-.317V8.5a.5.5 0 1 0 1 0v-.634l.549.317a.5.5 0 1 0 .5-.866L8 7l.549-.317a.5.5 0 1 0-.5-.866l-.549.317V5.5zm-2 4.5a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5zm0 2a.5.5 0 0 0 0 1h5a.5.5 0 0 0 0-1h-5z" />
+                <path d="M14 14V4.5L9.5 0H4a2 2 0 0 0-2 2v12a2 2 0 0 0 2 2h8a2 2 0 0 0 2-2zM9.5 3A1.5 1.5 0 0 0 11 4.5h2V14a1 1 0 0 1-1 1H4a1 1 0 0 1-1-1V2a1 1 0 0 1 1-1h5.5v2z" />
               </svg>
               Contracts
             </div>
             {activeTab === "contracts" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
+              <div
+                style={{ left: "0", right: "0", margin: "auto" }}
+                className="absolute bottom-0 w-2/4  sm:w-3/4 md:w-3/4 lg:w-3/4  h-1 bg-primary-dark dark:bg-primary-light transition-width duration-300 ease-in-out "
+              ></div>
             )}
           </li>
-
           <li
             onClick={() => setActiveTab("transactions")}
-            className="cursor-pointer transition-colors duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow"
+            className={`cursor-pointer transition-all duration-300 ease-in-out relative w-full sm:w-auto sm:flex-grow ${
+              activeTab === "transactions" ? "scale-105" : ""
+            }`}
           >
-            <div className="inline-flex items-center justify-center pt-4 px-6 group hover:text-primary-dark">
+            <div
+              className={`inline-flex items-center justify-center pt-4 px-6 group ${
+                activeTab === "transactions"
+                  ? "text-primary-dark"
+                  : "hover:text-primary-dark"
+              } transform transition-transform duration-300 ease-in-out`}
+            >
               <svg
-                className="w-5 h-5 mr-2 text-gray-500 group-hover:text-gray-700 dark:text-gray-300 dark:group-hover:text-gray-500"
-                aria-hidden="true"
                 xmlns="http://www.w3.org/2000/svg"
+                width="16"
+                height="16"
                 fill="currentColor"
-                viewBox="0 0 18 20"
+                className="bi mx-1 bi-receipt"
+                viewBox="0 0 16 16"
               >
-                {/* SVG Path */}
+                <path d="M1.92.506a.5.5 0 0 1 .434.14L3 1.293l.646-.647a.5.5 0 0 1 .708 0L5 1.293l.646-.647a.5.5 0 0 1 .708 0L7 1.293l.646-.647a.5.5 0 0 1 .708 0L9 1.293l.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .708 0l.646.647.646-.647a.5.5 0 0 1 .801.13l.5 1A.5.5 0 0 1 15 2v12a.5.5 0 0 1-.053.224l-.5 1a.5.5 0 0 1-.8.13L13 14.707l-.646.647a.5.5 0 0 1-.708 0L11 14.707l-.646.647a.5.5 0 0 1-.708 0L9 14.707l-.646.647a.5.5 0 0 1-.708 0L7 14.707l-.646.647a.5.5 0 0 1-.708 0L5 14.707l-.646.647a.5.5 0 0 1-.708 0L3 14.707l-.646.647a.5.5 0 0 1-.801-.13l-.5-1A.5.5 0 0 1 1 14V2a.5.5 0 0 1 .053-.224l.5-1a.5.5 0 0 1 .367-.27zm.217 1.338L2 2.118v11.764l.137.274.51-.51a.5.5 0 0 1 .707 0l.646.647.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.646.646.646-.646a.5.5 0 0 1 .708 0l.509.509.137-.274V2.118l-.137-.274-.51.51a.5.5 0 0 1-.707 0L12 1.707l-.646.647a.5.5 0 0 1-.708 0L10 1.707l-.646.647a.5.5 0 0 1-.708 0L8 1.707l-.646.647a.5.5 0 0 1-.708 0L6 1.707l-.646.647a.5.5 0 0 1-.708 0L4 1.707l-.646.647a.5.5 0 0 1-.708 0l-.509-.51z" />
+                <path d="M3 4.5a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 1 1 0 1h-6a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h6a.5.5 0 0 1 0 1h-6a.5.5 0 0 1-.5-.5zm8-6a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5zm0 2a.5.5 0 0 1 .5-.5h1a.5.5 0 0 1 0 1h-1a.5.5 0 0 1-.5-.5z" />
               </svg>
               Transactions
             </div>
             {activeTab === "transactions" && (
-              <div className="absolute bottom-0 left-0 w-full h-1 bg-primary-dark dark:bg-primary-light"></div>
+              <div
+                style={{ left: "0", right: "0", margin: "auto" }}
+                className="absolute bottom-0 w-2/4  sm:w-3/4 md:w-3/4 lg:w-3/4  h-1 bg-primary-dark dark:bg-primary-light transition-width duration-300 ease-in-out "
+              ></div>
             )}
           </li>
         </ul>
+
         <div className="mt-2"> {killPopup()}</div>
       </div>{" "}
       <hr className="h-px my-2 bg-primary-dark  border-0"></hr>
@@ -877,7 +919,7 @@ function Dashboard() {
         <div className="text-5xl font-bold text-primary-dark  my-2">
           Concordium Explorer
         </div>
-        <div className="text-lg font-bolder text-primary-dark  mb-4">
+        <div className="text-xl font-bolder text-primary-dark  mb-4">
           Concordium Block Explorer provides all the information to deep dive
           into transactions, blocks, contracts, and much more. Deep dive into
           Concordium and explore the network.
@@ -911,42 +953,10 @@ function Dashboard() {
         </div>
       </div>
       <br />
-      {/* <div className="flex gap-4 mb-5 justify-center">
-            <CButton
-              onClick={() => setActiveTab("accounts")}
-              className={`py-2 px-4 w-1/3 border-none  ${
-                activeTab === "accounts"
-                  ? "bg-ctp-blue text-black"
-                  : "bg-ctp-overlay0/50 text-white"
-              }`}
-            >
-              Accounts
-            </CButton>
-            <CButton
-              onClick={() => setActiveTab("contracts")}
-              className={`py-2 px-4 w-1/3 border-none  ${
-                activeTab === "contracts"
-                  ? "bg-ctp-blue text-black"
-                  : "bg-ctp-overlay0/50 text-white"
-              }`}
-            >
-              Contracts
-            </CButton>
-            <CButton
-              onClick={() => setActiveTab("transactions")}
-              className={`py-2 px-4 w-1/3 border-none  ${
-                activeTab === "transactions"
-                  ? "bg-ctp-blue text-black"
-                  : "bg-ctp-overlay0/50 text-white"
-              }`}
-            >
-              Transactions
-            </CButton>
-          </div> */}
       {activeTab === "contracts" && (
-        <div className="overflow-x-auto container-fluid overflow-y-auto">
-          <table className="w-full text-sm text-left text-background-light dark:text-background-dark bg-background-light">
-            <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase">
+        <div className="overflow-x-auto  container-fluid overflow-y-auto transition-all ease-in-out duration-300">
+          <table className="w-full  text-sm text-left text-background-light dark:text-background-dark bg-background-light transition-all ease-in-out duration-300">
+            <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase transition-all ease-in-out duration-300">
               <th className="px-6 py-3 text-primary-dark">Contract Address</th>
               <th className="px-6 py-3 text-primary-dark">Amount</th>
             </tr>
@@ -955,13 +965,13 @@ function Dashboard() {
               {Object.keys(contractsDict).map((x) => (
                 <tr
                   key={x}
-                  className="hover:bg-primary-dark hover:bg-opacity-25 "
+                  className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300"
                 >
-                  <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4  text-primary-dark">
+                  <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
                     {x}
                   </td>
-                  <td className="py-2 border-1  font-monospace border-black border-1 border-opacity-25 px-4  text-primary-dark">
-                    {contractsDict[x as any]}
+                  <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                    {contractsDict[x]}
                   </td>
                 </tr>
               ))}
@@ -1040,13 +1050,13 @@ function Dashboard() {
                       </td>
                       {transaction?.result?.outcome === "success" ? (
                         <td className="py-2 font-monospace border-1   border-opacity-10 border-black bg-opacity-75 text-center px-4 text-primary-dark">
-                          <div className="bg-success rounded d-inline p-1">
+                          <div className="bg-success rounded-1 d-inline p-1 text-capitalize ">
                             {" "}
                             {transaction?.result?.outcome}
                           </div>
                         </td>
                       ) : (
-                        <td className="py-2 uppercase border-1    border-opacity-10 border-black text-center px-4 text-primary-dark">
+                        <td className="py-2 uppercase border-1  text-capitalize  border-opacity-10 border-black text-center px-4 text-primary-dark">
                           <div className="bg-fail rounded d-inline p-1 bg-opacity-75">
                             {" "}
                             {transaction?.result?.outcome}
@@ -1086,10 +1096,11 @@ function Dashboard() {
                         {x}
                       </td>
                       <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
-                        {amountDict[x as any] / 1000000 + " CCD"}
+                        {amountDict[x] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))}
+
                 {filterValue.length ? (
                   Object.keys(amountDictFilter).map((x) => (
                     <tr
@@ -1101,7 +1112,7 @@ function Dashboard() {
                         {x}
                       </td>
                       <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
-                        {amountDictFilter[x as any] / 1000000 + " CCD"}
+                        {amountDictFilter[x] / 1000000 + " CCD"}
                       </td>
                     </tr>
                   ))
