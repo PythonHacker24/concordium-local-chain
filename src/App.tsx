@@ -686,7 +686,7 @@ function Dashboard() {
   const [selectedTransaction, setSelectedTransaction] = useState(null);
 
   const [latestHash, setLatestHash] = useState("");
-  const [blocks, setBlocks] = useState("");
+  const [blockHeight, setBlockHeight] = useState("");
   // const [amountDict, setAmounts] = useState({});
   const [contractsDict, setContracts] = useState({});
   const [transactionsDict, setTransactions] = useState({});
@@ -700,7 +700,7 @@ function Dashboard() {
 
     // Set up the listener for the 'new-block' event
     listen("new-block", (event: any) => {
-      setBlocks(event.payload.number);
+      setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
       setTransactions(event.payload.transactions);
       setContracts(event.payload.contracts);
@@ -887,7 +887,7 @@ function Dashboard() {
         <div className="flex items-center w-50 md:w-1/3 rounded" id="search">
           <input
             type="text"
-            placeholder="Search by transaction hash"
+            placeholder="Search by account address"
             name="search"
             className="w-full ms-3 p-2 py-3 rounded-start  bg-primary-dark bg-opacity-75"
             id="search"
@@ -898,14 +898,16 @@ function Dashboard() {
           </div>
         </div>
         <div className="border-1 border-primary-dark bg-background-light bg-opacity-50 rounded p-3 sm:p-0 min-w-[15%] max-w-[15%]">
-          <div className="text-lg  mb-1 xs:text-sm ">BLOCK NUMBER</div>
-          <div className="text-lg text-primary-light font-bold">{blocks}</div>
+          <div className="text-lg  mb-1 xs:text-sm ">BLOCK HEIGHT</div>
+          <div className="text-lg text-primary-light font-bold">
+            {blockHeight}
+          </div>
         </div>
         <div className="border-1 border-primary-dark bg-background-light bg-opacity-50 rounded p-3 min-w-[15%] max-w-[15%]">
           <div className="text-lg mb-1 xs:text-sm">LATEST HASH</div>
           <div className="text-lg text-primary-light font-bolder text-lg overflow-hidden  overflow-ellipsis whitespace-nowrap">
             {latestHash}
-          </div>
+          </div>{" "}
         </div>
       </div>
       <br />
