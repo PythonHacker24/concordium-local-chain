@@ -115,56 +115,51 @@ fn install_genesis_creator() {
     // Set the environment variable
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
 
-    // Run the command
-    // let output = std::process::Command::new("git")
-    //     .args(&[
-    //         "clone",
-    //         "--recurse-submodules",
-    //         "https://github.com/Concordium/concordium-misc-tools.git",
-    //     ])
-    //     .output();
-
-
-
-    // this solves the issue but we can manually install all the repositorys
-    // let output = std::process::Command::new("cargo")
-    //     .args(&[
-    //         "install",
-    //         "--path",
-    //         "concordium-misc-tools/genesis-creator/",
-    //         "--locked",
-    //     ])
-    //     .output();
-
-    // let output = std::process::Command::new("Remove-Item")
-    //     .args(&[
-    //         "-Path",
-    //         "./concordium-misc-tools/",
-    //         "-Recurse",
-    //         "-Force",
-    //     ])
-    //     .output();
-
-    // println!("{:#?}",output);
-    // match output {
-    //     Ok(output) => {
-    //         if output.status.success() {
-    //             Ok(String::from_utf8_lossy(&output.stdout).to_string())
-    //         } else {
-    //             Err(String::from_utf8_lossy(&output.stderr).to_string())
-    //         }
-    //     }
-    //     Err(e) => Err(e.to_string()),
-    // }
-
     
-    // let delete = std::process::Command::new("powershell")
-    //     .arg("-Command")
-    //     .arg("Remove-Item -Path ./concordium-misc-tools/ -Recurse -Force")
-    //     .output()
-    //     .expect("Failed to execute PowerShell command");
+    let genesis_installed = std::process::Command::new("genesis-creator")
+        .args(&["--help"])
+        .output();
 
-    
+    match genesis_installed {
+        Ok(genesis_installed) => {
+            if !genesis_installed.status.success() {
+                // Run the command
+                let output = std::process::Command::new("git")
+                    .args(&[
+                        "clone",
+                        "--recurse-submodules",
+                        "https://github.com/Concordium/concordium-misc-tools.git",
+                    ])
+                    .output();
+            
+                // this solves the issue but we can manually install all the repositorys
+                let output = std::process::Command::new("cargo")
+                    .args(&[
+                        "install",
+                        "--path",
+                        "concordium-misc-tools/genesis-creator/",
+                        "--locked",
+                    ])
+                    .output();
+            
+                let output = std::process::Command::new("Remove-Item")
+                    .args(&[
+                        "-Path",
+                        "./concordium-misc-tools/",
+                        "-Recurse",
+                        "-Force",
+                    ])
+                    .output();
+                let delete = std::process::Command::new("powershell")
+                    .arg("-Command")
+                    .arg("Remove-Item -Path ./concordium-misc-tools/ -Recurse -Force")
+                    .output()
+                    .expect("Failed to execute PowerShell command");
+            }
+        }
+        Err(e) => println!("Error")
+    }
+
 }
 
 async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -450,6 +445,7 @@ async fn launch_template(
 
     Ok(())
 }
+
 async fn parse_block_info(
     line: String,
     summaries: &mut Vec<BlockItemSummary>,
@@ -522,19 +518,16 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
         state.child_process.take() // This removes the child process from the state and gives us ownership.
     };
 
-    if let Some(mut child) = child_to_kill {
-        child.kill().await.map_err(|e| e.to_string())?;
-        Ok("Killed blockchain process.".to_string())
-    } else {
-        // If no child process was stored in AppState, try to find and kill the concordium-node-collector process.
-
+    // if(cfg!(target_os = "windows")){
         #[cfg(target_os = "windows")]
         {
             // Windows implementation using taskkill command
             let output = Command::new("taskkill")
-                .args(&["/F", "/IM", "concordium-node"])
-                .output()
-                .expect("Failed to execute command");
+            .args(&["/F", "/IM", "concordium-node.exe"])
+            .output()
+            .expect("Failed to execute command");
+        
+            println!("gassi,{:#?}",output.status.success());
 
             if output.status.success() {
                 Ok("Killed concordium-node-collector process.".to_string())
@@ -542,7 +535,6 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
                 Err("No running concordium-node-collector process to kill.".to_string())
             }
         }
-
         #[cfg(not(target_os = "windows"))]
         {
             // Unix-like systems implementation using pgrep and kill
@@ -567,44 +559,8 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
             .await
             .unwrap()
         }
-    }
 }
 
-// #[tauri::command]
-// async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
-//     // Check if there's a child process to kill.
-//     let child_to_kill = {
-//         let mut state = app_state.lock().unwrap();
-//         state.child_process.take() // This removes the child process from the state and gives us ownership.
-//     };
-
-//     if let Some(mut child) = child_to_kill {
-//         child.kill().await.map_err(|e| e.to_string())?;
-//         Ok("Killed blockchain process.".to_string())
-//     } else {
-//         // If no child process was stored in AppState, try to find and kill the concordium-node-collector process.
-//         task::spawn_blocking(|| {
-//             let output = Command::new("pgrep")
-//                 .arg("concordium-node")
-//                 .output()
-//                 .expect("Failed to execute command");
-
-//             if output.status.success() {
-//                 let pid_str = String::from_utf8_lossy(&output.stdout);
-//                 let pid: i32 = pid_str.trim().parse().expect("Failed to parse PID as i32");
-
-//                 // Kill the process
-//                 nix::sys::signal::kill(Pid::from_raw(pid), Signal::SIGKILL)
-//                     .expect("Failed to kill process");
-//                 Ok("Killed concordium-node-collector process.".to_string())
-//             } else {
-//                 Err("No running concordium-node-collector process to kill.".to_string())
-//             }
-//         })
-//         .await
-//         .unwrap()
-//     }
-// }
 
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
