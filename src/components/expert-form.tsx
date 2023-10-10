@@ -1,13 +1,20 @@
-import { useEffect, useState } from "react";
-import { CButton, CModalFooter, CModal, CModalHeader, CModalBody, CModalTitle } from "@coreui/react";
-import '@coreui/coreui/dist/css/coreui.min.css'
+import { useState, FC } from "react";
+import {
+  CButton,
+  CModalFooter,
+  CModal,
+  CModalHeader,
+  CModalBody,
+  CModalTitle,
+} from "@coreui/react";
+import "@coreui/coreui/dist/css/coreui.min.css";
+interface ExprtSettingsPageProps {
+  onHandleSubmit: (event: React.FormEvent<HTMLFormElement>) => void;
+}
+const ExpertSettingsPage: FC<ExprtSettingsPageProps> = ({ onHandleSubmit }) => {
+  const [visible, setVisible] = useState(false);
 
-
-const ExpertSettingsPage = ({ onHandleSubmit }) => {
-     const [visible, setVisible] = useState(false);
-
-
-     const [tomlConfig, setTomlConfig] = useState(`
+  const [tomlConfig, setTomlConfig] = useState(`
 protocolVersion = "5"
 
 [out]
@@ -134,40 +141,69 @@ mintDistribution = { bakingReward = 0.6, finalizationReward = 0.3 }
 transactionFeeDistribution = { baker = 0.45, gasAccount = 0.45 }
 gASRewards = { baker = 0.25, finalizationProof = 0.005, accountCreation = 0.02, chainUpdate = 0.005 }
           `);
-     const handleSubmit = (event: any) => {
-          event.preventDefault();
-          onHandleSubmit(localStorage.getItem('changedAdvanceValue'))
-     }
-     return (
-          <>
-               <div className="w-full flex justify-center">
-                    <CButton className="btn mt-10 bg-ctp-green hover:bg-ctp-green border-none text-black items-center" onClick={() => setVisible(!visible)}>Open Settings</CButton>
-               </div>
+  const handleSubmit = (event: any) => {
+    console.log(setTomlConfig);
 
-               <CModal className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6 overflow-auto mt-10" scrollable visible={visible} onClose={() => setVisible(false)}>
-                    <CModalHeader>
-                         <CModalTitle className="text-3xl text-black font-bolder">Settings</CModalTitle>
-                    </CModalHeader>
+    event.preventDefault();
+    onHandleSubmit(localStorage.getItem("changedAdvanceValue") as any);
+  };
+  return (
+    <>
+      <div className="w-full flex justify-center">
+        <CButton
+          className="btn mt-10 bg-ctp-green hover:bg-ctp-green border-none text-black items-center"
+          onClick={() => setVisible(!visible)}
+        >
+          Open Settings
+        </CButton>
+      </div>
 
-                    <CModalBody>
-                         <form id="settingsform" className="h-full" onSubmit={handleSubmit}>
-                              <textarea
-                                   style={{ height: "65vh" }}
-                                   className="w-full h-70" onChange={e => localStorage.setItem('changedAdvanceValue',e.target.value)} defaultValue={!localStorage.getItem('changedAdvanceValue')?tomlConfig:localStorage.getItem('changedAdvanceValue') as any}/>
-                         </form >
-                    </CModalBody>
-                    <CModalFooter>
-                         <CButton className="btn bg-ctp-red hover:bg-ctp-red text-black" color="secondary" onClick={() => setVisible(false)}>
-                              Close
-                         </CButton>
-                         <input className="btn btn-primary bg-black text-white" type="submit" form="settingsform" value="Save Changes" />
-                    </CModalFooter>
-               </CModal >
-          </>
-     );
-}
+      <CModal
+        className="bg-gradient-to-b from-ctp-base to-ctp-crust p-6 overflow-auto mt-10"
+        scrollable
+        visible={visible}
+        onClose={() => setVisible(false)}
+      >
+        <CModalHeader>
+          <CModalTitle className="text-3xl text-black font-bolder">
+            Settings
+          </CModalTitle>
+        </CModalHeader>
 
+        <CModalBody>
+          <form id="settingsform" className="h-full" onSubmit={handleSubmit}>
+            <textarea
+              style={{ height: "65vh" }}
+              className="w-full h-70"
+              onChange={(e) =>
+                localStorage.setItem("changedAdvanceValue", e.target.value)
+              }
+              defaultValue={
+                !localStorage.getItem("changedAdvanceValue")
+                  ? tomlConfig
+                  : (localStorage.getItem("changedAdvanceValue") as any)
+              }
+            />
+          </form>
+        </CModalBody>
+        <CModalFooter>
+          <CButton
+            className="btn bg-ctp-red hover:bg-ctp-red text-black"
+            color="secondary"
+            onClick={() => setVisible(false)}
+          >
+            Close
+          </CButton>
+          <input
+            className="btn btn-primary bg-black text-white"
+            type="submit"
+            form="settingsform"
+            value="Save Changes"
+          />
+        </CModalFooter>
+      </CModal>
+    </>
+  );
+};
 
 export default ExpertSettingsPage;
-
-
