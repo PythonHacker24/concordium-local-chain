@@ -142,6 +142,8 @@ transactionFeeDistribution = { baker = 0.45, gasAccount = 0.45 }
 gASRewards = { baker = 0.25, finalizationProof = 0.005, accountCreation = 0.02, chainUpdate = 0.005 }
           `);
   const handleSubmit = (event: any) => {
+    console.log(setTomlConfig);
+
     event.preventDefault();
     onHandleSubmit(localStorage.getItem("changedAdvanceValue") as any);
   };

@@ -9,10 +9,8 @@ use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
 use futures::StreamExt;
-#[cfg(not(target_os = "windows"))]
-use nix::sys::signal::{self, Signal};
-#[cfg(not(target_os = "windows"))]
-use nix::unistd::{self, Pid};
+use nix::sys::signal::Signal;
+use nix::unistd::Pid;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -88,8 +86,7 @@ async fn install() -> Result<(), String> {
 
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
-    let binary= if cfg!(target_os="windows"){r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"}else{"concordium-node"};
-    let output = std::process::Command::new(binary)
+    let output = std::process::Command::new("concordium-node")
         .arg("--version")
         .output();
 
@@ -106,60 +103,36 @@ async fn verify_installation() -> Result<String, String> {
         }
         Err(e) => Err(e.to_string()),
     }
-
 }
+
 /* ---------------------------------------------------- INSTALL Genesis COMMAND ------------------------------------------------------------ */
 
 #[tauri::command]
-fn install_genesis_creator() {
+fn install_genesis_creator() -> Result<String, String> {
     // Set the environment variable
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
 
-    
-    let genesis_installed = std::process::Command::new("genesis-creator")
-        .args(&["--help"])
+    // Run the command
+    let output = std::process::Command::new("cargo")
+        .args(&[
+            "install",
+            "--git",
+            "https://github.com/Concordium/concordium-misc-tools.git",
+            "genesis-creator",
+            "--locked",
+        ])
         .output();
 
-    match genesis_installed {
-        Ok(genesis_installed) => {
-            if !genesis_installed.status.success() {
-                // Run the command
-                let output = std::process::Command::new("git")
-                    .args(&[
-                        "clone",
-                        "--recurse-submodules",
-                        "https://github.com/Concordium/concordium-misc-tools.git",
-                    ])
-                    .output();
-            
-                // this solves the issue but we can manually install all the repositorys
-                let output = std::process::Command::new("cargo")
-                    .args(&[
-                        "install",
-                        "--path",
-                        "concordium-misc-tools/genesis-creator/",
-                        "--locked",
-                    ])
-                    .output();
-            
-                let output = std::process::Command::new("Remove-Item")
-                    .args(&[
-                        "-Path",
-                        "./concordium-misc-tools/",
-                        "-Recurse",
-                        "-Force",
-                    ])
-                    .output();
-                let delete = std::process::Command::new("powershell")
-                    .arg("-Command")
-                    .arg("Remove-Item -Path ./concordium-misc-tools/ -Recurse -Force")
-                    .output()
-                    .expect("Failed to execute PowerShell command");
+    match output {
+        Ok(output) => {
+            if output.status.success() {
+                Ok(String::from_utf8_lossy(&output.stdout).to_string())
+            } else {
+                Err(String::from_utf8_lossy(&output.stderr).to_string())
             }
         }
-        Err(e) => println!("Error")
+        Err(e) => Err(e.to_string()),
     }
-
 }
 
 async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
@@ -274,29 +247,20 @@ async fn launch_template(
 
     // Create a new folder within the home directory for LC1C if it does not exist
     let folder_path = home_dir.join(".concordium-lc1c");
-
     if !folder_path.exists() {
         std::fs::create_dir_all(&folder_path).map_err(|e| e.to_string())?;
     }
-
     let mut new_chain_folder: PathBuf = Default::default();
     let mut toml_path: PathBuf = Default::default();
     let mut should_run_concordium_node = false;
-
     match &launch_mode {
         LaunchMode::Easy => {
             new_chain_folder = create_next_chain_folder(&folder_path)?;
             let toml_url = "http://0x0.st/HpsT.toml";
             toml_path = new_chain_folder.join("desired_toml_file_name.toml");
-
-            
             let toml_string = toml_path
-            .to_str()
-            .ok_or("Failed to convert path to string")?;
-
-            println!("Hello string = {:#?}", toml_string);
-
-
+                .to_str()
+                .ok_or("Failed to convert path to string")?;
             match download_file(&toml_url, &toml_string).await {
                 Ok(_) => Ok(()),
                 Err(e) => Err(e.to_string()),
@@ -325,8 +289,7 @@ async fn launch_template(
     };
 
     if should_run_concordium_node {
-        let binary= if cfg!(target_os="windows"){r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"}else{"concordium-node"};
-        let mut child = AsyncCommand::new(binary)
+        let mut child = AsyncCommand::new("concordium-node")
             .args(&[
                 "--no-bootstrap=true",
                 "--listen-port",
@@ -371,8 +334,7 @@ async fn launch_template(
         });
     } else {
         let genesis_creator_path = home_dir.join(".cargo/bin/genesis-creator");
-        
-        let output = std::process::Command::new("genesis-creator")
+        let output = std::process::Command::new(&genesis_creator_path)
             .args(&["generate", "--config", &toml_path.display().to_string()])
             .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
             .output();
@@ -397,8 +359,7 @@ async fn launch_template(
         // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
         // That it is actually running successfully.
 
-        let binary= if cfg!(target_os="windows"){r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"}else{"concordium-node"};
-        let mut child = AsyncCommand::new(binary)
+        let mut child = AsyncCommand::new("concordium-node")
             .args(&[
                 "--no-bootstrap=true",
                 "--listen-port",
@@ -445,7 +406,6 @@ async fn launch_template(
 
     Ok(())
 }
-
 async fn parse_block_info(
     line: String,
     summaries: &mut Vec<BlockItemSummary>,
@@ -518,49 +478,33 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
         state.child_process.take() // This removes the child process from the state and gives us ownership.
     };
 
-    // if(cfg!(target_os = "windows")){
-        #[cfg(target_os = "windows")]
-        {
-            // Windows implementation using taskkill command
-            let output = Command::new("taskkill")
-            .args(&["/F", "/IM", "concordium-node.exe"])
-            .output()
-            .expect("Failed to execute command");
-        
-            println!("gassi,{:#?}",output.status.success());
+    if let Some(mut child) = child_to_kill {
+        child.kill().await.map_err(|e| e.to_string())?;
+        Ok("Killed blockchain process.".to_string())
+    } else {
+        // If no child process was stored in AppState, try to find and kill the concordium-node-collector process.
+        task::spawn_blocking(|| {
+            let output = Command::new("pgrep")
+                .arg("concordium-node")
+                .output()
+                .expect("Failed to execute command");
 
             if output.status.success() {
+                let pid_str = String::from_utf8_lossy(&output.stdout);
+                let pid: i32 = pid_str.trim().parse().expect("Failed to parse PID as i32");
+
+                // Kill the process
+                nix::sys::signal::kill(Pid::from_raw(pid), Signal::SIGKILL)
+                    .expect("Failed to kill process");
                 Ok("Killed concordium-node-collector process.".to_string())
             } else {
                 Err("No running concordium-node-collector process to kill.".to_string())
             }
-        }
-        #[cfg(not(target_os = "windows"))]
-        {
-            // Unix-like systems implementation using pgrep and kill
-            task::spawn_blocking(|| {
-                let output = Command::new("pgrep")
-                    .arg("concordium-node")
-                    .output()
-                    .expect("Failed to execute command");
-
-                if output.status.success() {
-                    let pid_str = String::from_utf8_lossy(&output.stdout);
-                    let pid: i32 = pid_str.trim().parse().expect("Failed to parse PID as i32");
-
-                    // Kill the process
-                    nix::sys::signal::kill(Pid::from_raw(pid), Signal::SIGKILL)
-                        .expect("Failed to kill process");
-                    Ok("Killed concordium-node-collector process.".to_string())
-                } else {
-                    Err("No running concordium-node-collector process to kill.".to_string())
-                }
-            })
-            .await
-            .unwrap()
-        }
+        })
+        .await
+        .unwrap()
+    }
 }
-
 
 /* ---------------------------------------------------- SUBTOOLS --------------------------------------------------------------------------- */
 
