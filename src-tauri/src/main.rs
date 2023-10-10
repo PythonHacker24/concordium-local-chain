@@ -451,6 +451,7 @@ async fn parse_block_info(
     summaries: &mut Vec<BlockItemSummary>,
 ) -> Option<UiBlockInfo> {
     println!("Processing line: {:?}", line);
+    println!("Transaction Summarry: {:#?}", summaries);
     let (block_hash, number) = account_info()
         .await
         .map_err(|e| {
@@ -676,3 +677,6 @@ fn main() {
         .run(tauri::generate_context!())
         .expect("error while running tauri application");
 }
+
+
+
