@@ -690,7 +690,7 @@ function Dashboard() {
   const [blockHeight, setBlockHeight] = useState("");
   // const [amountDict, setAmounts] = useState({});
   const [contractsDict, setContracts] = useState<any>({});
-  const [transactionsDict, setTransactions] = useState<any>({});
+  const [transactionsArray, setTransactionsArray] = useState<any[]>([]);
   const [amountDictFilter, setAmountsFilter] = useState<any>({});
   const [filterValue, setFilter] = useState("");
   const [amountDict, setTempDict] = useState<any>({});
@@ -699,11 +699,31 @@ function Dashboard() {
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
 
-    // Set up the listener for the 'new-block' event
+    const addOrUpdateTransaction = (newTransactions: any) => {
+      setTransactionsArray((prevTransactions: any[]) => {
+        const updatedTransactions = [...prevTransactions];
+
+        Object.keys(newTransactions).forEach((key) => {
+          const transaction = newTransactions[key];
+          const existingTransactionIndex = updatedTransactions.findIndex(
+            (t: any) => t?.hash === transaction?.hash
+          );
+
+          if (existingTransactionIndex === -1) {
+            updatedTransactions.push(transaction);
+          } else {
+            updatedTransactions[existingTransactionIndex] = transaction;
+          }
+        });
+
+        return updatedTransactions;
+      });
+    };
+
     listen("new-block", (event: any) => {
+      addOrUpdateTransaction(event.payload.transactions);
       setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
-      setTransactions(event.payload.transactions);
       setContracts(event.payload.contracts);
       if (filterValue.length == 0) {
         setTempDict(event.payload.amounts);
@@ -1026,7 +1046,7 @@ function Dashboard() {
                 </th>
               </tr>
               <tbody>
-                {Object.keys(transactionsDict).length === 0 ? (
+                {transactionsArray.length === 0 ? (
                   <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1 ">
                     <td className="py-2 px-4  text-primary-dark">
                       No Transactions
@@ -1035,13 +1055,11 @@ function Dashboard() {
                     <td className="py-2 px-4  text-primary-dark"></td>
                   </tr>
                 ) : (
-                  Object.keys(transactionsDict).map((x) => {
-                    const transaction = transactionsDict[x];
+                  transactionsArray.map((transaction, index) => {
                     const firstEvent = transaction?.result?.events?.[0];
-
                     return (
                       <tr
-                        key={x}
+                        key={transaction?.hash || index}
                         className="hover:bg-primary-dark hover:bg-opacity-25 hover:cursor-pointer"
                         onClick={() => {
                           setShowModal(true);
