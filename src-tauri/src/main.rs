@@ -27,6 +27,7 @@ use tauri::State;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
+use tokio::time::Duration;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
 use toml::Value as TomlValue;
@@ -387,16 +388,16 @@ async fn launch_template(
         let mut transaction_summaries = Vec::new();
         let window_clone = state.main_window.clone();
         tokio::spawn(async move {
-            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
-                // logging
+            loop {
                 if let Some(window) = &window_clone {
-                    //logging
-                    if let Some(block_info) =
-                        parse_block_info(line, &mut transaction_summaries).await
-                    {
-                        window.emit("new-block", block_info).unwrap();
-                    }
+                    if let Some(block_info) = parse_block_info(&mut transaction_summaries).await {
+                        // Check if the block is not the same as the last one
+                        window.emit("new-block", block_info.clone()).unwrap();
+                        }
+                    
                 }
+        
+                tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
         });
     } else {
@@ -470,16 +471,16 @@ async fn launch_template(
         let mut transaction_summaries = Vec::new();
         let window_clone = state.main_window.clone();
         tokio::spawn(async move {
-            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
-                // logging
+            loop {
                 if let Some(window) = &window_clone {
-                    // Logging
-                    if let Some(block_info) =
-                        parse_block_info(line, &mut transaction_summaries).await
-                    {
-                        window.emit("new-block", block_info).unwrap();
-                    }
+                    if let Some(block_info) = parse_block_info(&mut transaction_summaries).await {
+                        // Check if the block is not the same as the last one
+                        window.emit("new-block", block_info.clone()).unwrap();
+                        }
+                    
                 }
+        
+                tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
         });
     }
@@ -488,10 +489,8 @@ async fn launch_template(
 }
 
 async fn parse_block_info(
-    line: String,
     summaries: &mut Vec<BlockItemSummary>,
 ) -> Option<UiBlockInfo> {
-    println!("Processing line: {:?}", line);
     println!("Transaction Summarry: {:#?}", summaries);
     let (block_hash, number) = account_info()
         .await
@@ -516,6 +515,8 @@ async fn parse_block_info(
             e
         })
         .ok()?;
+
+
 
     transaction_info(block_hash, summaries)
         .await
@@ -609,11 +610,11 @@ struct UiBlockInfo {
     hash: String,
     number: AbsoluteBlockHeight,
     amounts: HashMap<AccountAddress, Amount>,
-    contracts: HashMap<ContractAddress, Amount>,
+    contracts: HashMap<String, Amount>,
     transactions: Vec<BlockItemSummary>,
 }
 
-async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<ContractAddress, Amount>> {
+async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<String, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
     let mut contracts = client.get_instance_list(&hash).await?;
@@ -622,9 +623,9 @@ async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<ContractAddres
         match a {
             Ok(contract_addr) => {
                 let info = client.get_instance_info(contract_addr, &hash).await?;
-                println!("{:#?}", info);
                 let amt = info.response.amount();
-                amounts_map.insert(a?, amt);
+                let key_string = contract_addr.index.to_string();
+                amounts_map.insert(key_string, amt);
             }
             Err(e) => return Err(anyhow::anyhow!("Failed to get contract address: {}", e)),
         }

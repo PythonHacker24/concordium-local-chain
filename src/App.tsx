@@ -725,6 +725,7 @@ function Dashboard() {
       setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
       setContracts(event.payload.contracts);
+      console.log(event.payload);
       if (filterValue.length == 0) {
         setTempDict(event.payload.amounts);
       }
@@ -982,7 +983,7 @@ function Dashboard() {
             <table className="w-full  text-sm text-left text-background-light dark:text-background-dark  transition-all ease-in-out duration-300">
               <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase transition-all ease-in-out duration-300">
                 <th className="px-6 py-3 text-primary-dark">
-                  Contract Address
+                  Contract Index
                 </th>
                 <th className="px-6 py-3 text-primary-dark">Amount</th>
               </tr>
