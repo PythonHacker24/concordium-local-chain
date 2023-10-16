@@ -645,7 +645,13 @@ async fn transaction_info(
             Ok(summary) => {
                 summaries.push(summary);
             }
-            Err(e) => return Err(anyhow::anyhow!("Error fetching transaction event: {}", e)),
+            Err(e) => {
+                return Err(anyhow::anyhow!(
+                    "Error fetching transaction event for hash {:?}: {}",
+                    hash,
+                    e
+                ))
+            }
         }
     }
     Ok(())
@@ -662,9 +668,15 @@ async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, 
                 let addr = AccountIdentifier::Address(account_addr.clone());
                 let info = client.get_account_info(&addr, hash).await?;
                 let amt = info.response.account_amount;
-                amounts_map.insert(a?, amt);
+                amounts_map.insert(account_addr, amt);
             }
-            Err(e) => return Err(anyhow::anyhow!("Failed to get account address: {}", e)),
+            Err(e) => {
+                return Err(anyhow::anyhow!(
+                    "Failed to get account address for hash {:?}: {}",
+                    hash,
+                    e
+                ))
+            }
         }
     }
     Ok(amounts_map)

@@ -696,29 +696,29 @@ function Dashboard() {
   const [amountDict, setTempDict] = useState<any>({});
   const [activeTab, setActiveTab] = useState("accounts");
 
+  const addOrUpdateTransaction = (newTransactions: any) => {
+    setTransactionsArray((prevTransactions: any[]) => {
+      const updatedTransactions = [...prevTransactions];
+
+      Object.keys(newTransactions).forEach((key) => {
+        const transaction = newTransactions[key];
+        const existingTransactionIndex = updatedTransactions.findIndex(
+          (t: any) => t?.hash === transaction?.hash
+        );
+
+        if (existingTransactionIndex === -1) {
+          updatedTransactions.push(transaction);
+        } else {
+          updatedTransactions[existingTransactionIndex] = transaction;
+        }
+      });
+
+      return updatedTransactions;
+    });
+  };
+
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
-
-    const addOrUpdateTransaction = (newTransactions: any) => {
-      setTransactionsArray((prevTransactions: any[]) => {
-        const updatedTransactions = [...prevTransactions];
-
-        Object.keys(newTransactions).forEach((key) => {
-          const transaction = newTransactions[key];
-          const existingTransactionIndex = updatedTransactions.findIndex(
-            (t: any) => t?.hash === transaction?.hash
-          );
-
-          if (existingTransactionIndex === -1) {
-            updatedTransactions.push(transaction);
-          } else {
-            updatedTransactions[existingTransactionIndex] = transaction;
-          }
-        });
-
-        return updatedTransactions;
-      });
-    };
 
     listen("new-block", (event: any) => {
       addOrUpdateTransaction(event.payload.transactions);
