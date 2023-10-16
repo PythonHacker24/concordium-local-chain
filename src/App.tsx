@@ -1040,6 +1040,9 @@ function Dashboard() {
                 <th className="px-6 py-3 text-primary-dark ">Transactions</th>
                 <th className="px-6 py-3 text-primary-dark text-center">
                   Amount
+                </th>{" "}
+                <th className="px-6 py-3 text-primary-dark text-center">
+                  Type
                 </th>
                 <th className="px-6 py-3 text-primary-dark text-center">
                   Outcome
@@ -1071,6 +1074,9 @@ function Dashboard() {
                         </td>
                         <td className="py-2 border-1 border-opacity-10 border-black  px-4 text-center text-primary-dark">
                           {transactionAmount(firstEvent) + " CCD"}
+                        </td>
+                        <td className="py-2 border-1 text-capitalize border-opacity-10 border-black  px-4 text-center text-primary-dark">
+                          {transaction?.type?.contents}
                         </td>
                         {transaction?.result?.outcome === "success" ? (
                           <td className="py-2 font-monospace border-1   border-opacity-10 border-black bg-opacity-75 text-center px-4 text-primary-dark">
