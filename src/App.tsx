@@ -698,6 +698,7 @@ function Dashboard() {
 
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
+    let transactionsunlistenFn: UnlistenFn | undefined;
 
     const addOrUpdateTransaction = (newTransactions: any) => {
       setTransactionsArray((prevTransactions: any[]) => {
@@ -721,7 +722,6 @@ function Dashboard() {
     };
 
     listen("new-block", (event: any) => {
-      addOrUpdateTransaction(event.payload.transactions);
       setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
       setContracts(event.payload.contracts);
@@ -737,10 +737,25 @@ function Dashboard() {
         console.error("Error setting up listener:", error);
       });
 
+      listen("transactions", (event: any) => {
+        addOrUpdateTransaction(event.payload.transactions);
+        console.log(event.payload);
+      })
+        .then((unlisten) => {
+          transactionsunlistenFn = unlisten;
+        })
+        .catch((error) => {
+          console.error("Error setting up listener:", error);
+        });
+
     // Cleanup the listener when the component is unmounted
     return () => {
       if (unlistenFn) {
         unlistenFn();
+      }
+
+      if (transactionsunlistenFn) {
+        transactionsunlistenFn();
       }
     };
   }, []);
