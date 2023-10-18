@@ -725,7 +725,9 @@ function Dashboard() {
       setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
       setContracts(event.payload.contracts);
-      console.log(event.payload);
+      console.log("Received contracts:", event.payload.contracts);
+      console.log("payload", event.payload);
+
       if (filterValue.length == 0) {
         setTempDict(event.payload.amounts);
       }
@@ -737,16 +739,16 @@ function Dashboard() {
         console.error("Error setting up listener:", error);
       });
 
-      listen("transactions", (event: any) => {
-        addOrUpdateTransaction(event.payload.transactions);
-        console.log(event.payload);
+    listen("transactions", (event: any) => {
+      addOrUpdateTransaction(event.payload.transactions);
+      console.log(event.payload);
+    })
+      .then((unlisten) => {
+        transactionsunlistenFn = unlisten;
       })
-        .then((unlisten) => {
-          transactionsunlistenFn = unlisten;
-        })
-        .catch((error) => {
-          console.error("Error setting up listener:", error);
-        });
+      .catch((error) => {
+        console.error("Error setting up listener:", error);
+      });
 
     // Cleanup the listener when the component is unmounted
     return () => {
@@ -994,29 +996,54 @@ function Dashboard() {
       </div>
       <div className="">
         {activeTab === "contracts" && (
-          <div className="overflow-x-auto  container-fluid overflow-y-auto transition-all ease-in-out duration-300">
-            <table className="w-full  text-sm text-left text-background-light dark:text-background-dark  transition-all ease-in-out duration-300">
-              <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase transition-all ease-in-out duration-300">
-                <th className="px-6 py-3 text-primary-dark">
-                  Contract Index
+          <div className="overflow-x-auto container-fluid overflow-y-auto">
+            <table className="w-full text-sm text-left text-background-light dark:text-background-dark ">
+              <tr className="bg-primary-dark bg-opacity-10  border-1 border-black border-opacity-25 table-bordered text-uppercase">
+                <th className="px-6 py-3 text-primary-dark">Index</th>
+                <th className="px-6 py-3 text-primary-dark text-center">
+                  Name
+                </th>{" "}
+                <th className="px-6 py-3 text-primary-dark text-center">
+                  Amount
                 </th>
-                <th className="px-6 py-3 text-primary-dark">Amount</th>
+                <th className="px-6 py-3 text-primary-dark text-center">
+                  Methods
+                </th>
               </tr>
               <tbody>
-                {" "}
-                {Object.keys(contractsDict).map((x) => (
-                  <tr
-                    key={x}
-                    className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300"
-                  >
-                    <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
-                      {x}
+                {Object.keys(contractsDict).length === 0 ? (
+                  <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1  ">
+                    <td className="py-2 px-4 text-primary-dark">
+                      No Contracts
                     </td>
-                    <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
-                      {contractsDict[x]}
-                    </td>
+                    <td></td>
                   </tr>
-                ))}
+                ) : (
+                  Object.entries(contractsDict).map(
+                    ([address, contractDetails]: [any, any]) => (
+                      <tr
+                        key={address}
+                        className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300"
+                      >
+                        <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                          {address}
+                        </td>
+                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                          {contractDetails.name}
+                        </td>
+                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                          {contractDetails.amount + " CCD"}
+                        </td>
+                        {/* Owner: {contractDetails.owner}
+                        <br />
+                       */}{" "}
+                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                          {contractDetails.methods.join(", ")}
+                        </td>
+                      </tr>
+                    )
+                  )
+                )}
               </tbody>
             </table>
           </div>
@@ -1070,6 +1097,7 @@ function Dashboard() {
                     <td className="py-2 px-4  text-primary-dark">
                       No Transactions
                     </td>
+                    <td></td>
                     <td className="py-2 px-4  text-primary-dark"></td>
                     <td className="py-2 px-4  text-primary-dark"></td>
                   </tr>
