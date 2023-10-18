@@ -719,12 +719,13 @@ function Dashboard() {
 
   useEffect(() => {
     let unlistenFn: UnlistenFn | undefined;
+    let transactionsunlistenFn: UnlistenFn | undefined;
 
     listen("new-block", (event: any) => {
-      addOrUpdateTransaction(event.payload.transactions);
       setBlockHeight(event.payload.number);
       setLatestHash(event.payload.hash);
       setContracts(event.payload.contracts);
+      console.log(event.payload);
       if (filterValue.length == 0) {
         setTempDict(event.payload.amounts);
       }
@@ -736,10 +737,25 @@ function Dashboard() {
         console.error("Error setting up listener:", error);
       });
 
+      listen("transactions", (event: any) => {
+        addOrUpdateTransaction(event.payload.transactions);
+        console.log(event.payload);
+      })
+        .then((unlisten) => {
+          transactionsunlistenFn = unlisten;
+        })
+        .catch((error) => {
+          console.error("Error setting up listener:", error);
+        });
+
     // Cleanup the listener when the component is unmounted
     return () => {
       if (unlistenFn) {
         unlistenFn();
+      }
+
+      if (transactionsunlistenFn) {
+        transactionsunlistenFn();
       }
     };
   }, []);
@@ -982,7 +998,7 @@ function Dashboard() {
             <table className="w-full  text-sm text-left text-background-light dark:text-background-dark  transition-all ease-in-out duration-300">
               <tr className="bg-primary-dark bg-opacity-10 border-opacity-25 rounded border-1 border-black text-uppercase transition-all ease-in-out duration-300">
                 <th className="px-6 py-3 text-primary-dark">
-                  Contract Address
+                  Contract Index
                 </th>
                 <th className="px-6 py-3 text-primary-dark">Amount</th>
               </tr>
