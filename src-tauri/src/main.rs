@@ -28,9 +28,9 @@ use tauri::State;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
-use tokio::time::Duration;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
+use tokio::time::Duration;
 use toml::Value as TomlValue;
 
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
@@ -380,12 +380,11 @@ async fn launch_template(
             .spawn()
             .expect("Failed to start the node.");
 
-
         let mut state = app_state.lock().unwrap();
         state.child_process = Some(child);
 
         let window_clone: Option<Window> = state.main_window.clone();
-        
+
         // Block Indexer
         tokio::spawn(async move {
             loop {
@@ -393,10 +392,9 @@ async fn launch_template(
                     if let Some(block_info) = parse_block_info().await {
                         // Check if the block is not the same as the last one
                         window.emit("new-block", block_info.clone()).unwrap();
-                        }
-                    
+                    }
                 }
-        
+
                 tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
         });
@@ -407,16 +405,16 @@ async fn launch_template(
             let mut latest_block = parse_block_info().await.unwrap().number;
             let original_latest_block = latest_block.clone();
             let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
-        
+
             loop {
                 if let Some(window) = &window_clone {
                     println!("Processing transactions for block: {}", latest_block);
-        
+
                     // Get all transactions for block
                     let transactions = transaction_info(latest_block).await.unwrap();
                     // Emit latest transactions as event
                     window.emit("transactions", transactions.clone()).unwrap();
-        
+
                     if latest_fetched == -1 {
                         if latest_block.height > 0 {
                             latest_block.height -= 1;
@@ -429,7 +427,8 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched) {
+                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched)
+                    {
                         latest_block.height -= 1;
                     } else {
                         let latest_new_block = parse_block_info().await.unwrap().number;
@@ -482,7 +481,7 @@ async fn launch_template(
         } else {
             "concordium-node"
         };
-        let  child = AsyncCommand::new(binary)
+        let child = AsyncCommand::new(binary)
             .args(&[
                 "--no-bootstrap=true",
                 "--listen-port",
@@ -504,7 +503,6 @@ async fn launch_template(
             .spawn()
             .expect("Failed to start the node.");
 
-
         let mut state = app_state.lock().unwrap();
         state.child_process = Some(child);
 
@@ -515,10 +513,9 @@ async fn launch_template(
                     if let Some(block_info) = parse_block_info().await {
                         // Check if the block is not the same as the last one
                         window.emit("new-block", block_info.clone()).unwrap();
-                        }
-                    
+                    }
                 }
-        
+
                 tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
         });
@@ -529,16 +526,16 @@ async fn launch_template(
             let mut latest_block = parse_block_info().await.unwrap().number;
             let original_latest_block = latest_block.clone();
             let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
-        
+
             loop {
                 if let Some(window) = &window_clone {
                     println!("Processing transactions for block: {}", latest_block);
-        
+
                     // Get all transactions for block
                     let transactions = transaction_info(latest_block).await.unwrap();
                     // Emit latest transactions as event
                     window.emit("transactions", transactions.clone()).unwrap();
-        
+
                     if latest_fetched == -1 {
                         if latest_block.height > 0 {
                             latest_block.height -= 1;
@@ -551,7 +548,8 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched) {
+                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched)
+                    {
                         latest_block.height -= 1;
                     } else {
                         let latest_new_block = parse_block_info().await.unwrap().number;
@@ -594,10 +592,6 @@ async fn parse_block_info() -> Option<UiBlockInfo> {
         })
         .ok()?;
 
-
-
-
-
     Some(UiBlockInfo {
         hash: block_hash.to_string(),
         number,
@@ -605,7 +599,6 @@ async fn parse_block_info() -> Option<UiBlockInfo> {
         contracts: contracts_map,
     })
 }
-
 
 fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
     let mut counter = 1;
@@ -686,7 +679,7 @@ struct UiBlockInfo {
 }
 #[derive(Debug, serde::Serialize, Clone)]
 struct TransactionsInfo {
-    transactions: Vec<BlockItemSummary>
+    transactions: Vec<BlockItemSummary>,
 }
 
 async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<String, InstanceInfo>> {
@@ -698,7 +691,7 @@ async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<String, Instan
         match a {
             Ok(contract_addr) => {
                 let info = client.get_instance_info(contract_addr, &hash).await?;
-                
+
                 let key_string = contract_addr.index.to_string();
                 let contract_info = info.response;
                 amounts_map.insert(key_string, contract_info);
@@ -709,13 +702,11 @@ async fn instance_list(hash: BlockHash) -> anyhow::Result<HashMap<String, Instan
     Ok(amounts_map)
 }
 
-async fn transaction_info(
-    number: AbsoluteBlockHeight,
-) -> anyhow::Result<TransactionsInfo> {
+async fn transaction_info(number: AbsoluteBlockHeight) -> anyhow::Result<TransactionsInfo> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
     let res = client.get_block_transaction_events(&number).await?;
-    let mut summaries: Vec<BlockItemSummary> = Vec::new();  // Created locally
+    let mut summaries: Vec<BlockItemSummary> = Vec::new(); // Created locally
 
     let mut transactions = res.response;
     while let Some(item) = transactions.next().await {
