@@ -712,15 +712,27 @@ async fn transaction_info(number: AbsoluteBlockHeight) -> anyhow::Result<Transac
     while let Some(item) = transactions.next().await {
         match item {
             Ok(summary) => {
+                println!("Transaction: {:?}", summary);
                 summaries.push(summary);
             }
-            Err(e) => return Err(anyhow::anyhow!("Error fetching transaction event: {}", e)),
+            Err(e) => {
+                println!("Error fetching transaction event: {}", e);
+                return Err(anyhow::anyhow!("Error fetching transaction event: {}", e));
+            }
         }
     }
+
+    if summaries.is_empty() {
+        println!("No transactions found for the given block height.");
+    } else {
+        println!("Total transactions fetched: {}", summaries.len());
+    }
+
     Ok(TransactionsInfo {
         transactions: summaries.to_vec(),
     })
 }
+
 async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddress, Amount>> {
     let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100")?;
     let mut client = v2::Client::new(endpoint_node).await?;
