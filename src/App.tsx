@@ -20,6 +20,7 @@ import {
   faCheckToSlot,
   faCircleInfo,
   faCloudDownload,
+  faCopy,
   faDownload,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
@@ -726,6 +727,7 @@ function Dashboard() {
       setLatestHash(event.payload.hash);
       setContracts(event.payload.contracts);
       console.log("Received contracts:", event.payload.contracts);
+
       console.log("payload", event.payload);
 
       if (filterValue.length == 0) {
@@ -741,7 +743,7 @@ function Dashboard() {
 
     listen("transactions", (event: any) => {
       addOrUpdateTransaction(event.payload.transactions);
-      console.log(event.payload);
+      console.log("payload transaction", event.payload);
     })
       .then((unlisten) => {
         transactionsunlistenFn = unlisten;
@@ -829,6 +831,18 @@ function Dashboard() {
     });
     setAmountsFilter(dictionary);
   }
+  const [activeRow, setActiveRow] = useState(null);
+  const [copy, setCopy] = useState(false);
+
+  const handleCopy = (textToCopy: any) => {
+    navigator.clipboard.writeText(textToCopy);
+    setCopy(true);
+
+    setTimeout(() => {
+      setCopy(false);
+    }, 1000);
+  };
+
   // function to get the amount of a transaction with decimal point
   const transactionAmount = (event: any) => {
     const amount = event?.amount;
@@ -1161,13 +1175,47 @@ function Dashboard() {
                 </thead>
                 <tbody className="">
                   {filterValue.length === 0 &&
-                    Object.keys(amountDict).map((x) => (
+                    Object.keys(amountDict).map((x: any) => (
                       <tr
                         key={x}
-                        className="hover:bg-primary-dark hover:bg-opacity-25"
+                        className=" hover:bg-primary-dark hover:bg-opacity-25"
+                        onMouseEnter={() => setActiveRow(x)}
+                        onMouseLeave={() => setActiveRow(null)}
                       >
-                        <td className="py-2 px-4 border-1 font-monospace border-opacity-25 border-black  text-primary-dark">
-                          {x}
+                        <td className="flex py-2 px-4 border-bottom-1 border-start-1 font-monospace border-opacity-25 border-black text-primary-dark relative">
+                          <span className="mx-3">{x}</span>
+                          {activeRow === x && (
+                            <span
+                              className=" cursor-pointer text-black  "
+                              onClick={() => handleCopy(x)}
+                            >
+                              {copy ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-clipboard-check-fill"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z" />
+                                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-clipboard"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+                                </svg>
+                              )}
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
                           {amountDict[x] / 1000000 + " CCD"}
@@ -1176,13 +1224,47 @@ function Dashboard() {
                     ))}
 
                   {filterValue.length ? (
-                    Object.keys(amountDictFilter).map((x) => (
+                    Object.keys(amountDictFilter).map((x: any) => (
                       <tr
                         key={x}
                         className="hover:bg-primary-dark hover:bg-opacity-25"
+                        onMouseEnter={() => setActiveRow(x)}
+                        onMouseLeave={() => setActiveRow(null)}
                       >
-                        <td className="py-2 px-4 border-1 font-monospace border-opacity-25 border-black  text-primary-dark">
-                          {x}
+                        <td className="flex py-2 px-4 border-bottom-1 border-start-1 font-monospace border-opacity-25 border-black text-primary-dark relative">
+                          <span className="mx-3">{x}</span>
+                          {activeRow === x && (
+                            <span
+                              className=" cursor-pointer text-black  "
+                              onClick={() => handleCopy(x)}
+                            >
+                              {copy ? (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-clipboard-check-fill"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M6.5 0A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3Zm3 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3Z" />
+                                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1A2.5 2.5 0 0 1 9.5 5h-3A2.5 2.5 0 0 1 4 2.5v-1Zm6.854 7.354-3 3a.5.5 0 0 1-.708 0l-1.5-1.5a.5.5 0 0 1 .708-.708L7.5 10.793l2.646-2.647a.5.5 0 0 1 .708.708Z" />
+                                </svg>
+                              ) : (
+                                <svg
+                                  xmlns="http://www.w3.org/2000/svg"
+                                  width="16"
+                                  height="16"
+                                  fill="currentColor"
+                                  className="bi bi-clipboard"
+                                  viewBox="0 0 16 16"
+                                >
+                                  <path d="M4 1.5H3a2 2 0 0 0-2 2V14a2 2 0 0 0 2 2h10a2 2 0 0 0 2-2V3.5a2 2 0 0 0-2-2h-1v1h1a1 1 0 0 1 1 1V14a1 1 0 0 1-1 1H3a1 1 0 0 1-1-1V3.5a1 1 0 0 1 1-1h1v-1z" />
+                                  <path d="M9.5 1a.5.5 0 0 1 .5.5v1a.5.5 0 0 1-.5.5h-3a.5.5 0 0 1-.5-.5v-1a.5.5 0 0 1 .5-.5h3zm-3-1A1.5 1.5 0 0 0 5 1.5v1A1.5 1.5 0 0 0 6.5 4h3A1.5 1.5 0 0 0 11 2.5v-1A1.5 1.5 0 0 0 9.5 0h-3z" />
+                                </svg>
+                              )}
+                            </span>
+                          )}
                         </td>
                         <td className="py-2 border-1 border-opacity-25 border-black px-4 text-primary-dark">
                           {amountDictFilter[x] / 1000000 + " CCD"}
