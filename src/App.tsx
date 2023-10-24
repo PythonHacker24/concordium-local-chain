@@ -20,7 +20,6 @@ import {
   faCheckToSlot,
   faCircleInfo,
   faCloudDownload,
-  faCopy,
   faDownload,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
