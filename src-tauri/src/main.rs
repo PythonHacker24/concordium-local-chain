@@ -4,16 +4,16 @@
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
 use concordium_rust_sdk::types::smart_contracts::InstanceInfo;
 use concordium_rust_sdk::types::{
-    AbsoluteBlockHeight, BlockItemSummary, ContractAddress, ContractSubIndex, TransactionStatus,
+    AbsoluteBlockHeight, BlockItemSummary
 };
 use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
 use futures::StreamExt;
 #[cfg(not(target_os = "windows"))]
-use nix::sys::signal::{self, Signal};
+use nix::sys::signal::Signal;
 #[cfg(not(target_os = "windows"))]
-use nix::unistd::{self, Pid};
+use nix::unistd::Pid;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -26,7 +26,6 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use tauri::State;
 use tauri::{Manager, Window};
-use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
@@ -90,10 +89,11 @@ async fn install() -> Result<(), String> {
 
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
+
     let binary = if cfg!(target_os = "windows") {
         r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
     } else {
-        "concordium-node"
+        "/usr/local/bin/concordium-node"
     };
     let output = std::process::Command::new(binary).arg("--version").output();
 
@@ -116,6 +116,7 @@ async fn verify_installation() -> Result<String, String> {
 #[tauri::command]
 fn install_genesis_creator() -> anyhow::Result<String, String> {
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
+    
 
     if cfg!(target_os = "windows") {
         let genesis_installed = std::process::Command::new("genesis-creator")
@@ -168,8 +169,9 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
             }
         }
     } else {
-        println!("Not windows");
-        let output = std::process::Command::new("cargo")
+        let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
+        let cargo_bin_path = home_dir.join(".cargo/bin/cargo").display().to_string();
+        let output = std::process::Command::new(cargo_bin_path)
             .args(&[
                 "install",
                 "--git",
@@ -178,7 +180,7 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
                 "--locked",
             ])
             .output();
-        println!("Output: {:#?}", output);
+
         match output {
             Ok(output_data) => {
                 if output_data.status.success() {
@@ -216,8 +218,8 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
     // Write the content to the file
     dest_file.write_all(&content)?;
 
-    let metadata = dest_file.metadata()?;
-    println!("Downloaded {} bytes to {}", metadata.len(), destination);
+    let _metadata = dest_file.metadata()?;
+
     // if mac OS open the file after downloading
     if cfg!(target_os = "macos") {
         std::process::Command::new("open")
@@ -323,7 +325,7 @@ async fn launch_template(
                 .to_str()
                 .ok_or("Failed to convert path to string")?;
 
-            println!("Hello string = {:#?}", toml_string);
+
 
             let _ = match download_file(&toml_url, &toml_string).await {
                 Ok(_) => Ok(()),
@@ -356,7 +358,7 @@ async fn launch_template(
         let binary = if cfg!(target_os = "windows") {
             r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
         } else {
-            "concordium-node"
+            "/usr/local/bin/concordium-node"
         };
         let child = AsyncCommand::new(binary)
             .args(&[
@@ -441,7 +443,7 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched)
+                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched
                     {
                         latest_block.height -= 1;
                     } else {
@@ -493,7 +495,7 @@ async fn launch_template(
         let binary = if cfg!(target_os = "windows") {
             r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
         } else {
-            "concordium-node"
+            "/usr/local/bin/concordium-node"
         };
         let child = AsyncCommand::new(binary)
             .args(&[
@@ -524,7 +526,7 @@ async fn launch_template(
 
         // BLOCK INDEXER
         tokio::spawn(async move {
-            println!("This is working.");
+
             loop {
                 if let Some(window) = &window_clone {
                     if let Some(block_info) = parse_block_info().await {
@@ -540,7 +542,7 @@ async fn launch_template(
 
         // TRANSACTION PROCESSOR
         tokio::spawn(async move {
-            println!("We are here.");
+
             let mut latest_block = parse_block_info().await.unwrap().number;
             let original_latest_block = latest_block.clone();
             let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
@@ -566,7 +568,7 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if (latest_fetched != -1 && latest_block.height as i64 > latest_fetched)
+                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched
                     {
                         latest_block.height -= 1;
                     } else {
@@ -639,7 +641,7 @@ fn create_next_chain_folder(base_path: &Path) -> Result<PathBuf, String> {
 #[tauri::command]
 async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     // Check if there's a child process to kill.
-    let child_to_kill = {
+    let _child_to_kill = {
         let mut state = app_state.lock().unwrap();
         state.child_process.take() // This removes the child process from the state and gives us ownership.
     };
@@ -652,7 +654,7 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
             .output()
             .expect("Failed to execute command");
 
-        println!("gassi,{:#?}", output.status.success());
+
 
         if output.status.success() {
             Ok("Killed concordium-node-collector process.".to_string())
