@@ -402,12 +402,26 @@ async fn launch_template(
 
         // TRANSACTION PROCESSOR
         tokio::spawn(async move {
-            let mut latest_block = parse_block_info().await.unwrap().number;
+                let mut latest_block;
+            loop {
+                match parse_block_info().await {
+                    Some(block) => {
+                        latest_block = block.number;
+                        break;
+                    }
+                    None => {
+                        eprintln!("Failed to fetch the block info. Retrying...");
+                        tokio::time::sleep(tokio::time::Duration::from_secs(5)).await;
+                    }
+                }
+            }
+
             let original_latest_block = latest_block.clone();
-            let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
+            let mut latest_fetched: i64 = -1;
 
             loop {
                 if let Some(window) = &window_clone {
+
                     println!("Processing transactions for block: {}", latest_block);
 
                     // Get all transactions for block
@@ -507,7 +521,10 @@ async fn launch_template(
         state.child_process = Some(child);
 
         let window_clone = state.main_window.clone();
+
+        // BLOCK INDEXER
         tokio::spawn(async move {
+            println!("This is working.");
             loop {
                 if let Some(window) = &window_clone {
                     if let Some(block_info) = parse_block_info().await {
@@ -523,6 +540,7 @@ async fn launch_template(
 
         // TRANSACTION PROCESSOR
         tokio::spawn(async move {
+            println!("We are here.");
             let mut latest_block = parse_block_info().await.unwrap().number;
             let original_latest_block = latest_block.clone();
             let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
