@@ -3,9 +3,7 @@
 
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
 use concordium_rust_sdk::types::smart_contracts::InstanceInfo;
-use concordium_rust_sdk::types::{
-    AbsoluteBlockHeight, BlockItemSummary
-};
+use concordium_rust_sdk::types::{AbsoluteBlockHeight, BlockItemSummary};
 use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
@@ -89,18 +87,22 @@ async fn install() -> Result<(), String> {
 
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
-
     let binary = if cfg!(target_os = "windows") {
         r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+    } else if cfg!(target_os = "linux") {
+        "/usr/bin/concordium-node"
     } else {
         "/usr/local/bin/concordium-node"
     };
+
     let output = std::process::Command::new(binary).arg("--version").output();
 
     match output {
         Ok(output) => {
             let stderr_string = String::from_utf8_lossy(&output.stderr).to_string();
-            if stderr_string.contains("command not found") {
+            if stderr_string.contains("command not found")
+                || stderr_string.contains("No such file or directory")
+            {
                 Err("Concordium node is not installed.".to_string())
             } else if output.status.success() {
                 Ok(String::from_utf8_lossy(&output.stdout).to_string())
@@ -111,12 +113,12 @@ async fn verify_installation() -> Result<String, String> {
         Err(e) => Err(e.to_string()),
     }
 }
+
 /* ---------------------------------------------------- INSTALL Genesis COMMAND ------------------------------------------------------------ */
 
 #[tauri::command]
 fn install_genesis_creator() -> anyhow::Result<String, String> {
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
-    
 
     if cfg!(target_os = "windows") {
         let genesis_installed = std::process::Command::new("genesis-creator")
@@ -219,6 +221,7 @@ async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::
     dest_file.write_all(&content)?;
 
     let _metadata = dest_file.metadata()?;
+    println!("Downloaded {} bytes to {}", _metadata.len(), destination);
 
     // if mac OS open the file after downloading
     if cfg!(target_os = "macos") {
@@ -325,8 +328,6 @@ async fn launch_template(
                 .to_str()
                 .ok_or("Failed to convert path to string")?;
 
-
-
             let _ = match download_file(&toml_url, &toml_string).await {
                 Ok(_) => Ok(()),
                 Err(e) => Err(e.to_string()),
@@ -357,6 +358,8 @@ async fn launch_template(
     if should_run_concordium_node {
         let binary = if cfg!(target_os = "windows") {
             r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+        } else if cfg!(target_os = "linux") {
+            "concordium-node"
         } else {
             "/usr/local/bin/concordium-node"
         };
@@ -404,7 +407,7 @@ async fn launch_template(
 
         // TRANSACTION PROCESSOR
         tokio::spawn(async move {
-                let mut latest_block;
+            let mut latest_block;
             loop {
                 match parse_block_info().await {
                     Some(block) => {
@@ -423,7 +426,6 @@ async fn launch_template(
 
             loop {
                 if let Some(window) = &window_clone {
-
                     println!("Processing transactions for block: {}", latest_block);
 
                     // Get all transactions for block
@@ -443,8 +445,7 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched
-                    {
+                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched {
                         latest_block.height -= 1;
                     } else {
                         let latest_new_block = parse_block_info().await.unwrap().number;
@@ -494,6 +495,8 @@ async fn launch_template(
 
         let binary = if cfg!(target_os = "windows") {
             r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+        } else if cfg!(target_os = "linux") {
+            "concordium-node"
         } else {
             "/usr/local/bin/concordium-node"
         };
@@ -526,7 +529,6 @@ async fn launch_template(
 
         // BLOCK INDEXER
         tokio::spawn(async move {
-
             loop {
                 if let Some(window) = &window_clone {
                     if let Some(block_info) = parse_block_info().await {
@@ -542,7 +544,6 @@ async fn launch_template(
 
         // TRANSACTION PROCESSOR
         tokio::spawn(async move {
-
             let mut latest_block = parse_block_info().await.unwrap().number;
             let original_latest_block = latest_block.clone();
             let mut latest_fetched: i64 = -1; // Using a signed integer to handle -1 as uninitialized
@@ -568,8 +569,7 @@ async fn launch_template(
                             latest_block = latest_new_block;
                             latest_fetched = original_latest_block.height as i64;
                         }
-                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched
-                    {
+                    } else if latest_fetched != -1 && latest_block.height as i64 > latest_fetched {
                         latest_block.height -= 1;
                     } else {
                         let latest_new_block = parse_block_info().await.unwrap().number;
@@ -653,8 +653,6 @@ async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String
             .args(&["/F", "/IM", "concordium-node.exe"])
             .output()
             .expect("Failed to execute command");
-
-
 
         if output.status.success() {
             Ok("Killed concordium-node-collector process.".to_string())
