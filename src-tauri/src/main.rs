@@ -88,7 +88,7 @@ async fn install() -> Result<(), String> {
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
     let binary = if cfg!(target_os = "windows") {
-        r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+        r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
     } else if cfg!(target_os = "linux") {
         "/usr/bin/concordium-node"
     } else {
@@ -357,7 +357,7 @@ async fn launch_template(
 
     if should_run_concordium_node {
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+            r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
         } else if cfg!(target_os = "linux") {
             "concordium-node"
         } else {
@@ -494,7 +494,7 @@ async fn launch_template(
         // That it is actually running successfully.
 
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+            r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
         } else if cfg!(target_os = "linux") {
             "concordium-node"
         } else {
