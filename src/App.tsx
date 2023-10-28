@@ -849,7 +849,7 @@ function Dashboard() {
     if (amount !== undefined) {
       return amount / 1000000;
     }
-    return "N/A";
+    return "0";
   };
 
   return (
