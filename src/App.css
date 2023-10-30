@@ -33,19 +33,21 @@
 }
 
 body {
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  height: 50vh;
-  margin: 0;
+  /* display: flex; */
+  /* justify-content: center;
+  align-items: center; */
+  height: 100vh;
+  /* margin: 0; */
 }
 
 .launch-button-container {
-  position: fixed;  /* This makes the button stick to a position */
-  bottom: 20px;     /* 20px from the bottom of the page */
-  left: 50%;        /* 50% from the left which helps in centering */
-  transform: translateX(-50%); /* This shifts the container left by half its width, centering the button */
-  z-index: 1000;    /* Ensuring it appears on top of other content */
+  position: fixed; /* This makes the button stick to a position */
+  bottom: 20px; /* 20px from the bottom of the page */
+  left: 50%; /* 50% from the left which helps in centering */
+  transform: translateX(
+    -50%
+  ); /* This shifts the container left by half its width, centering the button */
+  z-index: 1000; /* Ensuring it appears on top of other content */
 }
 
 /* Optional: Add some styling to the button */
@@ -61,7 +63,7 @@ body {
 .config-container {
   display: flex;
   justify-content: center; /* Center the content horizontally */
-  align-items: center;     /* Center the content vertically */
+  align-items: center; /* Center the content vertically */
   margin-top: 20px; /* Add some spacing from the buttons for visual separation */
   padding: 20px; /* Add some padding for visual appeal */
 }

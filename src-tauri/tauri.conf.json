@@ -8,20 +8,22 @@
   },
   "package": {
     "productName": "concordium-lc1c",
-    "version": "0.0.0"
+    "version": "0.1.0"
   },
   "tauri": {
     "allowlist": {
-      "all": false,
+      "all": true,
       "shell": {
-        "all": false,
-        "open": true
+        "all": true,
+        "open": true,
+        "execute": true,
+        "sidecar": true
       }
     },
     "bundle": {
       "active": true,
       "targets": "all",
-      "identifier": "com.tauri.dev",
+      "identifier": "io.athenaconsulting.dev",
       "icon": [
         "icons/32x32.png",
         "icons/128x128.png",
