@@ -37,3 +37,6 @@ Navigate back to the root directory and install the Rust dependencies:
 ```bash
 yarn run tauri dev
 ```
+
+## Documentation
+To go over the documentation of the tool and troubleshooting please read [this](https://github.com/Concordium/concordium-local-chain/blob/main/DOCUMENTATION.md).
