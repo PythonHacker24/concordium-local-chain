@@ -38,3 +38,10 @@ Navigate back to the root directory and install the Rust dependencies:
 ```bash
 yarn run tauri dev
 ```
+
+## Building for Production
+To build the Tauri app, you can easily run: 
+```bash
+yarn run tauri build
+```
+Please note that the application would be compiled for the OS you are currently running. 
