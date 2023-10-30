@@ -1,6 +1,7 @@
 # Concordium LC1C
 
-The Concordium LC1C GUI tool is built using Tauri and Rust.
+The Concordium LC1C GUI tool source code built using Tauri and Rust.
+LC1C allows to launch a custom local chain on local OS in less than two minutes. 
 
 ## Prerequisites
 
