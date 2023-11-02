@@ -119,7 +119,11 @@ async fn verify_installation() -> Result<String, String> {
 #[tauri::command]
 fn install_genesis_creator() -> anyhow::Result<String, String> {
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
-    let genesis_creator_command = "genesis-creator";
+    let genesis_creator_command = if cfg!(target_os = "windows") {
+        "genesis-creator.exe"
+    } else {
+        "genesis-creator"
+    };
 
     if std::process::Command::new(genesis_creator_command)
         .arg("--version")
@@ -130,7 +134,13 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
     }
 
     // Clone the repository
-    let clone_result = std::process::Command::new("git")
+    let git_clone_command = if cfg!(target_os = "windows") {
+        "git.exe"
+    } else {
+        "git"
+    };
+
+    let clone_result = std::process::Command::new(git_clone_command)
         .args(&[
             "clone",
             "--recurse-submodules",
@@ -150,7 +160,13 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
         ));
     }
 
-    let install_result = std::process::Command::new("cargo")
+    let cargo_install_command = if cfg!(target_os = "windows") {
+        "cargo.exe"
+    } else {
+        "cargo"
+    };
+
+    let install_result = std::process::Command::new(cargo_install_command)
         .args(&[
             "install",
             "--path",
@@ -171,7 +187,16 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
         ));
     }
 
-    let delete_result = std::fs::remove_dir_all("concordium-misc-tools");
+    let delete_result = if cfg!(target_os = "windows") {
+        std::process::Command::new("cmd.exe")
+            .args(&["/C", "rmdir", "/S", "/Q", "concordium-misc-tools"])
+            .output()
+    } else {
+        std::process::Command::new("rm")
+            .args(&["-rf", "concordium-misc-tools"])
+            .output()
+    };
+
     if let Err(e) = delete_result {
         return Err(format!("Failed to delete the cloned directory: {}", e));
     }
