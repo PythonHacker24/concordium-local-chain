@@ -119,83 +119,66 @@ async fn verify_installation() -> Result<String, String> {
 #[tauri::command]
 fn install_genesis_creator() -> anyhow::Result<String, String> {
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
+    let genesis_creator_command = "genesis-creator";
 
-    if cfg!(target_os = "windows") {
-        let genesis_installed = std::process::Command::new("genesis-creator")
-            .args(&["--help"])
-            .output();
-
-        match genesis_installed {
-            Ok(genesis_installed_output) => {
-                if !genesis_installed_output.status.success() {
-                    // Clone the repository
-                    let clone_output = std::process::Command::new("git")
-                        .args(&[
-                            "clone",
-                            "--recurse-submodules",
-                            "https://github.com/Concordium/concordium-misc-tools.git",
-                        ])
-                        .output();
-
-                    if let Err(e) = clone_output {
-                        return Err(format!("Failed to clone the repository: {}", e));
-                    }
-
-                    // Install using cargo
-                    let install_output = std::process::Command::new("cargo")
-                        .args(&[
-                            "install",
-                            "--path",
-                            "concordium-misc-tools/genesis-creator/",
-                            "--locked",
-                        ])
-                        .output();
-
-                    if let Err(e) = install_output {
-                        return Err(format!("Failed to install with cargo: {}", e));
-                    }
-
-                    // Delete the cloned directory
-                    let delete_output = std::process::Command::new("powershell")
-                        .arg("-Command")
-                        .arg("Remove-Item -Path ./concordium-misc-tools/ -Recurse -Force")
-                        .output();
-
-                    if let Err(e) = delete_output {
-                        return Err(format!("Failed to delete the directory: {}", e));
-                    }
-                }
-            }
-            Err(_) => {
-                return Err("Failed to check if genesis-creator is installed".to_string());
-            }
-        }
-    } else {
-        let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
-        let cargo_bin_path = home_dir.join(".cargo/bin/cargo").display().to_string();
-        let output = std::process::Command::new(cargo_bin_path)
-            .args(&[
-                "install",
-                "--git",
-                "https://github.com/Concordium/concordium-misc-tools.git",
-                "genesis-creator",
-                "--locked",
-            ])
-            .output();
-
-        match output {
-            Ok(output_data) => {
-                if output_data.status.success() {
-                    return Ok(String::from_utf8_lossy(&output_data.stdout).to_string());
-                } else {
-                    return Err(String::from_utf8_lossy(&output_data.stderr).to_string());
-                }
-            }
-            Err(e) => return Err(format!("Cargo install command failed: {}", e)),
-        }
+    if std::process::Command::new(genesis_creator_command)
+        .arg("--version")
+        .output()
+        .is_ok()
+    {
+        return Ok("genesis-creator is already installed.".to_string());
     }
+
+    // Clone the repository
+    let clone_result = std::process::Command::new("git")
+        .args(&[
+            "clone",
+            "--recurse-submodules",
+            "https://github.com/Concordium/concordium-misc-tools.git",
+        ])
+        .output();
+
+    if let Err(e) = clone_result {
+        return Err(format!("Failed to clone the repository: {}", e));
+    }
+
+    let clone_output = clone_result.unwrap();
+    if !clone_output.status.success() {
+        return Err(format!(
+            "Failed to clone the repository: {}",
+            String::from_utf8_lossy(&clone_output.stderr)
+        ));
+    }
+
+    let install_result = std::process::Command::new("cargo")
+        .args(&[
+            "install",
+            "--path",
+            "concordium-misc-tools/genesis-creator/",
+            "--locked",
+        ])
+        .output();
+
+    if let Err(e) = install_result {
+        return Err(format!("Failed to install with cargo: {}", e));
+    }
+
+    let install_output = install_result.unwrap();
+    if !install_output.status.success() {
+        return Err(format!(
+            "Failed to install with cargo: {}",
+            String::from_utf8_lossy(&install_output.stderr)
+        ));
+    }
+
+    let delete_result = std::fs::remove_dir_all("concordium-misc-tools");
+    if let Err(e) = delete_result {
+        return Err(format!("Failed to delete the cloned directory: {}", e));
+    }
+
     Ok("Successfully installed genesis-creator".to_string())
 }
+
 async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Make a GET request to the URL
     let response = reqwest::get(url).await?;
