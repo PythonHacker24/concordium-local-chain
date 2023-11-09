@@ -37,7 +37,8 @@
     },
     "updater": {
       "active": false
-    }
+    },
+    
     "windows": [
       {
         "fullscreen": false,
