@@ -77,8 +77,46 @@ async fn install() -> Result<(), String> {
     let destination_str = destination
         .to_str()
         .ok_or("Failed to convert path to string")?;
+
     match download_file(&download_url, &destination_str).await {
-        Ok(_) => Ok(()),
+        Ok(_) => {
+            if cfg!(target_os = "linux") {
+                let status = Command::new("pkexec")
+                    .args(&["dpkg", "-i", destination_str])
+                    .status()
+                    .map_err(|_| "Failed to execute pkexec command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed".into())
+                }
+            } else if cfg!(target_os = "windows") {
+                let status = Command::new("msiexec")
+                    .args(&["/i", destination_str, "/quiet", "/norestart"])
+                    .status()
+                    .map_err(|_| "Failed to execute msiexec command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed".into())
+                }
+            } else if cfg!(target_os = "macos") {
+                let status = Command::new("sudo")
+                    .args(&["installer", "-pkg", destination_str, "-target", "/"])
+                    .status()
+                    .map_err(|_| "Failed to execute installer command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed".into())
+                }
+            } else {
+                Ok(())
+            }
+        }
         Err(e) => Err(e.to_string()),
     }
 }

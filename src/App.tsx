@@ -41,6 +41,10 @@ import { concordiumMiscTools } from "./";
 function Installer() {
   // Installation for Node
   const [installing, setInstalling] = useState(false);
+  const [installationError, setInstallationError] = useState<string | null>(
+    null
+  );
+
   // Installation for Genesis Creator
   const [installingCreator, setInstallingCreator] = useState(false);
 
@@ -67,8 +71,11 @@ function Installer() {
     try {
       await invoke("install");
       setInstallationSuccess(true);
+      setInstallationError(null);
     } catch (error) {
       console.error("Installation error:", error);
+      setInstallationSuccess(false);
+      setInstallationError("Installation failed. Please try again.");
     } finally {
       setInstalling(false);
     }
@@ -146,7 +153,10 @@ function Installer() {
             : "Install Concordium Node"}
         </div>
       </button>
-
+      <div className="flex justify-center text-danger">
+        {" "}
+        {installationError}
+      </div>
       <button
         className={`  hover:text-white rounded-3 flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           verifying
