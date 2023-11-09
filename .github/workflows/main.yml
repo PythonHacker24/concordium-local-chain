@@ -48,13 +48,13 @@ jobs:
         uses: tauri-apps/tauri-action@v0
 
         env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
           tagName: pr-${{ github.event.pull_request.number }}
           releaseName: 'PR Preview v${{ github.event.pull_request.head.ref }}'
           releaseBody: 'Draft release for PR #${{ github.event.pull_request.number }} to the main branch.'
           releaseDraft: true
-          prerelease: true
+          prerelease: false
 
 
 # name: Release
