@@ -50,6 +50,7 @@ jobs:
         env:
           GITHUB_TOKEN: ${{ secrets.TOKEN }}
         with:
+          includeUpdaterJson: false
           tagName: pr-${{ github.event.pull_request.number }}
           releaseName: 'PR Preview v${{ github.event.pull_request.head.ref }}'
           releaseBody: 'Draft release for PR #${{ github.event.pull_request.number }} to the main branch.'
