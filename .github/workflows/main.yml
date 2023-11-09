@@ -3,7 +3,7 @@ on:
   pull_request:
     branches:
       - main
-    types: [opened, reopened, synchronize]
+    types: [closed]
   workflow_dispatch:
 
 jobs:
