@@ -93,14 +93,14 @@ async fn install() -> Result<(), String> {
                 }
             } else if cfg!(target_os = "windows") {
                 let status = Command::new("msiexec")
-                    .args(&["/i", destination_str, "/quiet", "/norestart"])
+                    .args(&["/i", destination_str, "/passive", "/norestart"])
                     .status()
                     .map_err(|_| "Failed to execute msiexec command")?;
 
                 if status.success() {
                     Ok(())
                 } else {
-                    Err("Installation failed".into())
+                    Err("Installation failed. Ensure you are running with administrative privileges.".into())
                 }
             } else if cfg!(target_os = "macos") {
                 let status = Command::new("sudo")

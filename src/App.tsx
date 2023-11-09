@@ -153,10 +153,11 @@ function Installer() {
             : "Install Concordium Node"}
         </div>
       </button>
-      <div className="flex justify-center text-danger">
-        {" "}
-        {installationError}
-      </div>
+      {installationError && (
+        <div className="flex justify-center text-danger">
+          {installationError}
+        </div>
+      )}
       <button
         className={`  hover:text-white rounded-3 flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           verifying
