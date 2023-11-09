@@ -41,6 +41,10 @@ import { concordiumMiscTools } from "./";
 function Installer() {
   // Installation for Node
   const [installing, setInstalling] = useState(false);
+  const [installationError, setInstallationError] = useState<string | null>(
+    null
+  );
+
   // Installation for Genesis Creator
   const [installingCreator, setInstallingCreator] = useState(false);
 
@@ -67,8 +71,11 @@ function Installer() {
     try {
       await invoke("install");
       setInstallationSuccess(true);
+      setInstallationError(null);
     } catch (error) {
       console.error("Installation error:", error);
+      setInstallationSuccess(false);
+      setInstallationError("Installation failed. Please try again.");
     } finally {
       setInstalling(false);
     }
@@ -80,7 +87,7 @@ function Installer() {
       await invoke("verify_installation");
       setVerificationError(null); // clear any previous errors
       setVerificationSuccess(true);
-      setInstallationSuccess(true);
+      // setInstallationSuccess(true);
     } catch (error) {
       console.error("Verification Failed: ", error);
       setVerificationError("Verification Failed: " + error);
@@ -113,40 +120,88 @@ function Installer() {
         Follow the below steps to complete installation and running of a local
         node.
       </div>
-      <button
-        onClick={install}
-        disabled={installing || installationSuccess}
-        className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
-          installing
-            ? "bg-secondary-dark hover:bg-secondary-dark"
-            : installationSuccess || verificationSuccess
-            ? "bg-success"
-            : "bg-primary-light hover:bg-primary-dark"
-        }`}
-      >
-        {installationSuccess ? (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
-            <FontAwesomeIcon icon={faCheck} className="p-2   " fontSize={25} />
-          </div>
-        ) : (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
-            <FontAwesomeIcon
-              icon={faDownload}
-              className="p-2   "
-              fontSize={25}
-            />
-          </div>
-        )}
+      {verificationSuccess ? (
+        <button
+          onClick={install}
+          disabled={installing || installationSuccess}
+          className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+            installing
+              ? "bg-secondary-dark hover:bg-secondary-dark"
+              : installationSuccess || verificationSuccess
+              ? "bg-success"
+              : "bg-primary-light hover:bg-primary-dark"
+          }`}
+        >
+          {installationSuccess ? (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          ) : (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
+              <FontAwesomeIcon
+                icon={faDownload}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          )}
 
-        <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
-          {installing
-            ? "Installing..."
-            : installationSuccess || verificationSuccess
-            ? "Node Installed!"
-            : "Install Concordium Node"}
+          <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
+            {installing
+              ? "Installing..."
+              : installationSuccess || verificationSuccess
+              ? "Node Installed!"
+              : "Install Concordium Node"}
+          </div>
+        </button>
+      ) : (
+        <button
+          onClick={install}
+          disabled={installing || installationSuccess}
+          className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+            installing
+              ? "bg-secondary-dark hover:bg-secondary-dark"
+              : installationSuccess
+              ? "bg-success"
+              : "bg-primary-light hover:bg-primary-dark"
+          }`}
+        >
+          {installationSuccess ? (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          ) : (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
+              <FontAwesomeIcon
+                icon={faDownload}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          )}
+
+          <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
+            {installing
+              ? "Installing..."
+              : installationSuccess
+              ? "Node Installed!"
+              : "Install Concordium Node"}
+          </div>
+        </button>
+      )}
+      {installationError && (
+        <div className="flex justify-center text-danger">
+          {installationError}
         </div>
-      </button>
-
+      )}
       <button
         className={`  hover:text-white rounded-3 flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           verifying

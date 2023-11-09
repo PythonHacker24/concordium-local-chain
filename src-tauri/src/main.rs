@@ -51,11 +51,11 @@ impl AppState {
 async fn install() -> Result<(), String> {
     // Detect the user's OS and architecture and generate the correct link for it.
     let download_url = if cfg!(target_os = "windows") {
-        "https://distribution.concordium.software/windows/Signed/Node-5.4.2-0.msi"
+        "https://distribution.concordium.software/windows/Signed/Node-6.0.4-0.msi"
     } else if cfg!(target_os = "macos") {
         "https://distribution.concordium.software/macos/signed/concordium-node-6.0.4-0.pkg"
     } else if cfg!(target_os = "linux") {
-        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_5.4.2-0_amd64.deb"
+        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_6.0.4-0_amd64.deb"
     } else {
         return Err("Unsupported OS".into());
     };
@@ -77,8 +77,46 @@ async fn install() -> Result<(), String> {
     let destination_str = destination
         .to_str()
         .ok_or("Failed to convert path to string")?;
+
     match download_file(&download_url, &destination_str).await {
-        Ok(_) => Ok(()),
+        Ok(_) => {
+            if cfg!(target_os = "linux") {
+                let status = Command::new("pkexec")
+                    .args(&["dpkg", "-i", destination_str])
+                    .status()
+                    .map_err(|_| "Failed to execute pkexec command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed".into())
+                }
+            } else if cfg!(target_os = "windows") {
+                let status = Command::new("msiexec")
+                    .args(&["/i", destination_str, "/passive", "/norestart"])
+                    .status()
+                    .map_err(|_| "Failed to execute msiexec command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed. Ensure you are running with administrative privileges.".into())
+                }
+            } else if cfg!(target_os = "macos") {
+                let status = Command::new("sudo")
+                    .args(&["installer", "-pkg", destination_str, "-target", "/"])
+                    .status()
+                    .map_err(|_| "Failed to execute installer command")?;
+
+                if status.success() {
+                    Ok(())
+                } else {
+                    Err("Installation failed".into())
+                }
+            } else {
+                Ok(())
+            }
+        }
         Err(e) => Err(e.to_string()),
     }
 }
@@ -88,7 +126,7 @@ async fn install() -> Result<(), String> {
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
     let binary = if cfg!(target_os = "windows") {
-        r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
+        r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
     } else if cfg!(target_os = "linux") {
         "/usr/bin/concordium-node"
     } else {
@@ -117,57 +155,52 @@ async fn verify_installation() -> Result<String, String> {
 /* ---------------------------------------------------- INSTALL Genesis COMMAND ------------------------------------------------------------ */
 
 #[tauri::command]
-fn install_genesis_creator() -> anyhow::Result<String, String> {
+fn install_genesis_creator() -> Result<String, String> {
     std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
 
     if cfg!(target_os = "windows") {
-        let genesis_installed = std::process::Command::new("genesis-creator")
-            .args(&["--help"])
+        let genesis_installed = Command::new("genesis-creator")
+            .args(&["--version"])
             .output();
 
-        match genesis_installed {
-            Ok(genesis_installed_output) => {
-                if !genesis_installed_output.status.success() {
-                    // Clone the repository
-                    let clone_output = std::process::Command::new("git")
-                        .args(&[
-                            "clone",
-                            "--recurse-submodules",
-                            "https://github.com/Concordium/concordium-misc-tools.git",
-                        ])
-                        .output();
-
-                    if let Err(e) = clone_output {
-                        return Err(format!("Failed to clone the repository: {}", e));
-                    }
-
-                    // Install using cargo
-                    let install_output = std::process::Command::new("cargo")
-                        .args(&[
-                            "install",
-                            "--path",
-                            "concordium-misc-tools/genesis-creator/",
-                            "--locked",
-                        ])
-                        .output();
-
-                    if let Err(e) = install_output {
-                        return Err(format!("Failed to install with cargo: {}", e));
-                    }
-
-                    // Delete the cloned directory
-                    let delete_output = std::process::Command::new("powershell")
-                        .arg("-Command")
-                        .arg("Remove-Item -Path ./concordium-misc-tools/ -Recurse -Force")
-                        .output();
-
-                    if let Err(e) = delete_output {
-                        return Err(format!("Failed to delete the directory: {}", e));
-                    }
-                }
+        if let Err(_) = genesis_installed {
+            if Command::new("cargo").arg("--version").output().is_err() {
+                return Err("Cargo is not found in your PATH. Please install Rust and Cargo, and ensure they are in your PATH.".to_string());
             }
-            Err(_) => {
-                return Err("Failed to check if genesis-creator is installed".to_string());
+
+            let clone_output = Command::new("git")
+                .args(&[
+                    "clone",
+                    "--recurse-submodules",
+                    "https://github.com/Concordium/concordium-misc-tools.git",
+                ])
+                .output();
+
+            if let Err(e) = clone_output {
+                return Err(format!("Failed to clone the repository: {}", e));
+            }
+
+            // Install genesis-creator
+            let install_output = Command::new("cargo")
+                .args(&[
+                    "install",
+                    "--path",
+                    "concordium-misc-tools/genesis-creator/",
+                    "--locked",
+                ])
+                .output();
+
+            if let Err(e) = install_output {
+                return Err(format!("Failed to install with cargo: {}", e));
+            }
+
+            // Delete the cloned directory
+            let delete_output = Command::new("cmd")
+                .args(&["/C", "rmdir", "/s", "/q", "concordium-misc-tools"])
+                .output();
+
+            if let Err(e) = delete_output {
+                return Err(format!("Failed to delete the directory: {}", e));
             }
         }
     } else {
@@ -196,6 +229,7 @@ fn install_genesis_creator() -> anyhow::Result<String, String> {
     }
     Ok("Successfully installed genesis-creator".to_string())
 }
+
 async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Make a GET request to the URL
     let response = reqwest::get(url).await?;
@@ -357,7 +391,7 @@ async fn launch_template(
 
     if should_run_concordium_node {
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
+            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
         } else if cfg!(target_os = "linux") {
             "concordium-node"
         } else {
@@ -494,7 +528,7 @@ async fn launch_template(
         // That it is actually running successfully.
 
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 5.4.2\concordium-node.exe"
+            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
         } else if cfg!(target_os = "linux") {
             "concordium-node"
         } else {
