@@ -71,8 +71,12 @@ async fn install() -> Result<(), String> {
         return Err("Unsupported OS".into());
     };
 
-    let downloads_folder = dirs::download_dir()
-        .unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"));
+    let downloads_folder = if cfg!(target_os = "linux") {
+        PathBuf::from("/tmp")
+    } else {
+        dirs::download_dir()
+            .unwrap_or_else(|| dirs::home_dir().expect("Failed to get home directory"))
+    };
     let destination = downloads_folder.join(file_name);
     let destination_str = destination
         .to_str()
@@ -81,10 +85,16 @@ async fn install() -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") {
+                let script_path =
+                    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("install_concordium_debian.sh");
+                let script_str = script_path
+                    .to_str()
+                    .ok_or("Failed to convert script path to string")?;
+
                 let status = Command::new("pkexec")
-                    .args(&["dpkg", "-i", destination_str])
+                    .args(&["bash", script_str, destination_str])
                     .status()
-                    .map_err(|_| "Failed to execute pkexec command")?;
+                    .map_err(|_| "Failed to execute the bash script with pkexec")?;
 
                 if status.success() {
                     Ok(())
