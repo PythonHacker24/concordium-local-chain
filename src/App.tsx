@@ -87,7 +87,7 @@ function Installer() {
       await invoke("verify_installation");
       setVerificationError(null); // clear any previous errors
       setVerificationSuccess(true);
-      // setInstallationSuccess(true);
+      setInstallationSuccess(true);
     } catch (error) {
       console.error("Verification Failed: ", error);
       setVerificationError("Verification Failed: " + error);
@@ -647,7 +647,7 @@ function GenesisBuilder() {
 
   return (
     <>
-      <div className="container m-[10%] mx-auto items-center justify-center h-screen">
+      <div className="container m-[10%] mx-auto items-center justify-center ">
         <CAlert
           color="secondary"
           className="text-lg w-75 flex justify-center mx-auto items-center"
@@ -1064,8 +1064,8 @@ function Dashboard() {
       </div>
       <div className="">
         {activeTab === "contracts" && (
-          <div className="overflow-x-auto container-fluid overflow-y-auto">
-            <table className="w-full text-sm text-left text-background-light dark:text-background-dark ">
+          <div className="overflow-x-auto container-fluid overflow-y-auto ">
+            <table className="w-full text-sm text-left text-background-light dark:text-background-dark  ">
               <tr className="bg-primary-dark bg-opacity-10  border-1 border-black border-opacity-25 table-bordered text-uppercase">
                 <th className="px-6 py-3 text-primary-dark">Index</th>
                 <th className="px-6 py-3 text-primary-dark text-center">
@@ -1080,18 +1080,21 @@ function Dashboard() {
               </tr>
               <tbody>
                 {Object.keys(contractsDict).length === 0 ? (
-                  <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1  ">
+                  <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1">
                     <td className="py-2 px-4 text-primary-dark">
                       No Contracts
                     </td>
                     <td></td>
+
+                    <td className="py-2 px-4  text-primary-dark"></td>
+                    <td className="py-2 px-4  text-primary-dark"></td>
                   </tr>
                 ) : (
                   Object.entries(contractsDict).map(
                     ([address, contractDetails]: [any, any]) => (
                       <tr
                         key={address}
-                        className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300"
+                        className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300  "
                       >
                         <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
                           {address}
@@ -1105,7 +1108,7 @@ function Dashboard() {
                         {/* Owner: {contractDetails.owner}
                         <br />
                        */}{" "}
-                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300 ">
                           {contractDetails.methods.join(", ")}
                         </td>
                       </tr>
