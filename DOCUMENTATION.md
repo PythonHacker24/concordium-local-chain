@@ -161,3 +161,4 @@ There are a couple of issues that a developer might initially face on the first 
 
 ### Installation of Concordium Node Incomplete
 Although you believe that you have correctly installed Concordium Node, verification fails. If verification fails, it means that there is a certain permission issue on the OS.
+

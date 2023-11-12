@@ -41,6 +41,10 @@ import { concordiumMiscTools } from "./";
 function Installer() {
   // Installation for Node
   const [installing, setInstalling] = useState(false);
+  const [installationError, setInstallationError] = useState<string | null>(
+    null
+  );
+
   // Installation for Genesis Creator
   const [installingCreator, setInstallingCreator] = useState(false);
 
@@ -67,8 +71,11 @@ function Installer() {
     try {
       await invoke("install");
       setInstallationSuccess(true);
+      setInstallationError(null);
     } catch (error) {
       console.error("Installation error:", error);
+      setInstallationSuccess(false);
+      setInstallationError("Installation failed. Please try again.");
     } finally {
       setInstalling(false);
     }
@@ -113,40 +120,88 @@ function Installer() {
         Follow the below steps to complete installation and running of a local
         node.
       </div>
-      <button
-        onClick={install}
-        disabled={installing || installationSuccess}
-        className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
-          installing
-            ? "bg-secondary-dark hover:bg-secondary-dark"
-            : installationSuccess || verificationSuccess
-            ? "bg-success"
-            : "bg-primary-light hover:bg-primary-dark"
-        }`}
-      >
-        {installationSuccess ? (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
-            <FontAwesomeIcon icon={faCheck} className="p-2   " fontSize={25} />
-          </div>
-        ) : (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
-            <FontAwesomeIcon
-              icon={faDownload}
-              className="p-2   "
-              fontSize={25}
-            />
-          </div>
-        )}
+      {verificationSuccess ? (
+        <button
+          onClick={install}
+          disabled={installing || installationSuccess}
+          className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+            installing
+              ? "bg-secondary-dark hover:bg-secondary-dark"
+              : installationSuccess || verificationSuccess
+              ? "bg-success"
+              : "bg-primary-light hover:bg-primary-dark"
+          }`}
+        >
+          {installationSuccess ? (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          ) : (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
+              <FontAwesomeIcon
+                icon={faDownload}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          )}
 
-        <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
-          {installing
-            ? "Installing..."
-            : installationSuccess || verificationSuccess
-            ? "Node Installed!"
-            : "Install Concordium Node"}
+          <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
+            {installing
+              ? "Installing..."
+              : installationSuccess || verificationSuccess
+              ? "Node Installed!"
+              : "Install Concordium Node"}
+          </div>
+        </button>
+      ) : (
+        <button
+          onClick={install}
+          disabled={installing || installationSuccess}
+          className={`  hover:text-white flex p-0 items-center mx-auto my-2  rounded-3 text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
+            installing
+              ? "bg-secondary-dark hover:bg-secondary-dark"
+              : installationSuccess
+              ? "bg-success"
+              : "bg-primary-light hover:bg-primary-dark"
+          }`}
+        >
+          {installationSuccess ? (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
+              <FontAwesomeIcon
+                icon={faCheck}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          ) : (
+            <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
+              <FontAwesomeIcon
+                icon={faDownload}
+                className="p-2   "
+                fontSize={25}
+              />
+            </div>
+          )}
+
+          <div className={`border-none  px-2 sm:w-80 md:w-34 text-lg `}>
+            {installing
+              ? "Installing..."
+              : installationSuccess
+              ? "Node Installed!"
+              : "Install Concordium Node"}
+          </div>
+        </button>
+      )}
+      {installationError && (
+        <div className="flex justify-center text-danger">
+          {installationError}
         </div>
-      </button>
-
+      )}
       <button
         className={`  hover:text-white rounded-3 flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
           verifying
@@ -592,7 +647,7 @@ function GenesisBuilder() {
 
   return (
     <>
-      <div className="container m-[10%] mx-auto items-center justify-center h-screen">
+      <div className="container m-[10%] mx-auto items-center justify-center ">
         <CAlert
           color="secondary"
           className="text-lg w-75 flex justify-center mx-auto items-center"
@@ -1009,8 +1064,8 @@ function Dashboard() {
       </div>
       <div className="">
         {activeTab === "contracts" && (
-          <div className="overflow-x-auto container-fluid overflow-y-auto">
-            <table className="w-full text-sm text-left text-background-light dark:text-background-dark ">
+          <div className="overflow-x-auto container-fluid overflow-y-auto ">
+            <table className="w-full text-sm text-left text-background-light dark:text-background-dark  ">
               <tr className="bg-primary-dark bg-opacity-10  border-1 border-black border-opacity-25 table-bordered text-uppercase">
                 <th className="px-6 py-3 text-primary-dark">Index</th>
                 <th className="px-6 py-3 text-primary-dark text-center">
@@ -1025,18 +1080,21 @@ function Dashboard() {
               </tr>
               <tbody>
                 {Object.keys(contractsDict).length === 0 ? (
-                  <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1  ">
+                  <tr className="hover:bg-primary-dark hover:bg-opacity-0 border-1">
                     <td className="py-2 px-4 text-primary-dark">
                       No Contracts
                     </td>
                     <td></td>
+
+                    <td className="py-2 px-4  text-primary-dark"></td>
+                    <td className="py-2 px-4  text-primary-dark"></td>
                   </tr>
                 ) : (
                   Object.entries(contractsDict).map(
                     ([address, contractDetails]: [any, any]) => (
                       <tr
                         key={address}
-                        className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300"
+                        className="hover:bg-primary-dark hover:bg-opacity-25 transition-all ease-in-out duration-300  "
                       >
                         <td className="py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
                           {address}
@@ -1050,7 +1108,7 @@ function Dashboard() {
                         {/* Owner: {contractDetails.owner}
                         <br />
                        */}{" "}
-                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300">
+                        <td className="text-center py-2 border-1 font-monospace border-black border-1 border-opacity-25 px-4 text-primary-dark transition-all ease-in-out duration-300 ">
                           {contractDetails.methods.join(", ")}
                         </td>
                       </tr>

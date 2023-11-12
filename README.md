@@ -1,6 +1,9 @@
 # Concordium LC1C
 
-The Concordium LC1C GUI tool source code built using Tauri and Rust. This README goes over the basic steps to clone the repository and test in development. To understand more about the tool, visit [Documentation](https://github.com/Concordium/concordium-local-chain/blob/main/DOCUMENTATION.md)
+
+The Concordium LC1C GUI tool source code built using Tauri and Rust.
+LC1C allows to launch a custom local chain on local OS in less than two minutes. 
+
 
 ## Prerequisites
 
@@ -38,5 +41,15 @@ Navigate back to the root directory and install the Rust dependencies:
 yarn run tauri dev
 ```
 
+
+## Building for Production
+To build the Tauri app, you can easily run: 
+```bash
+yarn run tauri build
+```
+Please note that the application would be compiled for the OS you are currently running. 
+
+
 ## Documentation
 To go over the documentation of the tool and troubleshooting please read [this](https://github.com/Concordium/concordium-local-chain/blob/main/DOCUMENTATION.md).
+
