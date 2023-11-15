@@ -430,23 +430,33 @@ async fn launch_template(
             .spawn()
             .expect("Failed to start the node.");
 
+        let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
         let mut state = app_state.lock().unwrap();
         state.child_process = Some(child);
 
         let window_clone: Option<Window> = state.main_window.clone();
-
+        let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
         // Block Indexer
         tokio::spawn(async move {
-            loop {
+            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
+                // logging
                 if let Some(window) = &window_clone {
+                    //logging
                     if let Some(block_info) = parse_block_info().await {
-                        // Check if the block is not the same as the last one
-                        window.emit("new-block", block_info.clone()).unwrap();
+                        window.emit("new-block", block_info).unwrap();
                     }
                 }
-
-                tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
+            // loop {
+            //     if let Some(window) = &window_clone {
+            //         if let Some(block_info) = parse_block_info().await {
+            //             // Check if the block is not the same as the last one
+            //             window.emit("new-block", block_info.clone()).unwrap();
+            //         }
+            //     }
+
+            //     tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
+            // }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
