@@ -12,10 +12,12 @@ use futures::StreamExt;
 use nix::sys::signal::Signal;
 #[cfg(not(target_os = "windows"))]
 use nix::unistd::Pid;
+use regex::Regex;
 use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::fs;
 use std::fs::File;
 use std::io::Write;
 use std::path::{Path, PathBuf};
@@ -29,7 +31,6 @@ use tokio::process::Command as AsyncCommand;
 use tokio::task;
 use tokio::time::Duration;
 use toml::Value as TomlValue;
-
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -47,8 +48,40 @@ impl AppState {
 }
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
+
+fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn std::error::Error>> {
+    let base_path = Path::new(r"C:\Program Files\Concordium");
+    let pattern = Regex::new(r"Node \d+\.\d+\.\d+")?;
+
+    if base_path.exists() && base_path.is_dir() {
+        for entry in fs::read_dir(base_path)? {
+            let entry = entry?;
+            let path = entry.path();
+            if path.is_dir() {
+                if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
+                    if pattern.is_match(dir_name) {
+                        let executable_path = path.join("concordium-node.exe");
+                        if executable_path.exists() {
+                            return Ok(executable_path);
+                        }
+                    }
+                }
+            }
+        }
+    }
+
+    Err("Concordium Node executable not found".into())
+}
+
 #[tauri::command]
-async fn install(handle: tauri::AppHandle) -> Result<(), String> {
+
+async fn install() -> Result<(), String> {
+    if find_concordium_node_executable().is_ok() {
+        // Concordium Node is already installed, skip installation
+        return Ok(());
+    }
+
+
     // Detect the user's OS and architecture and generate the correct link for it.
     let download_url = if cfg!(target_os = "windows") {
         "https://distribution.concordium.software/windows/Signed/Node-6.0.4-0.msi"
@@ -137,14 +170,16 @@ async fn install(handle: tauri::AppHandle) -> Result<(), String> {
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
     let binary = if cfg!(target_os = "windows") {
-        r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+        find_concordium_node_executable().map_err(|e| e.to_string())?
     } else if cfg!(target_os = "linux") {
-        "/usr/bin/concordium-node"
+        "/usr/bin/concordium-node".into() // Convert to PathBuf or String as necessary
     } else {
-        "/usr/local/bin/concordium-node"
+        "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
     };
 
-    let output = std::process::Command::new(binary).arg("--version").output();
+    let output = std::process::Command::new(&binary)
+        .arg("--version")
+        .output();
 
     match output {
         Ok(output) => {
@@ -402,11 +437,11 @@ async fn launch_template(
 
     if should_run_concordium_node {
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+            find_concordium_node_executable().map_err(|e| e.to_string())?
         } else if cfg!(target_os = "linux") {
-            "concordium-node"
+            "concordium-node".into() // Convert to PathBuf or String as necessary
         } else {
-            "/usr/local/bin/concordium-node"
+            "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
         };
         let child = AsyncCommand::new(binary)
             .args(&[
@@ -549,11 +584,11 @@ async fn launch_template(
         // That it is actually running successfully.
 
         let binary = if cfg!(target_os = "windows") {
-            r"C:\Program Files\Concordium\Node 6.0.4\concordium-node.exe"
+            find_concordium_node_executable().map_err(|e| e.to_string())?
         } else if cfg!(target_os = "linux") {
-            "concordium-node"
+            "concordium-node".into() // Convert to PathBuf or String as necessary
         } else {
-            "/usr/local/bin/concordium-node"
+            "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
         };
         let child = AsyncCommand::new(binary)
             .args(&[
