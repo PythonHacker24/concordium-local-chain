@@ -26,6 +26,7 @@ use std::str::FromStr;
 use std::sync::{Arc, Mutex};
 use tauri::State;
 use tauri::{Manager, Window};
+use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
@@ -74,13 +75,11 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn std::error::Erro
 }
 
 #[tauri::command]
-
-async fn install() -> Result<(), String> {
+async fn install(handle: tauri::AppHandle) -> Result<(), String> {
     if find_concordium_node_executable().is_ok() {
         // Concordium Node is already installed, skip installation
         return Ok(());
     }
-
 
     // Detect the user's OS and architecture and generate the correct link for it.
     let download_url = if cfg!(target_os = "windows") {
@@ -443,7 +442,7 @@ async fn launch_template(
         } else {
             "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
         };
-        let child = AsyncCommand::new(binary)
+        let mut child = AsyncCommand::new(binary)
             .args(&[
                 "--no-bootstrap=true",
                 "--listen-port",
@@ -465,23 +464,34 @@ async fn launch_template(
             .spawn()
             .expect("Failed to start the node.");
 
+        let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
         let mut state = app_state.lock().unwrap();
         state.child_process = Some(child);
 
         let window_clone: Option<Window> = state.main_window.clone();
-
+        let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
         // Block Indexer
         tokio::spawn(async move {
-            loop {
+            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
+                // logging
                 if let Some(window) = &window_clone {
+                    println!("{:#?}", line);
+                    //logging
                     if let Some(block_info) = parse_block_info().await {
-                        // Check if the block is not the same as the last one
-                        window.emit("new-block", block_info.clone()).unwrap();
+                        window.emit("new-block", block_info).unwrap();
                     }
                 }
-
-                tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
+            // loop {
+            //     if let Some(window) = &window_clone {
+            //         if let Some(block_info) = parse_block_info().await {
+            //             // Check if the block is not the same as the last one
+            //             window.emit("new-block", block_info.clone()).unwrap();
+            //         }
+            //     }
+
+            //     tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
+            // }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
@@ -580,7 +590,7 @@ async fn launch_template(
         } else {
             "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
         };
-        let child = AsyncCommand::new(binary)
+        let mut child = AsyncCommand::new(binary)
             .args(&[
                 "--no-bootstrap=true",
                 "--listen-port",
@@ -602,23 +612,36 @@ async fn launch_template(
             .spawn()
             .expect("Failed to start the node.");
 
+        let reader = BufReader::new(child.stderr.take().expect("Failed to capture stdout."));
         let mut state = app_state.lock().unwrap();
         state.child_process = Some(child);
 
-        let window_clone = state.main_window.clone();
-
-        // BLOCK INDEXER
+        let window_clone: Option<Window> = state.main_window.clone();
+        let mut lines: tokio::io::Lines<BufReader<tokio::process::ChildStderr>> = reader.lines();
+        // Block Indexer
         tokio::spawn(async move {
-            loop {
+            while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
+                // logging
                 if let Some(window) = &window_clone {
+                    println!("{:#?}", line);
+                    //logging
                     if let Some(block_info) = parse_block_info().await {
-                        // Check if the block is not the same as the last one
-                        window.emit("new-block", block_info.clone()).unwrap();
+                        window.emit("new-block", block_info).unwrap();
                     }
                 }
-
-                tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
             }
+            // BLOCK INDEXER
+            // tokio::spawn(async move {
+            //     loop {
+            //         if let Some(window) = &window_clone {
+            //             if let Some(block_info) = parse_block_info().await {
+            //                 // Check if the block is not the same as the last one
+            //                 window.emit("new-block", block_info.clone()).unwrap();
+            //             }
+            //         }
+
+            //         tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
+            //     }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
