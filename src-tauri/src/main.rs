@@ -28,6 +28,7 @@ use tauri::State;
 use tauri::{Manager, Window};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
+use tokio::task;
 use tokio::time::Duration;
 use toml::Value as TomlValue;
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
