@@ -74,11 +74,13 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn std::error::Erro
 }
 
 #[tauri::command]
+
 async fn install() -> Result<(), String> {
     if find_concordium_node_executable().is_ok() {
         // Concordium Node is already installed, skip installation
         return Ok(());
     }
+
 
     // Detect the user's OS and architecture and generate the correct link for it.
     let download_url = if cfg!(target_os = "windows") {
@@ -116,14 +118,15 @@ async fn install() -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") {
-                let script_path =
-                    PathBuf::from(env!("CARGO_MANIFEST_DIR")).join("install_concordium_debian.sh");
-                let script_str = script_path
-                    .to_str()
-                    .ok_or("Failed to convert script path to string")?;
+                let script_str = handle
+                    .path_resolver()
+                    .resolve_resource("assets/install_concordium_debian.sh")
+                    .unwrap()
+                    .to_string_lossy()
+                    .to_string();
 
                 let status = Command::new("pkexec")
-                    .args(&["bash", script_str, destination_str])
+                    .args(&["bash", &script_str, destination_str])
                     .status()
                     .map_err(|_| "Failed to execute the bash script with pkexec")?;
 
