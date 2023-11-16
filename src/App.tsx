@@ -19,7 +19,6 @@ import {
   faCheck,
   faCheckToSlot,
   faCircleInfo,
-  faCloudDownload,
   faDownload,
   faSearch,
 } from "@fortawesome/free-solid-svg-icons";
@@ -45,9 +44,6 @@ function Installer() {
     null
   );
 
-  // Installation for Genesis Creator
-  const [installingCreator, setInstallingCreator] = useState(false);
-
   const [verifying, setVerifying] = useState(false);
   const [verificationError, setVerificationError] = useState<string | null>(
     null
@@ -56,9 +52,6 @@ function Installer() {
 
   // Verification for Node
   const [installationSuccess, setInstallationSuccess] = useState(false);
-  // Verification for Genesis Creator
-  const [installationSuccessCreator, setInstallationSuccessCreator] =
-    useState(false);
 
   const navigate = useNavigate();
 
@@ -96,17 +89,6 @@ function Installer() {
     }
   }
 
-  async function installCreator() {
-    setInstallingCreator(true);
-    try {
-      await invoke("install_genesis_creator");
-      setInstallationSuccessCreator(true);
-    } catch (error) {
-      console.error("Installation error:", error);
-    } finally {
-      setInstallingCreator(false);
-    }
-  }
   return (
     <div className="container mx-auto p-4 m-[10%]">
       <div className="flex justify-content-center">
@@ -235,40 +217,7 @@ function Installer() {
         </div>
       </button>
 
-      <button
-        className={`   hover:text-white flex p-0 rounded-3 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)] ${
-          installingCreator
-            ? "bg-secondary-dark hover:bg-secondary-dark"
-            : installationSuccessCreator
-            ? "bg-success"
-            : "bg-primary-light hover:bg-primary-dark"
-        }`}
-        onClick={installCreator}
-        disabled={installingCreator || installationSuccessCreator}
-      >
-        {installationSuccessCreator ? (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-success m-0">
-            <FontAwesomeIcon icon={faCheck} className="p-2" fontSize={25} />
-          </div>
-        ) : (
-          <div className=" rounded-l-lg  border-background-light bg-background-light text-primary-light m-0">
-            <FontAwesomeIcon
-              icon={faCloudDownload}
-              className="p-2"
-              fontSize={25}
-            />
-          </div>
-        )}
-        <div className={`border-none px-2 sm:w-80 md:w-34 text-lg `}>
-          {installingCreator
-            ? "Installing..."
-            : installationSuccessCreator
-            ? "Genesis Creator Installed!"
-            : "Install Genesis Creator"}
-        </div>
-      </button>
-
-      {installationSuccess && installationSuccessCreator && (
+      {installationSuccess && (
         <button
           className="  hover:bg-primary-dark rounded-3 bg-primary-light hover:text-white flex p-0 items-center mx-auto my-2  text-white shadow-[4.0px_8.0px_8.0px_rgba(0,0,0,0.3)]"
           onClick={goToGenesisBuilder}

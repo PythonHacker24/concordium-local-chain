@@ -164,82 +164,6 @@ async fn verify_installation() -> Result<String, String> {
 
 /* ---------------------------------------------------- INSTALL Genesis COMMAND ------------------------------------------------------------ */
 
-#[tauri::command]
-fn install_genesis_creator() -> Result<String, String> {
-    std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
-
-    if cfg!(target_os = "windows") {
-        let genesis_installed = Command::new("genesis-creator")
-            .args(&["--version"])
-            .output();
-
-        if let Err(_) = genesis_installed {
-            if Command::new("cargo").arg("--version").output().is_err() {
-                return Err("Cargo is not found in your PATH. Please install Rust and Cargo, and ensure they are in your PATH.".to_string());
-            }
-
-            let clone_output = Command::new("git")
-                .args(&[
-                    "clone",
-                    "--recurse-submodules",
-                    "https://github.com/Concordium/concordium-misc-tools.git",
-                ])
-                .output();
-
-            if let Err(e) = clone_output {
-                return Err(format!("Failed to clone the repository: {}", e));
-            }
-
-            // Install genesis-creator
-            let install_output = Command::new("cargo")
-                .args(&[
-                    "install",
-                    "--path",
-                    "concordium-misc-tools/genesis-creator/",
-                    "--locked",
-                ])
-                .output();
-
-            if let Err(e) = install_output {
-                return Err(format!("Failed to install with cargo: {}", e));
-            }
-
-            // Delete the cloned directory
-            let delete_output = Command::new("cmd")
-                .args(&["/C", "rmdir", "/s", "/q", "concordium-misc-tools"])
-                .output();
-
-            if let Err(e) = delete_output {
-                return Err(format!("Failed to delete the directory: {}", e));
-            }
-        }
-    } else {
-        let home_dir = dirs::home_dir().ok_or("Unable to get home directory")?;
-        let cargo_bin_path = home_dir.join(".cargo/bin/cargo").display().to_string();
-        let output = std::process::Command::new(cargo_bin_path)
-            .args(&[
-                "install",
-                "--git",
-                "https://github.com/Concordium/concordium-misc-tools.git",
-                "genesis-creator",
-                "--locked",
-            ])
-            .output();
-
-        match output {
-            Ok(output_data) => {
-                if output_data.status.success() {
-                    return Ok(String::from_utf8_lossy(&output_data.stdout).to_string());
-                } else {
-                    return Err(String::from_utf8_lossy(&output_data.stderr).to_string());
-                }
-            }
-            Err(e) => return Err(format!("Cargo install command failed: {}", e)),
-        }
-    }
-    Ok("Successfully installed genesis-creator".to_string())
-}
-
 async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn std::error::Error>> {
     // Make a GET request to the URL
     let response = reqwest::get(url).await?;
@@ -394,7 +318,6 @@ async fn launch_template(
         }
         LaunchMode::FromExisting(folder_name) => {
             new_chain_folder = folder_path.join(folder_name);
-            println!("Creating Genesis Creator!");
             should_run_concordium_node = true;
         }
     };
@@ -503,35 +426,13 @@ async fn launch_template(
             }
         });
     } else {
-        let binary = if cfg!(target_os = "windows") {
-            "genesis-creator".to_string()
+        if let Err(e) = genesis_creator::handle_generate(toml_path.as_path(), false) {
+            eprintln!(
+                "Failed to create genesis: {e}",
+            );
+
         } else {
-            home_dir
-                .join(".cargo/bin/genesis-creator")
-                .display()
-                .to_string()
-        };
-
-        let output = std::process::Command::new(&binary)
-            .args(&["generate", "--config", &toml_path.display().to_string()])
-            .current_dir(&new_chain_folder) // No need to clone if you're only borrowing
-            .output();
-
-        match output {
-            Ok(output) => {
-                if output.status.success() {
-                    println!("Command executed successfully");
-                    println!("Output: {}", String::from_utf8_lossy(&output.stdout));
-                } else {
-                    eprintln!(
-                        "Command failed with error: {}",
-                        String::from_utf8_lossy(&output.stderr)
-                    );
-                }
-            }
-            Err(e) => {
-                eprintln!("Error executing command: {}", e);
-            }
+            println!("Created genesis.");
         }
 
         // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
@@ -943,7 +844,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             install,
             verify_installation,
-            install_genesis_creator,
             launch_template,
             list_chain_folders,
             kill_chain
