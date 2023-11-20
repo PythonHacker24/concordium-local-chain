@@ -475,23 +475,13 @@ async fn launch_template(
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
-                    println!("{:#?}", line);
                     //logging
                     if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
-            // loop {
-            //     if let Some(window) = &window_clone {
-            //         if let Some(block_info) = parse_block_info().await {
-            //             // Check if the block is not the same as the last one
-            //             window.emit("new-block", block_info.clone()).unwrap();
-            //         }
-            //     }
 
-            //     tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
-            // }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
@@ -623,25 +613,13 @@ async fn launch_template(
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
-                    println!("{:#?}", line);
                     //logging
                     if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
-            // BLOCK INDEXER
-            // tokio::spawn(async move {
-            //     loop {
-            //         if let Some(window) = &window_clone {
-            //             if let Some(block_info) = parse_block_info().await {
-            //                 // Check if the block is not the same as the last one
-            //                 window.emit("new-block", block_info.clone()).unwrap();
-            //             }
-            //         }
 
-            //         tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
-            //     }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
