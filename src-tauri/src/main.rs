@@ -17,6 +17,7 @@ use reqwest;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::collections::HashMap;
+use std::error::Error;
 use std::fs;
 use std::fs::File;
 use std::io::Write;
@@ -50,24 +51,39 @@ impl AppState {
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
 
-fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn std::error::Error>> {
-    let base_path = Path::new(r"C:\Program Files\Concordium");
-    let pattern = Regex::new(r"Node \d+\.\d+\.\d+")?;
+fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
+    #[cfg(target_os = "windows")]
+    let paths = vec![(
+        Path::new(r"C:\Program Files\Concordium"),
+        Some(Regex::new(r"Node \d+\.\d+\.\d+")?),
+    )];
 
-    if base_path.exists() && base_path.is_dir() {
-        for entry in fs::read_dir(base_path)? {
-            let entry = entry?;
-            let path = entry.path();
-            if path.is_dir() {
-                if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
-                    if pattern.is_match(dir_name) {
-                        let executable_path = path.join("concordium-node.exe");
-                        if executable_path.exists() {
-                            return Ok(executable_path);
+    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    let paths = vec![
+        (Path::new("/usr/bin/concordium-node"), None::<Regex>),
+        (Path::new("/usr/local/bin/concordium-node"), None),
+    ];
+
+    for (base_path, pattern_opt) in paths {
+        if let Some(pattern) = pattern_opt {
+            if base_path.exists() && base_path.is_dir() {
+                for entry in fs::read_dir(base_path)? {
+                    let entry = entry?;
+                    let path = entry.path();
+                    if path.is_dir() {
+                        if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
+                            if pattern.is_match(dir_name) {
+                                let executable_path = path.join("concordium-node.exe");
+                                if executable_path.exists() {
+                                    return Ok(executable_path);
+                                }
+                            }
                         }
                     }
                 }
             }
+        } else if base_path.exists() {
+            return Ok(base_path.to_path_buf());
         }
     }
 
@@ -168,13 +184,7 @@ async fn install(handle: tauri::AppHandle) -> Result<(), String> {
 
 #[tauri::command]
 async fn verify_installation() -> Result<String, String> {
-    let binary = if cfg!(target_os = "windows") {
-        find_concordium_node_executable().map_err(|e| e.to_string())?
-    } else if cfg!(target_os = "linux") {
-        "/usr/bin/concordium-node".into() // Convert to PathBuf or String as necessary
-    } else {
-        "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
-    };
+    let binary = find_concordium_node_executable().map_err(|e| e.to_string())?;
 
     let output = std::process::Command::new(&binary)
         .arg("--version")
@@ -435,13 +445,8 @@ async fn launch_template(
     };
 
     if should_run_concordium_node {
-        let binary = if cfg!(target_os = "windows") {
-            find_concordium_node_executable().map_err(|e| e.to_string())?
-        } else if cfg!(target_os = "linux") {
-            "concordium-node".into() // Convert to PathBuf or String as necessary
-        } else {
-            "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
-        };
+        let binary = find_concordium_node_executable().map_err(|e| e.to_string())?;
+
         let mut child = AsyncCommand::new(binary)
             .args(&[
                 "--no-bootstrap=true",
@@ -475,13 +480,23 @@ async fn launch_template(
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
+                    println!("{:#?}", line);
                     //logging
                     if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
+            // loop {
+            //     if let Some(window) = &window_clone {
+            //         if let Some(block_info) = parse_block_info().await {
+            //             // Check if the block is not the same as the last one
+            //             window.emit("new-block", block_info.clone()).unwrap();
+            //         }
+            //     }
 
+            //     tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
+            // }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
@@ -573,13 +588,8 @@ async fn launch_template(
         // Finally call Concordium Node to Run the Local Chain but run it as an async command for the frontend to aknowledge
         // That it is actually running successfully.
 
-        let binary = if cfg!(target_os = "windows") {
-            find_concordium_node_executable().map_err(|e| e.to_string())?
-        } else if cfg!(target_os = "linux") {
-            "concordium-node".into() // Convert to PathBuf or String as necessary
-        } else {
-            "/usr/local/bin/concordium-node".into() // Convert to PathBuf or String as necessary
-        };
+        let binary = find_concordium_node_executable().map_err(|e| e.to_string())?;
+
         let mut child = AsyncCommand::new(binary)
             .args(&[
                 "--no-bootstrap=true",
@@ -613,13 +623,25 @@ async fn launch_template(
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
                 // logging
                 if let Some(window) = &window_clone {
+                    println!("{:#?}", line);
                     //logging
                     if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
                 }
             }
+            // BLOCK INDEXER
+            // tokio::spawn(async move {
+            //     loop {
+            //         if let Some(window) = &window_clone {
+            //             if let Some(block_info) = parse_block_info().await {
+            //                 // Check if the block is not the same as the last one
+            //                 window.emit("new-block", block_info.clone()).unwrap();
+            //             }
+            //         }
 
+            //         tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
+            //     }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
