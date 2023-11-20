@@ -60,7 +60,7 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
 
     #[cfg(any(target_os = "linux", target_os = "macos"))]
     let paths = vec![
-        (Path::new("/usr/bin/concordium-node"), None),
+        (Path::new("/usr/bin/concordium-node"), None::<Regex>),
         (Path::new("/usr/local/bin/concordium-node"), None),
     ];
 
