@@ -22,10 +22,13 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::fs::{File, Permissions};
+use std::fs::File;
+// #[cfg(not(target_os = "windows"))]
+use std::fs::Permissions;
 use std::io::Write;
 use std::io::{self, Cursor};
-#[cfg(target_os = "linux")]
+#[cfg(not(target_os = "windows"))]
+// #[cfg(target_os = "linux")]
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -57,7 +60,7 @@ impl AppState {
 }
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
-
+#[cfg(target_family = "unix")]
 fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     dest_path.push(".local/bin/concordium-node");
@@ -91,7 +94,6 @@ fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
     }
     Ok(())
 }
-
 fn is_target_file(path: &std::path::Path) -> bool {
     path.display()
         .to_string()
@@ -105,18 +107,20 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
         Some(Regex::new(r"Node \d+\.\d+\.\d+")?),
     )];
 
-    if cfg!(any(target_os = "macos")) || cfg!(any(target_os = "windows")) {
-        let bin = which("concordium-node").unwrap();
-    }
+    // if cfg!(any(target_os = "macos")) || cfg!(any(target_os = "windows")) {
+    //     let bin = which("concordium-node").unwrap();
+    //     print!("{:?}", bin);
+    // }
 
-    #[cfg(any(target_os = "linux"))]
-    let home_dir = dirs::home_dir().expect("Could not find home directory");
-    let local_bin_path = home_dir.join(".local/bin/concordium-node");
-    let paths = vec![
-        (Path::new("/usr/bin/concordium-node"), None::<Regex>),
-        (local_bin_path.as_path(), None), // Convert PathBuf to Path
-        (Path::new("/usr/local/bin/concordium-node"), None),
-    ];
+    if cfg!(target_os = "linux") {
+        let home_dir = dirs::home_dir().expect("Could not find home directory");
+        let local_bin_path = home_dir.join(".local/bin/concordium-node");
+        let paths = vec![
+            (Path::new("/usr/bin/concordium-node"), None::<Regex>),
+            (local_bin_path.as_path(), None), // Convert PathBuf to Path
+            (Path::new("/usr/local/bin/concordium-node"), None),
+        ];
+    }
 
     for (base_path, pattern_opt) in paths {
         if let Some(pattern) = pattern_opt {
@@ -186,7 +190,8 @@ async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
 
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
-            if cfg!(target_os = "linux") {
+            if cfg!(target_os = "linux") && cfg!(not(target_os = "windows")) {
+                #[cfg(target_family = "unix")]
                 install_node_on_debian().map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
