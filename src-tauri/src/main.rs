@@ -1,6 +1,7 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(target_os = "linux")]
 use ar;
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
 use concordium_rust_sdk::types::smart_contracts::InstanceInfo;
@@ -24,6 +25,7 @@ use std::fs;
 use std::fs::{File, Permissions};
 use std::io::Write;
 use std::io::{self, Cursor};
+#[cfg(target_os = "linux")]
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -37,6 +39,7 @@ use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
 use toml::Value as TomlValue;
+use which::which;
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -55,7 +58,7 @@ impl AppState {
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
 
-fn out() -> Result<(), Box<dyn std::error::Error>> {
+fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     dest_path.push(".local/bin/concordium-node");
     if dest_path.exists() {
@@ -102,7 +105,11 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
         Some(Regex::new(r"Node \d+\.\d+\.\d+")?),
     )];
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    if cfg!(any(target_os = "macos")) || cfg!(any(target_os = "windows")) {
+        let bin = which("concordium-node").unwrap();
+    }
+
+    #[cfg(any(target_os = "linux"))]
     let home_dir = dirs::home_dir().expect("Could not find home directory");
     let local_bin_path = home_dir.join(".local/bin/concordium-node");
     let paths = vec![
@@ -180,7 +187,7 @@ async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") {
-                out().map_err(|e| e.to_string())?;
+                install_node_on_debian().map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
                 let status = Command::new("msiexec")
