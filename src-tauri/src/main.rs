@@ -106,7 +106,10 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
     )];
 
     if cfg!(any(target_os = "macos")) || cfg!(any(target_os = "windows")) {
-        let bin = which("concordium-node").unwrap();
+        let bin = match which("concordium-node") {
+            Ok(path) => path,
+            Err(e) => eprintln!("Concordium Node executable not found"),
+        };
     }
 
     #[cfg(any(target_os = "linux"))]
@@ -186,7 +189,7 @@ async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
 
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
-            if cfg!(target_os = "linux") {
+            if cfg!(target_os = "linux") && cfg!(not(target_os = "windows")) {
                 install_node_on_debian().map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
