@@ -22,10 +22,13 @@ use serde_json::Value as JsonValue;
 use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
-use std::fs::{File, Permissions};
+use std::fs::File;
+// #[cfg(not(target_os = "windows"))]
+use std::fs::Permissions;
 use std::io::Write;
 use std::io::{self, Cursor};
-#[cfg(target_os = "linux")]
+#[cfg(not(target_os = "windows"))]
+// #[cfg(target_os = "linux")]
 use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
@@ -39,7 +42,7 @@ use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
 use toml::Value as TomlValue;
-use which::which;
+// use which::which;
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -57,7 +60,9 @@ impl AppState {
 }
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
-
+///  Function to install concordium-node binary at $HOME/.local/bin
+/// for debian based linux distrbution or other supported distributions
+#[cfg(target_family = "unix")]
 fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     dest_path.push(".local/bin/concordium-node");
@@ -65,7 +70,7 @@ fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
         return Err("Already Installed".into());
     }
     let data = reqwest::blocking::get(
-        "https://distribution.testnet.concordium.com/deb/concordium-testnet-node_6.1.7-0_amd64.deb",
+        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_6.0.4-0_amd64.deb",
     )?
     .bytes()?;
 
@@ -91,11 +96,11 @@ fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
     }
     Ok(())
 }
-
+/// check if the target file exists or not
 fn is_target_file(path: &std::path::Path) -> bool {
     path.display()
         .to_string()
-        .starts_with("./usr/bin/concordium-testnet-node-6")
+        .starts_with("./usr/bin/concordium-mainnet-node-6")
 }
 
 fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
@@ -105,15 +110,13 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
         Some(Regex::new(r"Node \d+\.\d+\.\d+")?),
     )];
 
-    if cfg!(any(target_os = "macos")) || cfg!(any(target_os = "windows")) {
-        let bin = match which("concordium-node") {
-            Ok(path) => path,
-            Err(e) => eprintln!("Concordium Node executable not found"),
-        };
-    }
+    // TODO: Add this which function here for MacOS and Windows.
+    // #[cfg(target_os = "macos")]
+    // let bin = which("concordium-node").map_err(|e| e.to_string())?;
 
-    #[cfg(any(target_os = "linux"))]
     let home_dir = dirs::home_dir().expect("Could not find home directory");
+    // concordium-node is installed locally at `.local/bin/`.
+    // It is assumed that `.local/bin/` path is not set in the $PATH by default by the user.
     let local_bin_path = home_dir.join(".local/bin/concordium-node");
     let paths = vec![
         (Path::new("/usr/bin/concordium-node"), None::<Regex>),
@@ -190,6 +193,7 @@ async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") && cfg!(not(target_os = "windows")) {
+                #[cfg(target_family = "unix")]
                 install_node_on_debian().map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
