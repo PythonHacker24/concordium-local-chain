@@ -62,17 +62,11 @@ impl AppState {
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
 ///  Function to install concordium-node binary at $HOME/.local/bin
 /// for debian based linux distrbution or other supported distributions
-#[cfg(target_family = "unix")]
-fn install_node_on_debian() -> Result<(), Box<dyn std::error::Error>> {
+#[cfg(target_os = "linux")]
+fn install_node_on_debian(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     dest_path.push(".local/bin/concordium-node");
-    if dest_path.exists() {
-        return Err("Already Installed".into());
-    }
-    let data = reqwest::blocking::get(
-        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_6.0.4-0_amd64.deb",
-    )?
-    .bytes()?;
+    let data = reqwest::blocking::get(url)?.bytes()?;
 
     let mut ar = ar::Archive::new(Cursor::new(data));
     while let Some(entry_result) = ar.next_entry() {
@@ -192,9 +186,8 @@ async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
 
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
-            if cfg!(target_os = "linux") && cfg!(not(target_os = "windows")) {
-                #[cfg(target_family = "unix")]
-                install_node_on_debian().map_err(|e| e.to_string())?;
+            if cfg!(target_os = "linux") {
+                install_node_on_debian(&download_url).map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
                 let status = Command::new("msiexec")
