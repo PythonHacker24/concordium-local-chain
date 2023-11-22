@@ -81,7 +81,12 @@ fn install_node_on_debian(url: &str) -> Result<(), Box<dyn std::error::Error>> {
                 if is_target_file(&file.path()?) {
                     let mut out_file = File::create(&dest_path)?;
                     io::copy(&mut file, &mut out_file)?;
-                    out_file.set_permissions(Permissions::from_mode(0o755))?;
+                    // Only compiled for linux
+                    #[cfg(target_os = "linux")]
+                    {
+                        out_file.set_permissions(Permissions::from_mode(0o755))?;
+                    }
+                    
                     break;
                 }
             }
