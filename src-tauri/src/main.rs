@@ -1,6 +1,8 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
+#[cfg(target_os = "linux")]
+use ar;
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
 use concordium_rust_sdk::types::smart_contracts::InstanceInfo;
 use concordium_rust_sdk::types::{AbsoluteBlockHeight, BlockItemSummary};
@@ -8,6 +10,7 @@ use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
 use dirs;
 use futures::StreamExt;
+use lzma_rs;
 #[cfg(not(target_os = "windows"))]
 use nix::sys::signal::Signal;
 #[cfg(not(target_os = "windows"))]
@@ -20,19 +23,26 @@ use std::collections::HashMap;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
+// #[cfg(not(target_os = "windows"))]
+use std::fs::Permissions;
 use std::io::Write;
+use std::io::{self, Cursor};
+#[cfg(not(target_os = "windows"))]
+// #[cfg(target_os = "linux")]
+use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use std::process::Command;
 use std::str::FromStr;
 use std::sync::{Arc, Mutex};
+use tar::Archive;
 use tauri::State;
 use tauri::{Manager, Window};
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
-use tokio::time::Duration;
 use toml::Value as TomlValue;
+// use which::which;
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -50,6 +60,42 @@ impl AppState {
 }
 
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
+///  Function to install concordium-node binary at $HOME/.local/bin
+/// for debian based linux distrbution or other supported distributions
+#[cfg(target_os = "linux")]
+fn install_node_on_debian(url: &str) -> Result<(), Box<dyn std::error::Error>> {
+    let mut dest_path = dirs::home_dir().unwrap();
+    dest_path.push(".local/bin/concordium-node");
+    let data = reqwest::blocking::get(url)?.bytes()?;
+
+    let mut ar = ar::Archive::new(Cursor::new(data));
+    while let Some(entry_result) = ar.next_entry() {
+        let entry = entry_result?;
+        if entry.header().identifier() == b"data.tar.xz" {
+            let mut archive = Vec::new();
+            lzma_rs::xz_decompress(&mut std::io::BufReader::new(entry), &mut archive)?;
+
+            let mut archive = Archive::new(Cursor::new(archive));
+            for file in archive.entries()? {
+                let mut file = file?;
+                if is_target_file(&file.path()?) {
+                    let mut out_file = File::create(&dest_path)?;
+                    io::copy(&mut file, &mut out_file)?;
+                    out_file.set_permissions(Permissions::from_mode(0o755))?;
+                    break;
+                }
+            }
+            break;
+        }
+    }
+    Ok(())
+}
+/// check if the target file exists or not
+fn is_target_file(path: &std::path::Path) -> bool {
+    path.display()
+        .to_string()
+        .starts_with("./usr/bin/concordium-mainnet-node-6")
+}
 
 fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
     #[cfg(target_os = "windows")]
@@ -58,9 +104,17 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
         Some(Regex::new(r"Node \d+\.\d+\.\d+")?),
     )];
 
-    #[cfg(any(target_os = "linux", target_os = "macos"))]
+    // TODO: Add this which function here for MacOS and Windows.
+    // #[cfg(target_os = "macos")]
+    // let bin = which("concordium-node").map_err(|e| e.to_string())?;
+
+    let home_dir = dirs::home_dir().expect("Could not find home directory");
+    // concordium-node is installed locally at `.local/bin/`.
+    // It is assumed that `.local/bin/` path is not set in the $PATH by default by the user.
+    let local_bin_path = home_dir.join(".local/bin/concordium-node");
     let paths = vec![
         (Path::new("/usr/bin/concordium-node"), None::<Regex>),
+        (local_bin_path.as_path(), None), // Convert PathBuf to Path
         (Path::new("/usr/local/bin/concordium-node"), None),
     ];
 
@@ -91,7 +145,7 @@ fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
 }
 
 #[tauri::command]
-async fn install(handle: tauri::AppHandle) -> Result<(), String> {
+async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     if find_concordium_node_executable().is_ok() {
         // Concordium Node is already installed, skip installation
         return Ok(());
@@ -133,23 +187,8 @@ async fn install(handle: tauri::AppHandle) -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") {
-                let script_str = handle
-                    .path_resolver()
-                    .resolve_resource("assets/install_concordium_debian.sh")
-                    .unwrap()
-                    .to_string_lossy()
-                    .to_string();
-
-                let status = Command::new("pkexec")
-                    .args(&["bash", &script_str, destination_str])
-                    .status()
-                    .map_err(|_| "Failed to execute the bash script with pkexec")?;
-
-                if status.success() {
-                    Ok(())
-                } else {
-                    Err("Installation failed".into())
-                }
+                install_node_on_debian(&download_url).map_err(|e| e.to_string())?;
+                Ok(())
             } else if cfg!(target_os = "windows") {
                 let status = Command::new("msiexec")
                     .args(&["/i", destination_str, "/passive", "/norestart"])
@@ -487,16 +526,6 @@ async fn launch_template(
                     }
                 }
             }
-            // loop {
-            //     if let Some(window) = &window_clone {
-            //         if let Some(block_info) = parse_block_info().await {
-            //             // Check if the block is not the same as the last one
-            //             window.emit("new-block", block_info.clone()).unwrap();
-            //         }
-            //     }
-
-            //     tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
-            // }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
@@ -630,18 +659,6 @@ async fn launch_template(
                     }
                 }
             }
-            // BLOCK INDEXER
-            // tokio::spawn(async move {
-            //     loop {
-            //         if let Some(window) = &window_clone {
-            //             if let Some(block_info) = parse_block_info().await {
-            //                 // Check if the block is not the same as the last one
-            //                 window.emit("new-block", block_info.clone()).unwrap();
-            //             }
-            //         }
-
-            //         tokio::time::sleep(Duration::from_millis(100)).await; // Optional: avoid busy waiting by adding a small sleep
-            //     }
         });
         let window_clone: Option<Window> = state.main_window.clone();
 
