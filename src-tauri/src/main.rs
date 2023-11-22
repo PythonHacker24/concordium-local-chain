@@ -62,7 +62,7 @@ impl AppState {
 /* ---------------------------------------------------- INSTALL COMMAND ------------------------------------------------------------ */
 ///  Function to install concordium-node binary at $HOME/.local/bin
 /// for debian based linux distrbution or other supported distributions
-#[cfg(target_os = "linux")]
+
 fn install_node_on_debian(url: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     dest_path.push(".local/bin/concordium-node");
