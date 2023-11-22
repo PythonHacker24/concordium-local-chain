@@ -42,7 +42,7 @@ use tokio::process::Child;
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
 use toml::Value as TomlValue;
-// use which::which;
+
 /* ---------------------------------------------------- MUTEX APP STATE ------------------------------------------------------------ */
 
 struct AppState {
@@ -655,10 +655,10 @@ async fn launch_template(
         // Block Indexer
         tokio::spawn(async move {
             while let Some(line) = lines.next_line().await.expect("Failed to read line.") {
-                // logging
+                
                 if let Some(window) = &window_clone {
                     println!("{:#?}", line);
-                    //logging
+                    
                     if let Some(block_info) = parse_block_info().await {
                         window.emit("new-block", block_info).unwrap();
                     }
