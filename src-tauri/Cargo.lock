@@ -788,9 +788,26 @@ dependencies = [
  "atty",
  "bitflags 1.3.2",
  "strsim 0.8.0",
- "textwrap",
+ "textwrap 0.11.0",
  "unicode-width",
  "vec_map",
+]
+
+[[package]]
+name = "clap"
+version = "3.2.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "4ea181bf566f71cb9a5d17a59e1871af638180a18fb0035c92ae62b705207123"
+dependencies = [
+ "atty",
+ "bitflags 1.3.2",
+ "clap_derive",
+ "clap_lex 0.2.4",
+ "indexmap 1.9.3",
+ "once_cell",
+ "strsim 0.10.0",
+ "termcolor",
+ "textwrap 0.16.0",
 ]
 
 [[package]]
@@ -810,8 +827,30 @@ checksum = "2bb9faaa7c2ef94b2743a21f5a29e6f0010dff4caa69ac8e9d6cf8b6fa74da08"
 dependencies = [
  "anstream",
  "anstyle",
- "clap_lex",
+ "clap_lex 0.5.1",
  "strsim 0.10.0",
+]
+
+[[package]]
+name = "clap_derive"
+version = "3.2.25"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ae6371b8bdc8b7d3959e9cf7b22d4435ef3e79e138688421ec654acf8c81b008"
+dependencies = [
+ "heck 0.4.1",
+ "proc-macro-error",
+ "proc-macro2",
+ "quote",
+ "syn 1.0.109",
+]
+
+[[package]]
+name = "clap_lex"
+version = "0.2.4"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "2850f2f5a82cbf437dd5af4d49848fbdfc27c157c3d010345776f952765261c5"
+dependencies = [
+ "os_str_bytes",
 ]
 
 [[package]]
@@ -876,8 +915,7 @@ dependencies = [
 [[package]]
 name = "concordium-contracts-common"
 version = "8.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "d87e82f19b82f76e86e76a13efe05e520e593451122efed5599d085f92904f3a"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "base64 0.21.3",
  "bs58",
@@ -898,8 +936,7 @@ dependencies = [
 [[package]]
 name = "concordium-contracts-common-derive"
 version = "4.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "4ffcc34b050d8c0a86498854c190d5008bc3b4927ded1a9627f3fc1150c326e6"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "proc-macro2",
  "quote",
@@ -915,6 +952,7 @@ dependencies = [
  "concordium-rust-sdk",
  "dirs",
  "futures",
+ "genesis-creator",
  "log",
  "nix 0.27.1",
  "package",
@@ -931,8 +969,7 @@ dependencies = [
 [[package]]
 name = "concordium-rust-sdk"
 version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "64373287f460435217439514770848c872ffc5edeced7fe7e5ec05cd7132c800"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "aes-gcm",
  "anyhow",
@@ -962,8 +999,7 @@ dependencies = [
 [[package]]
 name = "concordium-smart-contract-engine"
 version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "49629e53591115f9e5e3669f671641ed09b7884a5f1e8ed97ccea2a03d095483"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "anyhow",
  "byteorder",
@@ -987,8 +1023,7 @@ dependencies = [
 [[package]]
 name = "concordium-wasm"
 version = "3.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "5c3147903254a3c4862db6207bd8f1f43dcbec6c457cc0053940c42b452cc442"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "anyhow",
  "concordium-contracts-common",
@@ -1000,8 +1035,7 @@ dependencies = [
 [[package]]
 name = "concordium_base"
 version = "3.0.1"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "e55cc58fc55bdab5d8cafbbb8c017b3321fadc639b29682d6b3d793e6e4bb727"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "aes",
  "anyhow",
@@ -1046,12 +1080,11 @@ dependencies = [
 [[package]]
 name = "concordium_base_derive"
 version = "1.0.0"
-source = "registry+https://github.com/rust-lang/crates.io-index"
-checksum = "b9a154e9a64d58d3e9f890c603df847b8685cfd0bac3fadd18498af539650bed"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
 dependencies = [
  "proc-macro2",
  "quote",
- "syn 1.0.109",
+ "syn 2.0.29",
 ]
 
 [[package]]
@@ -1763,6 +1796,12 @@ dependencies = [
 ]
 
 [[package]]
+name = "gcd"
+version = "2.3.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "1d758ba1b47b00caf47f24925c0074ecb20d6dfcffe7f6d53395c0465674841a"
+
+[[package]]
 name = "gdk"
 version = "0.15.4"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -1869,6 +1908,26 @@ checksum = "85649ca51fd72272d7821adaf274ad91c288277713d9c18820d8499a7ff69e9a"
 dependencies = [
  "typenum",
  "version_check",
+]
+
+[[package]]
+name = "genesis-creator"
+version = "0.2.0"
+source = "git+https://github.com/Concordium/concordium-misc-tools.git#0b83d68af0db67f63a6b90f52b27dc32fbf86fda"
+dependencies = [
+ "anyhow",
+ "chrono",
+ "clap 3.2.25",
+ "concordium-rust-sdk",
+ "ed25519-dalek",
+ "gcd",
+ "rand 0.7.3",
+ "rayon",
+ "rust_decimal",
+ "serde",
+ "serde_json",
+ "sha2 0.10.7",
+ "toml 0.5.11",
 ]
 
 [[package]]
@@ -3116,6 +3175,12 @@ dependencies = [
  "libc",
  "windows-sys 0.48.0",
 ]
+
+[[package]]
+name = "os_str_bytes"
+version = "6.6.1"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "e2355d85b9a3786f481747ced0e0ff2ba35213a1f9bd406ed906554d7af805a1"
 
 [[package]]
 name = "overload"
@@ -4809,6 +4874,15 @@ dependencies = [
 ]
 
 [[package]]
+name = "termcolor"
+version = "1.4.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "ff1bc3d3f05aff0403e8ac0d92ced918ec05b666a43f83297ccef5bea8a3d449"
+dependencies = [
+ "winapi-util",
+]
+
+[[package]]
 name = "textwrap"
 version = "0.11.0"
 source = "registry+https://github.com/rust-lang/crates.io-index"
@@ -4816,6 +4890,12 @@ checksum = "d326610f408c7a4eb6f51c37c330e496b08506c9457c9d34287ecc38809fb060"
 dependencies = [
  "unicode-width",
 ]
+
+[[package]]
+name = "textwrap"
+version = "0.16.0"
+source = "registry+https://github.com/rust-lang/crates.io-index"
+checksum = "222a222a5bfe1bba4a77b45ec488a741b3cb8872e5e499451fd7d0129c9c7c3d"
 
 [[package]]
 name = "thin-slice"
