@@ -1,4 +1,4 @@
-mod super::unix;
+mod unix;
 
 use super::utils::AppState;
 #[cfg(target_os = "linux")]
