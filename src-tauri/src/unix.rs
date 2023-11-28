@@ -1,7 +1,6 @@
 use ar;
 use dirs;
 use lzma_rs;
-use regex::Regex;
 use std::error::Error;
 use std::fs;
 use std::fs::File;
@@ -62,37 +61,17 @@ fn is_target_file(path: &std::path::Path) -> bool {
         .to_string()
         .starts_with("./usr/bin/concordium-mainnet-node")
 }
-
 pub fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
     let home_dir = dirs::home_dir().expect("Could not find home directory");
-    // concordium-node is installed locally at `.local/bin/`.
-    // It is assumed that `.local/bin/` path is not set in the $PATH by default by the user.
     let local_bin_path = home_dir.join(".concordium-lc1c/bin/concordium-node");
     let paths = vec![
-        (Path::new("/usr/bin/concordium-node"), None::<Regex>),
-        (local_bin_path.as_path(), None), // Convert PathBuf to Path
-        (Path::new("/usr/local/bin/concordium-node"), None),
+        Path::new("/usr/bin/concordium-node"),
+        local_bin_path.as_path(),
+        Path::new("/usr/local/bin/concordium-node"),
     ];
 
-    for (base_path, pattern_opt) in paths {
-        if let Some(pattern) = pattern_opt {
-            if base_path.exists() && base_path.is_dir() {
-                for entry in fs::read_dir(base_path)? {
-                    let entry = entry?;
-                    let path = entry.path();
-                    if path.is_dir() {
-                        if let Some(dir_name) = path.file_name().and_then(|n| n.to_str()) {
-                            if pattern.is_match(dir_name) {
-                                let executable_path = path.join("concordium-node.exe");
-                                if executable_path.exists() {
-                                    return Ok(executable_path);
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else if base_path.exists() {
+    for base_path in paths {
+        if base_path.exists() && base_path.is_file() {
             return Ok(base_path.to_path_buf());
         }
     }
