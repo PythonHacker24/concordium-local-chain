@@ -1,11 +1,17 @@
-mod unix;
+use crate::common::{
+    create_next_chain_folder, download_file, json_to_toml, parse_block_info, transaction_info,
+};
+#[cfg(target_family = "unix")]
+use crate::unix::find_concordium_node_executable;
 
-use super::utils::AppState;
-#[cfg(target_os = "linux")]
+#[cfg(not(target_family = "unix"))]
+use crate::windows::find_concordium_node_executable;
+
+use crate::unix::install_node_on_debian;
+use crate::AppState;
+
 use dirs;
-#[cfg(not(target_os = "windows"))]
 use nix::sys::signal::Signal;
-#[cfg(not(target_os = "windows"))]
 use nix::unistd::Pid;
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
@@ -61,7 +67,7 @@ pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     match download_file(&download_url, &destination_str).await {
         Ok(_) => {
             if cfg!(target_os = "linux") {
-                install_node_on_debian(&download_url).map_err(|e| e.to_string())?;
+                install_node_on_debian(&destination_str).map_err(|e| e.to_string())?;
                 Ok(())
             } else if cfg!(target_os = "windows") {
                 let status = Command::new("msiexec")
@@ -222,7 +228,7 @@ pub async fn list_chain_folders() -> Result<Vec<String>, String> {
 
 #[derive(Debug, Serialize, Deserialize)]
 #[serde(rename_all = "PascalCase")]
-enum LaunchMode {
+pub enum LaunchMode {
     Easy,
     Advanced(String),
     Expert(String),
@@ -507,6 +513,23 @@ pub async fn launch_template(
 
     Ok(())
 }
+
+#[cfg(target_os = "windows")]
+#[tauri::command]
+pub fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+    let output = Command::new("taskkill")
+        .args(&["/F", "/IM", "concordium-node.exe"])
+        .output()
+        .expect("Failed to execute command");
+
+    if output.status.success() {
+        Ok("Killed concordium-node-collector process.".to_string())
+    } else {
+        Err("No running concordium-node-collector process to kill.".to_string())
+    }
+}
+
+#[cfg(not(target_os = "windows"))]
 #[tauri::command]
 pub async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     // Check if there's a child process to kill.
@@ -514,24 +537,7 @@ pub async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<St
         let mut state = app_state.lock().unwrap();
         state.child_process.take() // This removes the child process from the state and gives us ownership.
     };
-
-    #[cfg(target_os = "windows")]
     {
-        // Windows implementation using taskkill command
-        let output = Command::new("taskkill")
-            .args(&["/F", "/IM", "concordium-node.exe"])
-            .output()
-            .expect("Failed to execute command");
-
-        if output.status.success() {
-            Ok("Killed concordium-node-collector process.".to_string())
-        } else {
-            Err("No running concordium-node-collector process to kill.".to_string())
-        }
-    }
-    #[cfg(not(target_os = "windows"))]
-    {
-        // Unix-like systems implementation using pgrep and kill
         task::spawn_blocking(|| {
             let output = Command::new("pgrep")
                 .arg("concordium-node")
