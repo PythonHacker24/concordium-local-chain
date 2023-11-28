@@ -4,7 +4,6 @@ use concordium_rust_sdk::smart_contracts::types::InstanceInfo;
 use concordium_rust_sdk::types::{AbsoluteBlockHeight, BlockItemSummary};
 use concordium_rust_sdk::v2::{self, AccountIdentifier};
 use concordium_rust_sdk::{endpoints::Endpoint, types::hashes::BlockHash};
-// use futures::StreamExt;
 use futures::stream::StreamExt;
 use reqwest;
 use serde_json::Value as JsonValue;
