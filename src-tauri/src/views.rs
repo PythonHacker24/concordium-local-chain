@@ -5,14 +5,12 @@ use crate::common::{
 use crate::unix::find_concordium_node_executable;
 
 #[cfg(not(target_family = "unix"))]
-use crate::windows::find_concordium_node_executable;
+use crate::windows::{find_concordium_node_executable, install_node_on_debian};
 
-use crate::unix::install_node_on_debian;
 use crate::AppState;
 
 use dirs;
-use nix::sys::signal::Signal;
-use nix::unistd::Pid;
+
 use serde::{Deserialize, Serialize};
 use serde_json::Value as JsonValue;
 use std::path::PathBuf;
@@ -22,7 +20,6 @@ use tauri::State;
 use tauri::Window;
 use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command as AsyncCommand;
-use tokio::task;
 
 #[tauri::command]
 pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
@@ -532,6 +529,8 @@ pub fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, 
 #[cfg(not(target_os = "windows"))]
 #[tauri::command]
 pub async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+    use nix::sys::signal::Signal;
+    use nix::unistd::Pid;
     // Check if there's a child process to kill.
     let _child_to_kill = {
         let mut state = app_state.lock().unwrap();

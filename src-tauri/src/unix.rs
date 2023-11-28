@@ -6,7 +6,10 @@ use std::fs;
 use std::fs::File;
 use std::fs::Permissions;
 use std::io::{self, Cursor, Read};
+
+#[cfg(target_family = "unix")]
 use std::os::unix::fs::PermissionsExt;
+/// Target family has been set so that the code compiles on windows without error
 use std::path::{Path, PathBuf};
 use tar::Archive;
 

@@ -30,3 +30,7 @@ pub fn find_concordium_node_executable() -> Result<PathBuf, Box<dyn Error>> {
 
     Err("Concordium Node executable not found".into())
 }
+pub fn install_node_on_debian(destination_str: &str) -> Result<(), Box<dyn std::error::Error>> {
+    ///This is just a dummy function to make the code compile on windows due to the error in crate 'use std::os::unix::fs::PermissionsExt'
+    unimplemented!("Not implemented for windows")
+}
