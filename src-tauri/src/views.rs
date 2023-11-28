@@ -2,12 +2,13 @@ use crate::common::{
     create_next_chain_folder, download_file, json_to_toml, parse_block_info, transaction_info,
 };
 #[cfg(target_family = "unix")]
-use crate::unix::find_concordium_node_executable;
+use crate::unix::{find_concordium_node_executable, install_node_on_debian};
 
 #[cfg(not(target_family = "unix"))]
 use crate::windows::{find_concordium_node_executable, install_node_on_debian};
 
 use crate::AppState;
+use tokio::task;
 
 use dirs;
 
@@ -511,7 +512,7 @@ pub async fn launch_template(
     Ok(())
 }
 
-#[cfg(target_os = "windows")]
+#[cfg(not(target_family = "unix"))]
 #[tauri::command]
 pub fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     let output = Command::new("taskkill")
@@ -526,7 +527,7 @@ pub fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, 
     }
 }
 
-#[cfg(not(target_os = "windows"))]
+#[cfg(target_family = "unix")]
 #[tauri::command]
 pub async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
     use nix::sys::signal::Signal;
