@@ -1,6 +1,7 @@
 mod unix;
 
 use super::utils::AppState;
+
 #[cfg(target_os = "linux")]
 use dirs;
 #[cfg(not(target_os = "windows"))]
@@ -18,6 +19,37 @@ use tokio::io::{AsyncBufReadExt, BufReader};
 use tokio::process::Command as AsyncCommand;
 use tokio::task;
 
+#[cfg(target_os = "windows")]
+async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
+    if find_concordium_node_executable().is_ok() {
+        // Concordium Node is already installed, skip installation
+        return Ok(());
+    }
+
+    let download_url = "https://distribution.concordium.software/windows/Signed/Node-6.0.4-0.msi";
+    let file_name = "concordium-node-lc1c.msi";
+    let downloads_folder = dirs::download_dir()
+        .or_else(dirs::home_dir)
+        .ok_or("Failed to find a suitable directory for downloads")?;
+
+    let destination = downloads_folder.join(file_name);
+    let destination_str = destination
+        .to_str()
+        .ok_or("Failed to convert path to string")?;
+
+    download_file(&download_url, &destination_str).await?;
+
+    let status = Command::new("msiexec")
+        .args(&["/i", destination_str, "/passive", "/norestart"])
+        .status()
+        .map_err(|_| "Failed to execute msiexec command")?;
+
+    if status.success() {
+        Ok(())
+    } else {
+        Err("Installation failed. Ensure you are running with administrative privileges.".into())
+    }
+}
 #[tauri::command]
 pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     if find_concordium_node_executable().is_ok() {
@@ -93,6 +125,31 @@ pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     }
 }
 
+#[cfg(target_os = "windows")]
+#[tauri::command]
+async fn verify_installation() -> Result<String, String> {
+    let binary = find_concordium_node_executable().map_err(|e| e.to_string())?;
+
+    let output = std::process::Command::new(&binary)
+        .arg("--version")
+        .output();
+
+    match output {
+        Ok(output) => {
+            let stderr_string = String::from_utf8_lossy(&output.stderr).to_string();
+            if stderr_string.contains("command not found")
+                || stderr_string.contains("No such file or directory")
+            {
+                Err("Concordium node is not installed.".to_string())
+            } else if output.status.success() {
+                Ok(String::from_utf8_lossy(&output.stdout).to_string())
+            } else {
+                Err(stderr_string)
+            }
+        }
+        Err(e) => Err(e.to_string()),
+    }
+}
 #[tauri::command]
 pub async fn verify_installation() -> Result<String, String> {
     let binary = find_concordium_node_executable().map_err(|e| e.to_string())?;
@@ -116,6 +173,58 @@ pub async fn verify_installation() -> Result<String, String> {
         }
         Err(e) => Err(e.to_string()),
     }
+}
+#[cfg(target_os = "windows")]
+#[tauri::command]
+fn install_genesis_creator() -> Result<String, String> {
+    std::env::set_var("CARGO_NET_GIT_FETCH_WITH_CLI", "true");
+
+    let genesis_installed = Command::new("genesis-creator")
+        .args(&["--version"])
+        .output();
+
+    if let Err(_) = genesis_installed {
+        if Command::new("cargo").arg("--version").output().is_err() {
+            return Err("Cargo is not found in your PATH. Please install Rust and Cargo, and ensure they are in your PATH.".to_string());
+        }
+
+        let clone_output = Command::new("git")
+            .args(&[
+                "clone",
+                "--recurse-submodules",
+                "https://github.com/Concordium/concordium-misc-tools.git",
+            ])
+            .output();
+
+        if let Err(e) = clone_output {
+            return Err(format!("Failed to clone the repository: {}", e));
+        }
+
+        // Install genesis-creator
+        let install_output = Command::new("cargo")
+            .args(&[
+                "install",
+                "--path",
+                "concordium-misc-tools/genesis-creator/",
+                "--locked",
+            ])
+            .output();
+
+        if let Err(e) = install_output {
+            return Err(format!("Failed to install with cargo: {}", e));
+        }
+
+        // Delete the cloned directory
+        let delete_output = Command::new("cmd")
+            .args(&["/C", "rmdir", "/s", "/q", "concordium-misc-tools"])
+            .output();
+
+        if let Err(e) = delete_output {
+            return Err(format!("Failed to delete the directory: {}", e));
+        }
+    }
+
+    Ok("Successfully installed genesis-creator".to_string())
 }
 
 #[tauri::command]
@@ -506,6 +615,28 @@ pub async fn launch_template(
     }
 
     Ok(())
+}
+#[cfg(target_os = "windows")]
+#[tauri::command]
+async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
+    // Check if there's a child process to kill.
+    let _child_to_kill = {
+        let mut state = app_state.lock().unwrap();
+        state.child_process.take() // This removes the child process from the state and gives us ownership.
+    };
+    {
+        // Windows implementation using taskkill command
+        let output = Command::new("taskkill")
+            .args(&["/F", "/IM", "concordium-node.exe"])
+            .output()
+            .expect("Failed to execute command");
+
+        if output.status.success() {
+            Ok("Killed concordium-node-collector process.".to_string())
+        } else {
+            Err("No running concordium-node-collector process to kill.".to_string())
+        }
+    }
 }
 #[tauri::command]
 pub async fn kill_chain(app_state: State<'_, Arc<Mutex<AppState>>>) -> Result<String, String> {
