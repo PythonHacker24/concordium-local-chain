@@ -13,9 +13,8 @@ use std::os::unix::fs::PermissionsExt;
 use std::path::{Path, PathBuf};
 use tar::Archive;
 
-///  Function to install concordium-node binary at $HOME/.local/bin
+///  Function to install concordium-node binary at $HOME/.concordium-lc1c/bin
 /// for debian based linux distrbution or other supported distributions
-
 pub fn install_node_on_debian(destination_str: &str) -> Result<(), Box<dyn std::error::Error>> {
     let mut dest_path = dirs::home_dir().unwrap();
     let concordium_dir = dest_path.join(".concordium-lc1c");
