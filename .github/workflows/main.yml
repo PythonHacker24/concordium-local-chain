@@ -48,7 +48,7 @@ jobs:
         uses: tauri-apps/tauri-action@v0
 
         env:
-          GITHUB_TOKEN: ${{ secrets.TOKEN }}
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
         with:
           includeUpdaterJson: false
           tagName: v-${{ github.event.pull_request.head.ref }}
