@@ -16,24 +16,24 @@ During installation, LC1C will verify that all necessary tools are installed and
 
 ## Installation and Setup 🛠
 
-1. **Clone the Repository**:
+1. **Fork and Clone the Repository**:
 
    ```bash
-   git clone https://github.com/your-repository-url/concordium-lc1c.git
-   cd concordium-lc1c
+   git clone https://github.com/your-repository-url/concordium-local-chain.git
+   cd concordium-local-chain
    ```
 
 2. **Install Frontend Dependencies**:
-Navigate to the frontend directory (assuming it's named frontend):
+Navigate to the src directory (contains frontend files):
     ```bash
-    cd frontend
+    cd src
     yarn install
     ```
 
 3. **Install Rust Dependencies**: 
-Navigate back to the root directory and install the Rust dependencies:
+Navigate to the src-tauri directory and install the Rust dependencies (containes tauri code):
     ```bash
-    cd ..
+    cd src-tauri
     cargo build --release
     ```
 
@@ -47,7 +47,7 @@ To build the Tauri app, you can easily run:
 ```bash
 yarn run tauri build
 ```
-Please note that the application would be compiled for the OS you are currently running. 
+Please note that the application would be compiled for the OS you are currently running. The commands provided here are with respect to the project's root directory. 
 
 ## Contribution 🤝
 
