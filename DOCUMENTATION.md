@@ -165,64 +165,78 @@ User have reported about the issue of the required dependences for the RUST pack
 Dependency: libsoup2.4-dev
 
 For Debain/Ubuntu Based Systems 
-`sudo apt-get update
- sudo apt-get install libsoup2.4-dev
-`
+```
+sudo apt-get update
+sudo apt-get install libsoup2.4-dev
+```
 
 For RedHat/Fedora Based Systems 
-`sudo yum install libsoup2.4-dev
-`
+```
+sudo yum install libsoup2.4-dev
+```
 or with dnf 
-`sudo dnf install libsoup2.4-dev
-`
+```
+sudo dnf install libsoup2.4-dev
+```
 OpenSUSE Based Systems 
-`sudo zypper install libsoup2.4-dev
-`
+```
+sudo zypper install libsoup2.4-dev
+```
 Arch Linux based Systems 
-`sudo pacman -S libsoup2.4-dev
-`
+```
+sudo pacman -S libsoup2.4-dev
+```
 Gentoo Based Systems 
-`sudo emerge dev-libs/libsoup:2.4
-`
+```
+sudo emerge dev-libs/libsoup:2.4
+```
 Alpine Linux Issues 
-`sudo apk add libsoup2.4-dev
-`
+```
+sudo apk add libsoup2.4-dev
+```
 Dependency: libwebkit2gtk-4.0-dev
 
 For Debian/Ubuntu Based Systems
-`sudo apt-get update
+```
+sudo apt-get update
 sudo apt-get install libwebkit2gtk-4.0-dev
-`
+```
 For RedHat/Fedora Based Systems 
-`sudo yum install libwebkit2gtk-4.0-dev
-`
+```
+sudo yum install libwebkit2gtk-4.0-dev
+```
 or with dnf 
-`sudo dnf install libwebkit2gtk-4.0-dev
-`
+```
+sudo dnf install libwebkit2gtk-4.0-dev
+```
 OpenSUSE Based Systems 
-`sudo zypper install libwebkit2gtk-4.0-dev
-`
+```
+sudo zypper install libwebkit2gtk-4.0-dev
+```
 Arch Linux Based Systems 
-`sudo pacman -S webkit2gtk
-`
+```
+sudo pacman -S webkit2gtk
+```
 Gentoo Based Systems 
-`sudo emerge www-client/webkit-gtk
-`
+```
+sudo emerge www-client/webkit-gtk
+```
 Alpine Based Systems 
-`sudo apk add webkit2gtk-dev
-`
+```
+sudo apk add webkit2gtk-dev
+```
 
 ### dpkg tool Issues 
-- The running of the Concordium Node might fail if there `dpkg` is not installed. Make sure to have it installed to avoid the dpkg not found errors. 
+The running of the Concordium Node might fail if there `dpkg` is not installed. Make sure to have it installed to avoid the dpkg not found errors. 
 
 For Debian-based systems (e.g., Ubuntu)
-`sudo apt-get update && sudo apt-get install dpkg`
+```sudo apt-get update && sudo apt-get install dpkg```
 
 For Red Hat-based systems (e.g., Fedora)
-`sudo yum install dpkg`
+```sudo yum install dpkg```
 
 For systems using dnf package manager (e.g., CentOS 8+)
-`sudo dnf install dpkg`
+```sudo dnf install dpkg```
 
 Make sure that the latest version of dpkg is running on the system 
 
