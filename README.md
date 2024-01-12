@@ -19,7 +19,7 @@ During installation, LC1C will verify that all necessary tools are installed and
 ### Auto Installation Script
 
 ```
-sh -c "$(curl -fsSLhttps://raw.githubusercontent.com/Concordium/concordium-local-chain/main/install.sh)"
+sh -c "$(curl -fsSL https://raw.githubusercontent.com/Concordium/concordium-local-chain/main/install.sh)"
 ```
 Just copy the command and paste in the terminal. It will download the files and build the whole thing by it's own. 
 Note: This command works great with Linux and MacOS. Make sure to have a all the dependencies. Refer to the Documentation to know more about the dependencies and troubleshoot any errors.
