@@ -159,6 +159,84 @@ Pool parameters are the parameters that govern the baker's pool of delegations.
 ## Troubleshooting
 There are a couple of issues that a developer might initially face on the first page when installing the tools, this section focuses on how to troubleshoot the issues and solve them. 
 
+### Rust Build dependences Issues
+User have reported about the issue of the required dependences for the RUST packages to build 
+
+Dependency: libsoup2.4-dev
+
+For Debain/Ubuntu Based Systems 
+`sudo apt-get update
+ sudo apt-get install libsoup2.4-dev
+`
+
+For RedHat/Fedora Based Systems 
+`sudo yum install libsoup2.4-dev
+`
+or with dnf 
+`sudo dnf install libsoup2.4-dev
+`
+OpenSUSE Based Systems 
+`sudo zypper install libsoup2.4-dev
+`
+Arch Linux based Systems 
+`sudo pacman -S libsoup2.4-dev
+`
+Gentoo Based Systems 
+`sudo emerge dev-libs/libsoup:2.4
+`
+Alpine Linux Issues 
+`sudo apk add libsoup2.4-dev
+`
+Dependency: libwebkit2gtk-4.0-dev
+
+For Debian/Ubuntu Based Systems
+`sudo apt-get update
+sudo apt-get install libwebkit2gtk-4.0-dev
+`
+For RedHat/Fedora Based Systems 
+`sudo yum install libwebkit2gtk-4.0-dev
+`
+or with dnf 
+`sudo dnf install libwebkit2gtk-4.0-dev
+`
+OpenSUSE Based Systems 
+`sudo zypper install libwebkit2gtk-4.0-dev
+`
+Arch Linux Based Systems 
+`sudo pacman -S webkit2gtk
+`
+Gentoo Based Systems 
+`sudo emerge www-client/webkit-gtk
+`
+Alpine Based Systems 
+`sudo apk add webkit2gtk-dev
+`
+
+### dpkg tool Issues 
+- The running of the Concordium Node might fail if there `dpkg` is not installed. Make sure to have it installed to avoid the dpkg not found errors. 
+
+For Debian-based systems (e.g., Ubuntu)
+`sudo apt-get update && sudo apt-get install dpkg`
+
+For Red Hat-based systems (e.g., Fedora)
+`sudo yum install dpkg`
+
+For systems using dnf package manager (e.g., CentOS 8+)
+`sudo dnf install dpkg`
+
+Make sure that the latest version of dpkg is running on the system 
+
+### Ram Error Issues
+
+The Concordium Node Installation Package demands atleast 16GB RAM is installed in the system. Make sure that the system has the available memory to ensure that the Node runs in your system.
+
+### Node Installtion stucks in the GUI 
+
+1. Check you internet connection to allow the downloads to get installed 
+2. Most probably, if you are not running as the `root` user in the system, the installation process might need to have your password for accessing the requried permissions. Check out the terminal where the installation was going on. (happens in MacOs that the termnal gets hidden and asks for password while installation gets stuck)
+
 ### Installation of Concordium Node Incomplete
 Although you believe that you have correctly installed Concordium Node, verification fails. If verification fails, it means that there is a certain permission issue on the OS.
+
+If the issue persists, it would be great if you raise an issue on on the repository. We would try to resolve the issue as soon as possible. It would also be of great help as it will expand the troubleshooting guide and help further developers to avoid the issues in the future.
 
