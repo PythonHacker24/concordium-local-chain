@@ -15,7 +15,7 @@ During installation, LC1C will verify that all necessary tools are installed and
 
 ## Installation and Setup
 
-**Clone the Repository**:
+1. **Clone the Repository**:
 Clone the Project Repository to your local system
 ```bash
 git clone https://github.com/Concordium/concordium-local-chain.git
