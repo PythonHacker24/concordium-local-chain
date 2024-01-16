@@ -52,6 +52,12 @@ Please note that the application would be compiled for the OS you are currently 
 The GRPC API of the launched Concordium node is accessible on port `20100`.
 The node is using port `8169` for listening for incoming connections (by potential other nodes).
 
+### Storage
+Node databases, account keys are stored in their relevant `chain-x` folder under the under the user.
+1. Linux `/home/$USER/.concordium-lc1c/chain-x/`
+2. MacOS `/Users/$USER/.concordium-lc1c/chain-x/`
+3. Windows `C:\Users\$USER\.concordium-lc1c\chain-x\`
+
 ## Contribution
 
 Open source plays a pivotal role in the development and success of Concordium LC1C. By embracing an open-source model, LC1C benefits from a diverse community of developers who contribute their unique skills and perspectives, driving innovation and ensuring robust, secure software. This collaborative approach accelerates the tool's evolution, addressing the specific needs of developers building on the Concordium blockchain more efficiently.
