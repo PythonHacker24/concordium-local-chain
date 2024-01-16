@@ -1,7 +1,6 @@
 // Prevents additional console window on Windows in release, DO NOT REMOVE!!
 #![cfg_attr(not(debug_assertions), windows_subsystem = "windows")]
 
-
 mod common;
 mod unix;
 mod utils;
@@ -15,7 +14,6 @@ use views::{
     install, install_genesis_creator, kill_chain, launch_template, list_chain_folders,
     verify_installation,
 };
-
 
 fn main() {
     let app_state = Arc::new(Mutex::new(AppState::new()));
@@ -35,7 +33,6 @@ fn main() {
         .invoke_handler(tauri::generate_handler![
             install,
             verify_installation,
-            install_genesis_creator,
             launch_template,
             list_chain_folders,
             kill_chain
