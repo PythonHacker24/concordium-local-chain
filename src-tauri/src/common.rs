@@ -51,7 +51,7 @@ pub async fn download_file(url: &str, destination: &str) -> Result<(), Box<dyn s
 }
 
 pub async fn parse_block_info() -> Option<UiBlockInfo> {
-    let (block_hash, number) = account_info()
+    let (block_hash, number) = block_info()
         .await
         .map_err(|e| {
             eprintln!("Error fetching account info: {}", e);
@@ -223,7 +223,7 @@ pub async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddre
     Ok(amounts_map)
 }
 
-pub async fn account_info() -> anyhow::Result<(BlockHash, AbsoluteBlockHeight)> {
+pub async fn block_info() -> anyhow::Result<(BlockHash, AbsoluteBlockHeight)> {
     let endpoint_node: Endpoint = "http://127.0.0.1:20100"
         .try_into()
         .context("failed to create endpoint")?;
