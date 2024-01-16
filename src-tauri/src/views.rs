@@ -31,7 +31,7 @@ pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
 
     // Detect the user's OS and architecture and generate the correct link for it.
     let download_url = if cfg!(target_os = "windows") {
-        "https://distribution.concordium.software/windows/Signed/Node-6.0.4-0.msi"
+        "https://distribution.concordium.software/windows/Signed/Node-6.2.3-0.msi"
     } else if cfg!(target_os = "macos") {
         "https://distribution.concordium.software/macos/signed/concordium-node-6.2.3-0.pkg"
     } else if cfg!(target_os = "linux") {
