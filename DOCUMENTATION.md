@@ -17,6 +17,9 @@ The advanced builder allows for some configurations to be done to the blockchain
 ### Expert Builder 
 The Expert Builder platform is meticulously designed for developers who seek granular control over parameters, enabling them to delve into intricate chain configurations. This platform caters to those with a deep understanding of system structures and a passion for fine-tuning and optimizing their projects. With a comprehensive set of tools and configurations at their disposal, developers can customize, and innovate, ensuring the highest standards of precision and performance.
 
+### Dependences and Requirements for Concordium Node
+The dependences and requirements for the Concordium Node to run can be found [here](https://developer.concordium.software/en/mainnet/net/nodes/node-requirements.html#node-requirements).  
+
 ### Parameters
 Below is a guide to understanding the set of genesis parameters more clearly.
 
@@ -155,10 +158,23 @@ Pool parameters are the parameters that govern the baker's pool of delegations.
 
 1. passiveFinalizationCommission: The commission (between 0 and 1) that bakers take from passive delegators the finalization rewards earned by bakers that are active in the finalization protocol. If set to 1, then rewards are NOT distributed to passive delegators.
 
-
 ## Troubleshooting
-There are a couple of issues that a developer might initially face on the first page when installing the tools, this section focuses on how to troubleshoot the issues and solve them. 
+There are a couple of issues that a developer might initially face on the first page when installing the tools, this section focuses on how to troubleshoot the issues and solve them. Additionally, checkout the dependences and requirements section to ensure that that system is compactible for running Concordium Node.
+
+### Rust Build dependences Issues
+Ensure that all the dependences are installed as per the documentation. Additionally check for the given dependences too.
+1. libsoup2.4-dev
+2. libwebkit2gtk-4.0-dev
+
+### dpkg tool Issues 
+The running of the Concordium Node might fail if there `dpkg` is not installed. Make sure to have it installed to avoid the dpkg not found errors. Make sure that the latest version of dpkg is running on the system.
+
+### Node Installtion stucks in the GUI 
+1. Check you internet connection to allow the downloads to get installed 
+2. Most probably, if you are not running as the `root` user in the system, the installation process might need to have your password for accessing the requried permissions. Check out the terminal where the installation was going on. (happens in MacOs that the termnal gets hidden and asks for password while installation gets stuck)
 
 ### Installation of Concordium Node Incomplete
 Although you believe that you have correctly installed Concordium Node, verification fails. If verification fails, it means that there is a certain permission issue on the OS.
+
+If the issue persists, it would be great if you raise an issue on on the repository. We would try to resolve the issue as soon as possible. It would also be of great help as it will expand the troubleshooting guide and help further developers to avoid the issues in the future.
 
