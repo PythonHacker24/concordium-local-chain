@@ -46,7 +46,17 @@ To build the Tauri app, you can easily run:
 ```bash
 yarn run tauri build
 ```
-Please note that the application would be compiled for the OS you are currently running. The commands provided here are with respect to the project's root directory. 
+Please note that the application would be compiled for the OS you are currently running. The commands provided here are with respect to the project's root directory.
+
+## Operation
+The GRPC API of the launched Concordium node is accessible on port `20100`.
+The node is using port `8169` for listening for incoming connections (by potential other nodes).
+
+### Storage
+Node databases, account keys are stored in their relevant `chain-x` folder under the under the user.
+1. Linux `/home/$USER/.concordium-lc1c/chain-x/`
+2. MacOS `/Users/$USER/.concordium-lc1c/chain-x/`
+3. Windows `C:\Users\$USER\.concordium-lc1c\chain-x\`
 
 ## Contribution
 
