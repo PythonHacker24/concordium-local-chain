@@ -1,4 +1,5 @@
 use crate::utils::{TransactionsInfo, UiBlockInfo};
+use anyhow::Context;
 use concordium_rust_sdk::smart_contracts::common::{AccountAddress, Amount};
 use concordium_rust_sdk::smart_contracts::types::InstanceInfo;
 use concordium_rust_sdk::types::{AbsoluteBlockHeight, BlockItemSummary};
@@ -223,62 +224,17 @@ pub async fn amount_info(hash: BlockHash) -> anyhow::Result<HashMap<AccountAddre
 }
 
 pub async fn account_info() -> anyhow::Result<(BlockHash, AbsoluteBlockHeight)> {
-    let endpoint_node = Endpoint::from_str("http://127.0.0.1:20100").map_err(|e| {
-        println!("[ERROR] Failed to create endpoint: {:?}", e);
-        e
-    })?;
-
-    println!("[INFO] Endpoint created successfully.");
-
-    let mut client = v2::Client::new(endpoint_node).await.map_err(|e| {
-        println!("[ERROR] Failed to create client: {:?}", e);
-        e
-    })?;
-
-    println!("[INFO] Client created successfully.");
-
-    let mut accounts = client
-        .get_account_list(&v2::BlockIdentifier::LastFinal)
+    let endpoint_node: Endpoint = "http://127.0.0.1:20100"
+        .try_into()
+        .context("failed to create endpoint")?;
+    let mut client = v2::Client::new(endpoint_node)
         .await
-        .map_err(|e| {
-            println!("[ERROR] Failed to get account list: {:?}", e);
-            e
-        })?;
-
-    println!("[INFO] Account list retrieved successfully.");
-
-    let block = accounts.block_hash;
-    let mut account_addr: Option<AccountAddress> = None;
-    while let Some(a) = accounts.response.next().await {
-        account_addr = a.ok();
-    }
-
-    if account_addr.is_none() {
-        println!("[WARN] No account address found.");
-        return Err(anyhow::anyhow!("No account address found"));
-    }
-
-    let addr = AccountIdentifier::Address(account_addr.unwrap());
-
-    let info = client.get_account_info(&addr, block).await.map_err(|e| {
-        println!("[ERROR] Failed to get account info: {:?}", e);
-        e
-    })?;
-
-    println!("[INFO] Account info retrieved successfully.");
-
-    let hash = info.block_hash;
-
-    let blocks = client.get_block_info(&block).await.map_err(|e| {
-        println!("[ERROR] Failed to get block info: {:?}", e);
-        e
-    })?;
-
-    println!("[INFO] Block info retrieved successfully.");
-
-    let block_number = blocks.response.block_height;
-
-    Ok((hash, block_number))
+        .context("failed to create client")?;
+    let bi = client
+        .get_block_info(&v2::BlockIdentifier::LastFinal)
+        .await
+        .context("failed retrieving last finalized block")?;
+    Ok((bi.block_hash, bi.response.block_height))
 }
 
 pub fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
@@ -296,7 +252,7 @@ pub fn json_to_toml(json_value: &JsonValue) -> Option<TomlValue> {
         }
         JsonValue::String(s) => Some(TomlValue::String(s.clone())),
         JsonValue::Array(arr) => {
-            let toml_arr: Vec<TomlValue> = arr.iter().filter_map(|v| json_to_toml(v)).collect();
+            let toml_arr: Vec<TomlValue> = arr.iter().filter_map(json_to_toml).collect();
             Some(TomlValue::Array(toml_arr))
         }
         JsonValue::Object(obj) => {
