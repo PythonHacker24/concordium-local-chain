@@ -35,7 +35,7 @@ pub async fn install(_handle: tauri::AppHandle) -> Result<(), String> {
     } else if cfg!(target_os = "macos") {
         "https://distribution.concordium.software/macos/signed/concordium-node-6.2.3-0.pkg"
     } else if cfg!(target_os = "linux") {
-        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_6.0.4-0_amd64.deb"
+        "https://distribution.mainnet.concordium.software/deb/concordium-mainnet-node_6.2.3-0_amd64.deb"
     } else {
         return Err("Unsupported OS".into());
     };
