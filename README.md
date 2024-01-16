@@ -46,7 +46,11 @@ To build the Tauri app, you can easily run:
 ```bash
 yarn run tauri build
 ```
-Please note that the application would be compiled for the OS you are currently running. The commands provided here are with respect to the project's root directory. 
+Please note that the application would be compiled for the OS you are currently running. The commands provided here are with respect to the project's root directory.
+
+## Operation
+The GRPC API of the launched Concordium node is accessible on port `20100`.
+The node is using port `8169` for listening for incoming connections (by potential other nodes).
 
 ## Contribution
 
